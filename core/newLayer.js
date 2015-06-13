@@ -1,8 +1,14 @@
 /**
- * This FUNCTION creates a new layer object. Layers are self-contained store-view pairings.
+ * This METHOD creates a new layer which is either returned: myLayer = s.newLayer() or appended to the root socioscapes
+ * object: (s.newLayer('myLayer'). Layers are a simple way to organize related data, geometry, and settings; they allow
+ * you to easily access your data, analyze it, associate it with specific geometry, and connect it to various views.
+ *
+ * To create a new layer: s.newLayer('myLayer')
+ * To add data: s.myLayer(
  *
  * @function newLayer
- * @return this {Object}
+ * @param name {String} The name to be used for the layer (eg. s.name).
+ * @return myLayer {Object}
  */
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
@@ -11,33 +17,17 @@ myPolyfills();
 
 module.exports = function (name) {
     var myLayer,
-        _myData,
-        _myGeom,
-        _myColourscale = "YlOrRd",
-        _myGeostats,
-        _myDomain,
-        _myClassification = 'getClassJenks',
-        _myClasses,
-        _myViews = [],
         _myBreaks = 5,
+        _myClasses,
+        _myClassification = 'getClassJenks',
+        _myColourscale = "YlOrRd",
+        _myData,
+        _myDomain,
+        _myGeom,
+        _myGeostats,
+        _myViews = {},
         _myLayerStatus = {};
-    Object.defineProperty(_myLayerStatus, 'data', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geom', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'colourscale', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geostats', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'domain', {
+    Object.defineProperty(_myLayerStatus, 'breaks', {
         value: false,
         configurable: true
     });
@@ -45,13 +35,34 @@ module.exports = function (name) {
         value: false,
         configurable: true
     });
-    Object.defineProperty(_myLayerStatus, 'breaks', {
+    Object.defineProperty(_myLayerStatus, 'colourscale', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'data', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'domain', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'geom', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'geostats', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'readyGis', {
         value: false,
         configurable: true
     });
 
     myLayer = {};
-
+    myLayer.views = _myViews;
+    console.log(this);
     Object.defineProperty(myLayer, 'status', {
         value: function (name, state) {
             if (!name) {
@@ -62,7 +73,24 @@ module.exports = function (name) {
             }
             if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
                 delete _myLayerStatus[name];
-                _myLayerStatus[name] = state;
+                Object.defineProperty(_myLayerStatus, name, {
+                    value: state,
+                    configurable: true
+                });
+
+                if (_myLayerStatus.breaks &&
+                _myLayerStatus.classes &&
+                _myLayerStatus.colourscale &&
+                _myLayerStatus.data &&
+                _myLayerStatus.domain &&
+                _myLayerStatus.geom &&
+                _myLayerStatus.geostats) {
+                    delete _myLayerStatus.readyGis;
+                    Object.defineProperty(_myLayerStatus, 'readyGis', {
+                        value: true,
+                        configurable: true
+                    });
+                }
             }
         }
     });
@@ -185,7 +213,7 @@ module.exports = function (name) {
             }
             if (viewName && !viewFunction) {
                 if (_myViews[viewName]) {
-                    return _myViews[viewName]();
+                    _myViews[viewName]();
                 } else {
                     return _myViews;
                 }
@@ -193,18 +221,12 @@ module.exports = function (name) {
             if (_myViews[viewName] && viewFunction === "DELETE") {
                 delete(_myViews[viewName]);
                 return _myViews;
-            } else if (_myViews[viewName] && ViewFunction === "INIT") {
-                delete(_myViews[viewName]);
-                return _myViews;
-            } else {
-                Object.defineProperty(_myViews, viewName, {
-                    value: function () {
-                        viewFunction(myLayer, viewConfig)
-                    },
-                    enumerable: true,
-                    configurable:true
-                });
             }
+            Object.defineProperty(_myViews, viewName, {
+                value: viewFunction(viewConfig),
+                enumerable: true,
+                configurable:true
+            });
         }
     });
     if (name) {

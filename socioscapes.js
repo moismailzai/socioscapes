@@ -1,9 +1,15 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
- * This FUNCTION creates a new layer object. Layers are self-contained store-view pairings.
+ * This METHOD creates a new layer which is either returned: myLayer = s.newLayer() or appended to the root socioscapes
+ * object: (s.newLayer('myLayer'). Layers are a simple way to organize related data, geometry, and settings; they allow
+ * you to easily access your data, analyze it, associate it with specific geometry, and connect it to various views.
+ *
+ * To create a new layer: s.newLayer('myLayer')
+ * To add data: s.myLayer(
  *
  * @function newLayer
- * @return this {Object}
+ * @param name {String} The name to be used for the layer (eg. s.name).
+ * @return myLayer {Object}
  */
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
@@ -12,33 +18,17 @@ myPolyfills();
 
 module.exports = function (name) {
     var myLayer,
-        _myData,
-        _myGeom,
-        _myColourscale = "YlOrRd",
-        _myGeostats,
-        _myDomain,
-        _myClassification = 'getClassJenks',
-        _myClasses,
-        _myViews = [],
         _myBreaks = 5,
+        _myClasses,
+        _myClassification = 'getClassJenks',
+        _myColourscale = "YlOrRd",
+        _myData,
+        _myDomain,
+        _myGeom,
+        _myGeostats,
+        _myViews = {},
         _myLayerStatus = {};
-    Object.defineProperty(_myLayerStatus, 'data', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geom', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'colourscale', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geostats', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'domain', {
+    Object.defineProperty(_myLayerStatus, 'breaks', {
         value: false,
         configurable: true
     });
@@ -46,13 +36,34 @@ module.exports = function (name) {
         value: false,
         configurable: true
     });
-    Object.defineProperty(_myLayerStatus, 'breaks', {
+    Object.defineProperty(_myLayerStatus, 'colourscale', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'data', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'domain', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'geom', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'geostats', {
+        value: false,
+        configurable: true
+    });
+    Object.defineProperty(_myLayerStatus, 'readyGis', {
         value: false,
         configurable: true
     });
 
     myLayer = {};
-
+    myLayer.views = _myViews;
+    console.log(this);
     Object.defineProperty(myLayer, 'status', {
         value: function (name, state) {
             if (!name) {
@@ -63,7 +74,24 @@ module.exports = function (name) {
             }
             if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
                 delete _myLayerStatus[name];
-                _myLayerStatus[name] = state;
+                Object.defineProperty(_myLayerStatus, name, {
+                    value: state,
+                    configurable: true
+                });
+
+                if (_myLayerStatus.breaks &&
+                _myLayerStatus.classes &&
+                _myLayerStatus.colourscale &&
+                _myLayerStatus.data &&
+                _myLayerStatus.domain &&
+                _myLayerStatus.geom &&
+                _myLayerStatus.geostats) {
+                    delete _myLayerStatus.readyGis;
+                    Object.defineProperty(_myLayerStatus, 'readyGis', {
+                        value: true,
+                        configurable: true
+                    });
+                }
             }
         }
     });
@@ -186,7 +214,7 @@ module.exports = function (name) {
             }
             if (viewName && !viewFunction) {
                 if (_myViews[viewName]) {
-                    return _myViews[viewName]();
+                    _myViews[viewName]();
                 } else {
                     return _myViews;
                 }
@@ -194,18 +222,14 @@ module.exports = function (name) {
             if (_myViews[viewName] && viewFunction === "DELETE") {
                 delete(_myViews[viewName]);
                 return _myViews;
-            } else if (_myViews[viewName] && ViewFunction === "INIT") {
-                delete(_myViews[viewName]);
-                return _myViews;
-            } else {
-                Object.defineProperty(_myViews, viewName, {
-                    value: function () {
-                        viewFunction(myLayer, viewConfig)
-                    },
-                    enumerable: true,
-                    configurable:true
-                });
             }
+            Object.defineProperty(_myViews, viewName, {
+                value: function () {
+                    viewFunction(viewConfig)
+                },
+                enumerable: true,
+                configurable:true
+            });
         }
     });
     if (name) {
@@ -1595,8 +1619,8 @@ module.exports = function () {
 
 var fetchGoogleAuth = require('../fetchers/fetchGoogleAuth.js'),
     fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
-    setViewGmap_Labels = require('./setViewGmap_Labels.js'),
-    setViewGmap_Map = require('./setViewGmap_Map.js');
+    setViewGmap_Labels = require('./viewGmap_Labels.js'),
+    setViewGmap_Map = require('./viewGmap_Map.js');
 
 module.exports = function (config) {
     var myGmapView, _myDiv, _myMap, _myGmapLayer, _myGmapLayers, _myStyle, _myHoverListenerSet, _myHoverListenerReset, _myOnClickListener, _mySelectedFeatures, _mySelectionLimit, _mySelectionCount, _myFeatureId;
@@ -1926,24 +1950,24 @@ module.exports = function (geocode, div, styles, options) {
 };
 },{}],13:[function(require,module,exports){
 /**
- * Socioscapes is an alternative to desktop geographic information systems and proprietary data visualization platforms.
- * The modular API fuses together various free-to-use and open-source GIS libraries into an organized, modular, and
+ * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
+ * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
  * sandboxed environment.
  *
- *      Source code...................... http://github.com/moismailzai/SocioscapesGIS
- *      Reference implementation......... http://app.socioscapes.com
- *      License.......................... MIT license (free as in beer & speech)
- *      Copyright........................ Ideas are free
+ *    Source code...................... http://github.com/moismailzai/SocioscapesGIS
+ *    Reference implementation......... http://app.socioscapes.com
+ *    License.......................... MIT license (free as in beer & speech)
+ *    Copyright........................ Copies have no rights
  *
- * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
- * the University of Toronto.
+ * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
+ * University of Toronto.
  */
 var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
     fetchGoogleGeocode = require('./fetchers/fetchGoogleGeocode.js'),
     fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
     fetchWfs = require('./fetchers/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
-    setViewGmap = require('./views/setViewGmap.js');
+    setViewGmap = require('./views/viewGmap.js');
 
 module.exports = function (pluginModule) {
 
@@ -1973,5 +1997,6 @@ module.exports = function (pluginModule) {
     }
     return s;
 };
+
 },{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/setViewGmap.js":10}]},{},[13])(13)
 });
