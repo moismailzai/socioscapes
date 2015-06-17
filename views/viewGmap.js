@@ -1,23 +1,22 @@
+/*jslint node: true */
 'use strict';
-/**
- * This METHOD creates new Google Maps view and returns the object.
- *
- * @method viewGmap
- * @param config.div Div ID for an empty div or a Google map object.
- * @param config.address {String} The address to center the map around.
- * @param config.styles {String} The style options for the Google map.
- * @param config.options {String} The map options for the Google map.
- * @param config.labelStyles {String} The style options for the Label layer.
- * @return this {Object}
- */
-
 var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
     viewGmap_Labels = require('./viewGmap_Labels.js'),
     viewGmap_Map = require('./viewGmap_Map.js');
-
-module.exports = function (config) {
-
-    var MyView = function() {
+/**
+ * This METHOD creates a new Google Maps view and associates it with the {@linkcode myLayer} instance.
+ *
+ * @method viewGmap
+ * @param {Object} config - An object with configuration options for the Google Map view.
+ * @param {String} config.div - The id of an html div element that will store the map
+ * @param {String} config.address - The address around which the map around (eg. 'Toronto, Canada').
+ * @param {String} config.styles - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {String} config.options - An array of valid Google Maps map option.
+ * @param {String} config.labelStyles - An optional array of {"feature": "rule"} declarative styles for map labels.
+ * @return {Object} MyView - The rendered and configured view object.
+ */
+module.exports = function viewGmap(config) {
+    var MyView = function () {
         var _myMap,
             _myGmapLayer,
             _myGmapLayers,

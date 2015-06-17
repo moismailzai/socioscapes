@@ -1,23 +1,24 @@
+/*jslint node: true */
 'use strict';
 /**
- * This function requests authorization to use the Google APIs.
+ * This function requests authorization to use a Google API, and if received, loads that API client.
  *
  * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
  *
- * A function in MyNamespace (MyNamespace.myFunction).
- * @function getGoogleAuth
- * @memberof s
- * @param config {Object} Configuration parameters (.auth and .client) for the gapi.auth and gapi.client apis.
- * @param [callback] {Function} Optional callback.
+ * @function fetchGoogleAuth
+ * @param {Object} config - An object with configuration options for Google APIs.
+ * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
+ * @param {Object} config.client.name - The name of the Google API client to load.
+ * @param {Object} config.client.version - The version of the Google API client to load.
+ * @param {Function} callback - This is an optional callback that returns the result of the client load.
  * @return this {Object}
  */
-module.exports = function (config, callback) {
+module.exports = function fetchGoogleAuth(config, callback) {
+    callback = (typeof callback === 'function') ? callback : function () { };
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
-            gapi.client.load(config.client.name, config.client.version, function () {
-                if (callback) {
-                    callback();
-                }
+            gapi.client.load(config.client.name, config.client.version, function (result) {
+                callback(result);
             });
         }
     });

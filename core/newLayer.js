@@ -1,10 +1,9 @@
+/*jslint node: true */
 'use strict';
-
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
-
 /**
  * This constructor method appends a new object (of class {@linkcode MyLayer}) to the Socioscapes instance.
  *
@@ -16,8 +15,7 @@ myPolyfills();
  * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
  * @return {Object} MyLayer
  */
-module.exports = function (name) {
-
+module.exports = function newLayer(name) {
     /**
      * Each instance of this class consists of the two store members {@linkcode MyLayer#data} and
      * {@linkcode MyLayer#geom}, as well as well as the configuration members {@linkcode MyLayer#breaks},
@@ -41,7 +39,6 @@ module.exports = function (name) {
             _myViews = {},
             _myLayerStatus = {},
             that = this;
-
         Object.defineProperty(_myLayerStatus, 'breaks', {
             value: false,
             configurable: true
@@ -74,7 +71,6 @@ module.exports = function (name) {
             value: false,
             configurable: true
         });
-
         /**
          * This container holds all instances of {@linkcode MyView} that are associated with this {@linkcode MyLayer}
          * instance.
@@ -84,7 +80,6 @@ module.exports = function (name) {
          * @instance
          */
         this.views = _myViews;
-
         /**
          * This method returns a boolean status for each configurable member of the associated {@linkcode MyLayer}
          * instance.
@@ -134,7 +129,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method sets the data store of the the associated {@linkcode MyLayer} instance. If the fetch is
          * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
@@ -169,7 +163,6 @@ module.exports = function (name) {
                 });
             }
         });
-
         /**
          * This method sets the geom store of the the associated {@linkcode MyLayer} instance. If the fetch is
          * successful, myLayer.status('geom') will return true.
@@ -203,7 +196,6 @@ module.exports = function (name) {
                 });
             }
         });
-
         /**
          * This method sets the number of breaks for the associated {@linkcode MyLayer} instance. This setting, along
          * with {@linkcode myLayer#classification} and {@linkcode myLayer#colourscale} constitute the core GIS
@@ -230,7 +222,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
          * scale. Socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
@@ -271,7 +262,6 @@ module.exports = function (name) {
                 return _myColourscaleName;
             }
         });
-
         /**
          * This method classifies {@linkcode myLayer#data} based on a geostats classification. See
          * {@linktext https://github.com/simogeo/geostats}.
@@ -317,7 +307,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method returns the data domain.
          *
@@ -330,7 +319,6 @@ module.exports = function (name) {
                 return _myDomain;
             }
         });
-
         /**
          * This container stores the {@linkcode myLayer} instance's geostats object. It is calculated each time
          * {@linkcode myLayer#data} is successfully set.
@@ -342,7 +330,6 @@ module.exports = function (name) {
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
         });
-
         /**
          * This method gets or sets a new view based on the {@linkcode myLayer} instance's {@linkcode myLayer#data}
          * and {@linkcode myLayer#geom}. Views associated with a given {@linkcode myLayer} instance share the same
@@ -378,10 +365,8 @@ module.exports = function (name) {
             }
         });
     };
-
     if (name) {
       this[name] = new MyLayer;
     }
-
     return new MyLayer;
 };

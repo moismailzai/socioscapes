@@ -1,3 +1,4 @@
+/*jslint node: true */
 'use strict';
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
@@ -5,19 +6,17 @@ var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
  * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
- * @param config {Object} Configuration parameters for Google Big Query.
- * @param config.bqClientId {String} The Google Big Query client ID.
- * @param config.bqProjectId {String} The Google Big Query project ID.
- * @param config.bqQueryColumns {String} The number of Google Big Query columns being queried.
- * @param config.bqQueryString {String} The Google Big Query query string.
- * @param config.id {String} The ID column (the values in this column are used to match geom ID values).
- * @return this {Object}
+ * @param {Object} config - An object with configuration options for the Google Big Query fetch.
+ * @param {String} config.bqClientId - The Google Big Query client id.
+ * @param {String} config.bqProjectId - The Google Big Query project id.
+ * @param {String} config.bqQueryString - The Google Big Query query string.
+ * @param {String} config.id - The id column (the values in this column are used to match the geom id property).
+ * @return {Array} data - An object with .values, .url, and .id members. This can be used to populate myLayer.data.
  */
-module.exports = function (config) {
+module.exports = function fetchGoogleBq(config) {
     var data,
         _bqClientId = config.bqClientId,
         _bqProjectId = config.bqProjectId,
-        _bqQueryColumns = config.bqQueryColumns || 2,
         _bqQueryString = config.bqQueryString,
         _currentRow = 0,
         _dataId = config.id,
@@ -43,10 +42,10 @@ module.exports = function (config) {
 
     fetchGoogleAuth(_gapiConfig, function () {
         _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
-        _request.execute(function (queryResult) {
-            console.log(queryResult);
-            _totalRows = queryResult.result.totalRows;
-            fetchGoogleBq_Sort(queryResult, _bqQueryColumns, function(sortedResult) {
+        _request.execute(function (bqResult) {
+            console.log(bqResult);
+            _totalRows = bqResult.result.totalRows;
+            fetchGoogleBq_Sort(bqResult, function (sortedResult) {
                 _values.push(sortedResult);
                 _currentRow++;
                 if (_currentRow === _totalRows) {

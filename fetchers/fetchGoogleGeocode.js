@@ -1,27 +1,23 @@
+/*jslint node: true */
 'use strict';
 /**
- * This METHOD executes a Google Geocoder query for 'address' and appends the results to the calling object's
- * .geo_cache.lat and .geo_cache.long members.
+ * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.
  *
- * Make sure you obtain a google auth token and load the appropriate client first.
+ * Make sure you obtain Google auth and load the GAPI client first.
  *
- * @function getLatLong
- * @param address {String}
- * @param [callback] {Function} Optional callback.
- * @return this {Object}
+ * @function fetchGoogleGeocode
+ * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
+ * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
-module.exports = function (address) {
-
+module.exports = function fetchGoogleGeocode(address) {
     var geocoder = new google.maps.Geocoder(),
-        geoCodedAddress = {};
-
+        geocode = {};
     geocoder.geocode({'address': address}, function (results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
-            geoCoded.lat = results[0].geometry.location.lat();
-            geoCoded.long = results[0].geometry.location.lng();
-            return geoCodedAddress;
-        } else {
-            alert('Error: Google Geocoder was unable to locate ' + address);
+            geocode.lat = results[0].geometry.location.lat();
+            geocode.long = results[0].geometry.location.lng();
+            return geocode;
         }
+        alert('Error: Google Geocoder was unable to locate ' + address);
     });
 };

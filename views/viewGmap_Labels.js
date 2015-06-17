@@ -1,17 +1,15 @@
+/*jslint node: true */
 'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
  *
- * @function setLabels
- * @param mapObject {Object} The map to append this OverlayView to.
- * @param [styles] {Array} Optional array of {"feature": "rule"} declarative styles.
- * @return this {Object}
+ * @function viewGmap_Labels
+ * @param {Object} myMap - The map to append this OverlayView to.
+ * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @return {Object} myMap - The rendered Google Maps object.
  */
-
-module.exports = function (mapObject, styles) {
-
+module.exports = function viewGmap_Labels(myMap, styles) {
     var dom, LayerHack;
-
     styles = styles || [
         {
             "elementType": "all",
@@ -38,20 +36,19 @@ module.exports = function (mapObject, styles) {
 
     // Create a custom OverlayView class and declare rules that will ensure it appears above all other map content
     LayerHack = new google.maps.OverlayView();
-    LayerHack.onAdd = function() {
+    LayerHack.onAdd = function () {
         dom = this.getPanes();
         dom.mapPane.style.zIndex = 150;
     };
-    LayerHack.onRemove = function() {
+    LayerHack.onRemove = function () {
         this.div_.parentNode.removeChild(this.div_);
         this.div_ = null;
     };
-    LayerHack.draw = function() {};
-    LayerHack.setMap(mapObject);
+    LayerHack.draw = function () { };
+    LayerHack.setMap(myMap);
 
     // Create and set the label layer
-    mapObject.labels = new google.maps.StyledMapType(styles);
-    mapObject.overlayMapTypes.insertAt(0, mapObject.labels);
-
-    return mapObject;
+    myMap.labels = new google.maps.StyledMapType(styles);
+    myMap.overlayMapTypes.insertAt(0, myMap.labels);
+    return myMap;
 };

@@ -1,25 +1,26 @@
+/*jslint node: true */
 'use strict';
 /**
- * This METHOD asonchronously fetches geometry from a WFS feature server. It expects GeoJson geometry and stores the
- * result in this.data.geoJson and can optionally return it in a callback.
+ * This METHOD asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
+ * returns the queried url, the id parameter, and the fetched GeoJson features.
  *
- * @function fetchWfsGeoJson
- * @param queryString {String} The query (as an escaped CQL string).
- * @param [queryBaseUrl] {String} A valid WFS feature server URL. If an URL is not provided, defaults to
- *                                this.data.wfsUrl.
- * @param [callback] {Object} An optional callback.
- * @return this {Object}
+ * @function fetchWfs
+ * @param {Object} config - An object with configuration options for the Web Feature Service fetch.
+ * @param {String} config.url - The Web Feature Service query url.
+ * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).
+ * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetch.
+ * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
-
-// From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-module.exports = function (config, callback) {
+module.exports = function fetchWfs(config, callback) {
     var _xobj = new XMLHttpRequest(),
         _url = config.url,
-        _id = config.id;
-    _xobj.overrideMimeType("application/json");
+        _id = config.id,
+        geom;
+    callback = (typeof callback === 'function') ? callback : function () { };
+    _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
     _xobj.open('GET', _url, true);
     _xobj.onreadystatechange = function () {
-        if (_xobj.readyState == 4 && _xobj.status == "200") {
+        if (_xobj.readyState === 4 && _xobj.status === "200") {
             geom = {};
             geom.features = _xobj.responseText;
             geom.url = _url;

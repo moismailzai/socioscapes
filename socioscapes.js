@@ -1,11 +1,10 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
-
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
-
 /**
  * This constructor method appends a new object (of class {@linkcode MyLayer}) to the Socioscapes instance.
  *
@@ -17,8 +16,7 @@ myPolyfills();
  * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
  * @return {Object} MyLayer
  */
-module.exports = function (name) {
-
+module.exports = function newLayer(name) {
     /**
      * Each instance of this class consists of the two store members {@linkcode MyLayer#data} and
      * {@linkcode MyLayer#geom}, as well as well as the configuration members {@linkcode MyLayer#breaks},
@@ -42,7 +40,6 @@ module.exports = function (name) {
             _myViews = {},
             _myLayerStatus = {},
             that = this;
-
         Object.defineProperty(_myLayerStatus, 'breaks', {
             value: false,
             configurable: true
@@ -75,7 +72,6 @@ module.exports = function (name) {
             value: false,
             configurable: true
         });
-
         /**
          * This container holds all instances of {@linkcode MyView} that are associated with this {@linkcode MyLayer}
          * instance.
@@ -85,7 +81,6 @@ module.exports = function (name) {
          * @instance
          */
         this.views = _myViews;
-
         /**
          * This method returns a boolean status for each configurable member of the associated {@linkcode MyLayer}
          * instance.
@@ -135,7 +130,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method sets the data store of the the associated {@linkcode MyLayer} instance. If the fetch is
          * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
@@ -170,7 +164,6 @@ module.exports = function (name) {
                 });
             }
         });
-
         /**
          * This method sets the geom store of the the associated {@linkcode MyLayer} instance. If the fetch is
          * successful, myLayer.status('geom') will return true.
@@ -204,7 +197,6 @@ module.exports = function (name) {
                 });
             }
         });
-
         /**
          * This method sets the number of breaks for the associated {@linkcode MyLayer} instance. This setting, along
          * with {@linkcode myLayer#classification} and {@linkcode myLayer#colourscale} constitute the core GIS
@@ -231,7 +223,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
          * scale. Socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
@@ -272,7 +263,6 @@ module.exports = function (name) {
                 return _myColourscaleName;
             }
         });
-
         /**
          * This method classifies {@linkcode myLayer#data} based on a geostats classification. See
          * {@linktext https://github.com/simogeo/geostats}.
@@ -318,7 +308,6 @@ module.exports = function (name) {
                 }
             }
         });
-
         /**
          * This method returns the data domain.
          *
@@ -331,7 +320,6 @@ module.exports = function (name) {
                 return _myDomain;
             }
         });
-
         /**
          * This container stores the {@linkcode myLayer} instance's geostats object. It is calculated each time
          * {@linkcode myLayer#data} is successfully set.
@@ -343,7 +331,6 @@ module.exports = function (name) {
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
         });
-
         /**
          * This method gets or sets a new view based on the {@linkcode myLayer} instance's {@linkcode myLayer#data}
          * and {@linkcode myLayer#geom}. Views associated with a given {@linkcode myLayer} instance share the same
@@ -379,40 +366,40 @@ module.exports = function (name) {
             }
         });
     };
-
     if (name) {
       this[name] = new MyLayer;
     }
-
     return new MyLayer;
 };
 },{"../libs/Geostats.js":7,"../libs/chroma.js":8,"../libs/myPolyfills.js":9}],2:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
- * This function requests authorization to use the Google APIs.
+ * This function requests authorization to use a Google API, and if received, loads that API client.
  *
  * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
  *
- * A function in MyNamespace (MyNamespace.myFunction).
- * @function getGoogleAuth
- * @memberof s
- * @param config {Object} Configuration parameters (.auth and .client) for the gapi.auth and gapi.client apis.
- * @param [callback] {Function} Optional callback.
+ * @function fetchGoogleAuth
+ * @param {Object} config - An object with configuration options for Google APIs.
+ * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
+ * @param {Object} config.client.name - The name of the Google API client to load.
+ * @param {Object} config.client.version - The version of the Google API client to load.
+ * @param {Function} callback - This is an optional callback that returns the result of the client load.
  * @return this {Object}
  */
-module.exports = function (config, callback) {
+module.exports = function fetchGoogleAuth(config, callback) {
+    callback = (typeof callback === 'function') ? callback : function () { };
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
-            gapi.client.load(config.client.name, config.client.version, function () {
-                if (callback) {
-                    callback();
-                }
+            gapi.client.load(config.client.name, config.client.version, function (result) {
+                callback(result);
             });
         }
     });
 };
 
 },{}],3:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
@@ -420,19 +407,17 @@ var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
  * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
- * @param config {Object} Configuration parameters for Google Big Query.
- * @param config.bqClientId {String} The Google Big Query client ID.
- * @param config.bqProjectId {String} The Google Big Query project ID.
- * @param config.bqQueryColumns {String} The number of Google Big Query columns being queried.
- * @param config.bqQueryString {String} The Google Big Query query string.
- * @param config.id {String} The ID column (the values in this column are used to match geom ID values).
- * @return this {Object}
+ * @param {Object} config - An object with configuration options for the Google Big Query fetch.
+ * @param {String} config.bqClientId - The Google Big Query client id.
+ * @param {String} config.bqProjectId - The Google Big Query project id.
+ * @param {String} config.bqQueryString - The Google Big Query query string.
+ * @param {String} config.id - The id column (the values in this column are used to match the geom id property).
+ * @return {Array} data - An object with .values, .url, and .id members. This can be used to populate myLayer.data.
  */
-module.exports = function (config) {
+module.exports = function fetchGoogleBq(config) {
     var data,
         _bqClientId = config.bqClientId,
         _bqProjectId = config.bqProjectId,
-        _bqQueryColumns = config.bqQueryColumns || 2,
         _bqQueryString = config.bqQueryString,
         _currentRow = 0,
         _dataId = config.id,
@@ -458,10 +443,10 @@ module.exports = function (config) {
 
     fetchGoogleAuth(_gapiConfig, function () {
         _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
-        _request.execute(function (queryResult) {
-            console.log(queryResult);
-            _totalRows = queryResult.result.totalRows;
-            fetchGoogleBq_Sort(queryResult, _bqQueryColumns, function(sortedResult) {
+        _request.execute(function (bqResult) {
+            console.log(bqResult);
+            _totalRows = bqResult.result.totalRows;
+            fetchGoogleBq_Sort(bqResult, function (sortedResult) {
                 _values.push(sortedResult);
                 _currentRow++;
                 if (_currentRow === _totalRows) {
@@ -476,75 +461,78 @@ module.exports = function (config) {
     });
 };
 },{"./fetchGoogleAuth.js":2,"./fetchGoogleBq_Sort.js":4}],4:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
- * @function sortBigQuery
- * @param bq {Object} The results of a Google Big Query fetch.
- * @param [callback] {Function} Optional callback.
+ * @function fetchGoogleBq_Sort
+ * @param {Object} bqResult - The results of a Google Big Query fetch.
+ * @param {Function} callback - This is a mandatory callback that returns each row of the asynchronous fetch.
  */
-module.exports = function (bq, columns, callback){
-    var thisRow = {};
-    bq.result.rows.forEach (function(row) {
-        thisRow[columns[0]] = parseFloat(row.f[0].v);
+module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
+    var i,
+        thisRow = {};
+    if (!callback) {
+        return;
+    }
+    callback = (typeof callback === 'function') ? callback : function () { };
+    bqResult.result.rows.forEach(function (row) {
+        thisRow[0] = parseFloat(row.f[0].v);
         for (i = 1; i < row.f.length; i++) {
-            thisRow[columns[i]] = parseFloat(row.f[i].v);
+            thisRow[i] = parseFloat(row.f[i].v);
         }
         callback(thisRow);
     });
 };
 },{}],5:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
- * This METHOD executes a Google Geocoder query for 'address' and appends the results to the calling object's
- * .geo_cache.lat and .geo_cache.long members.
+ * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.
  *
- * Make sure you obtain a google auth token and load the appropriate client first.
+ * Make sure you obtain Google auth and load the GAPI client first.
  *
- * @function getLatLong
- * @param address {String}
- * @param [callback] {Function} Optional callback.
- * @return this {Object}
+ * @function fetchGoogleGeocode
+ * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
+ * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
-module.exports = function (address) {
-
+module.exports = function fetchGoogleGeocode(address) {
     var geocoder = new google.maps.Geocoder(),
-        geoCodedAddress = {};
-
+        geocode = {};
     geocoder.geocode({'address': address}, function (results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
-            geoCoded.lat = results[0].geometry.location.lat();
-            geoCoded.long = results[0].geometry.location.lng();
-            return geoCodedAddress;
-        } else {
-            alert('Error: Google Geocoder was unable to locate ' + address);
+            geocode.lat = results[0].geometry.location.lat();
+            geocode.long = results[0].geometry.location.lng();
+            return geocode;
         }
+        alert('Error: Google Geocoder was unable to locate ' + address);
     });
 };
 },{}],6:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
- * This METHOD asonchronously fetches geometry from a WFS feature server. It expects GeoJson geometry and stores the
- * result in this.data.geoJson and can optionally return it in a callback.
+ * This METHOD asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
+ * returns the queried url, the id parameter, and the fetched GeoJson features.
  *
- * @function fetchWfsGeoJson
- * @param queryString {String} The query (as an escaped CQL string).
- * @param [queryBaseUrl] {String} A valid WFS feature server URL. If an URL is not provided, defaults to
- *                                this.data.wfsUrl.
- * @param [callback] {Object} An optional callback.
- * @return this {Object}
+ * @function fetchWfs
+ * @param {Object} config - An object with configuration options for the Web Feature Service fetch.
+ * @param {String} config.url - The Web Feature Service query url.
+ * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).
+ * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetch.
+ * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
-
-// From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-module.exports = function (config, callback) {
+module.exports = function fetchWfs(config, callback) {
     var _xobj = new XMLHttpRequest(),
         _url = config.url,
-        _id = config.id;
-    _xobj.overrideMimeType("application/json");
+        _id = config.id,
+        geom;
+    callback = (typeof callback === 'function') ? callback : function () { };
+    _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
     _xobj.open('GET', _url, true);
     _xobj.onreadystatechange = function () {
-        if (_xobj.readyState == 4 && _xobj.status == "200") {
+        if (_xobj.readyState === 4 && _xobj.status === "200") {
             geom = {};
             geom.features = _xobj.responseText;
             geom.url = _url;
@@ -1764,26 +1752,25 @@ module.exports = function () {
     }
 };
 },{}],10:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
-/**
- * This METHOD creates new Google Maps view and returns the object.
- *
- * @method viewGmap
- * @param config.div Div ID for an empty div or a Google map object.
- * @param config.address {String} The address to center the map around.
- * @param config.styles {String} The style options for the Google map.
- * @param config.options {String} The map options for the Google map.
- * @param config.labelStyles {String} The style options for the Label layer.
- * @return this {Object}
- */
-
 var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
     viewGmap_Labels = require('./viewGmap_Labels.js'),
     viewGmap_Map = require('./viewGmap_Map.js');
-
-module.exports = function (config) {
-
-    var MyView = function() {
+/**
+ * This METHOD creates a new Google Maps view and associates it with the {@linkcode myLayer} instance.
+ *
+ * @method viewGmap
+ * @param {Object} config - An object with configuration options for the Google Map view.
+ * @param {String} config.div - The id of an html div element that will store the map
+ * @param {String} config.address - The address around which the map around (eg. 'Toronto, Canada').
+ * @param {String} config.styles - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {String} config.options - An array of valid Google Maps map option.
+ * @param {String} config.labelStyles - An optional array of {"feature": "rule"} declarative styles for map labels.
+ * @return {Object} MyView - The rendered and configured view object.
+ */
+module.exports = function viewGmap(config) {
+    var MyView = function () {
         var _myMap,
             _myGmapLayer,
             _myGmapLayers,
@@ -1927,20 +1914,18 @@ module.exports = function (config) {
     return new MyView;
 };
 },{"../fetchers/fetchGoogleGeocode.js":5,"./viewGmap_Labels.js":11,"./viewGmap_Map.js":12}],11:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
  *
- * @function setLabels
- * @param mapObject {Object} The map to append this OverlayView to.
- * @param [styles] {Array} Optional array of {"feature": "rule"} declarative styles.
- * @return this {Object}
+ * @function viewGmap_Labels
+ * @param {Object} myMap - The map to append this OverlayView to.
+ * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @return {Object} myMap - The rendered Google Maps object.
  */
-
-module.exports = function (mapObject, styles) {
-
+module.exports = function viewGmap_Labels(myMap, styles) {
     var dom, LayerHack;
-
     styles = styles || [
         {
             "elementType": "all",
@@ -1967,161 +1952,159 @@ module.exports = function (mapObject, styles) {
 
     // Create a custom OverlayView class and declare rules that will ensure it appears above all other map content
     LayerHack = new google.maps.OverlayView();
-    LayerHack.onAdd = function() {
+    LayerHack.onAdd = function () {
         dom = this.getPanes();
         dom.mapPane.style.zIndex = 150;
     };
-    LayerHack.onRemove = function() {
+    LayerHack.onRemove = function () {
         this.div_.parentNode.removeChild(this.div_);
         this.div_ = null;
     };
-    LayerHack.draw = function() {};
-    LayerHack.setMap(mapObject);
+    LayerHack.draw = function () { };
+    LayerHack.setMap(myMap);
 
     // Create and set the label layer
-    mapObject.labels = new google.maps.StyledMapType(styles);
-    mapObject.overlayMapTypes.insertAt(0, mapObject.labels);
-
-    return mapObject;
+    myMap.labels = new google.maps.StyledMapType(styles);
+    myMap.overlayMapTypes.insertAt(0, myMap.labels);
+    return myMap;
 };
 },{}],12:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
- * This METHOD creates a new google.maps object and assigns it to the specified view.
+ * This METHOD creates a new google.maps object and assigns it to the specified div.
  *
- * @function setGmap
- * @param viewName {String} The name to use for this map view.
- * @param [latLong] {Object} Optional object with latitude and longitude coordinates. .lat .long
- * @param [options] {Object} Optional object with google maps options. See google api docs for formatting.
- * @param [styles] {Array} Optional array of {"feature": "rule"} declarative styles.
- * @return this {Object}
+ * @function viewGmap_Map
+ * @param {Object} geocode - An object with latitude and longitude coordinates.
+ * @param {Object} geocode.lat - The latitude around which the map should be centered.
+ * @param {Object} geocode.long - The longitude around which the map should be centered.
+ * @param {Object} div - The html div element that will store the map ( document.getElementById('divId') ).
+ * @param {Array} styles - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {Array} options - An array of valid Google Maps map option.
+ * @return {Object} myMap - The rendered Google Maps object.
  */
-
 module.exports = function (geocode, div, styles, options) {
-
     var myMap;
-
     styles = styles || [
-            {
-                "featureType":"administrative",
-                "elementType":"labels.text.fill",
-                "stylers":[
-                    {"color":"#444444"}
+        {
+            "featureType": "administrative",
+            "elementType": "labels.text.fill",
+            "stylers": [
+                {"color": "#444444"}
+            ]
+        },
+        {
+            "featureType": "administrative.locality",
+            "elementType": "labels.text",
+            "stylers":
+                [
+                    {"visibility": "on"}
                 ]
-            },
-            {
-                "featureType":"administrative.locality",
-                "elementType":"labels.text",
-                "stylers":
-                    [
-                        {"visibility":"on"}
-                    ]
-            },
-            {
-                "featureType":"administrative.neighborhood",
-                "elementType":"labels.text",
-                "stylers":
-                    [
-                        {"visibility":"off"},
-                        {"hue":"#ff0000"}
-                    ]
-            },
-            {
-                "featureType":"landscape",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"color":"#f2f2f2"}
-                    ]
-            },
-            {
-                "featureType":"poi",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"visibility":"off"}
-                    ]
-            },
-            {
-                "featureType":"road",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"saturation":-100},
-                        {"lightness":45}
-                    ]
-            },
-            {
-                "featureType":"road.highway",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"visibility":"simplified"}
-                    ]
-            },
-            {
-                "featureType":"road.highway",
-                "elementType":"labels.text",
-                "stylers":
-                    [
-                        {"visibility":"on"}
-                    ]
-            },
-            {
-                "featureType":"road.highway",
-                "elementType":"labels.icon",
-                "stylers":
-                    [
-                        {"visibility":"on"}
-                    ]
-            },
-            {
-                "featureType":"road.arterial",
-                "elementType":"labels.icon",
-                "stylers":
-                    [
-                        {"visibility":"off"}
-                    ]
-            },
-            {
-                "featureType":"transit",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"visibility":"off"}
-                    ]
-            },
-            {
-                "featureType":"water",
-                "elementType":"all",
-                "stylers":
-                    [
-                        {"color":"#46bcec"},
-                        {"visibility":"on"}
-                    ]
-            },
-            {
-                "featureType":"all",
-                "elementType":"labels",
-                "stylers":
-                    [
-                        {"visibility":"off"}
-                    ]
-            }
-        ];
-
+        },
+        {
+            "featureType": "administrative.neighborhood",
+            "elementType": "labels.text",
+            "stylers":
+                [
+                    {"visibility": "off"},
+                    {"hue": "#ff0000"}
+                ]
+        },
+        {
+            "featureType": "landscape",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"color": "#f2f2f2"}
+                ]
+        },
+        {
+            "featureType": "poi",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"visibility": "off"}
+                ]
+        },
+        {
+            "featureType": "road",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"saturation": -100},
+                    {"lightness": 45}
+                ]
+        },
+        {
+            "featureType": "road.highway",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"visibility": "simplified"}
+                ]
+        },
+        {
+            "featureType": "road.highway",
+            "elementType": "labels.text",
+            "stylers":
+                [
+                    {"visibility": "on"}
+                ]
+        },
+        {
+            "featureType": "road.highway",
+            "elementType": "labels.icon",
+            "stylers":
+                [
+                    {"visibility": "on"}
+                ]
+        },
+        {
+            "featureType": "road.arterial",
+            "elementType": "labels.icon",
+            "stylers":
+                [
+                    {"visibility": "off"}
+                ]
+        },
+        {
+            "featureType": "transit",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"visibility": "off"}
+                ]
+        },
+        {
+            "featureType": "water",
+            "elementType": "all",
+            "stylers":
+                [
+                    {"color": "#46bcec"},
+                    {"visibility": "on"}
+                ]
+        },
+        {
+            "featureType": "all",
+            "elementType": "labels",
+            "stylers":
+                [
+                    {"visibility": "off"}
+                ]
+        }
+    ];
     options = options || {
-            zoom: 13,
-            center: new google.maps.LatLng(geocode.lat, geocode.long),
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-            mapTypeControl:true,
-            MapTypeControlOptions: {mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE], style: google.maps.MapTypeControlStyle.DROPDOWN_MENU},
-            scaleControl: true,
-            disableDoubleClickZoom: true,
-            streetViewControl: true,
-            overviewMapControl: true,
-            styles: styles
-        };
+        zoom: 13,
+        center: new google.maps.LatLng(geocode.lat, geocode.long),
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeControl: true,
+        MapTypeControlOptions: {mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE], style: google.maps.MapTypeControlStyle.DROPDOWN_MENU},
+        scaleControl: true,
+        disableDoubleClickZoom: true,
+        streetViewControl: true,
+        overviewMapControl: true,
+        styles: styles
+    };
     myMap = new google.maps.Map(div, options);
     myMap.setTilt(45);
     return myMap;
