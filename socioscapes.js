@@ -12,7 +12,6 @@ myPolyfills();
  *
  * @method newLayer
  * @memberof! Socioscapes
- * @instance
  * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
  * @return {Object} MyLayer
  */
@@ -23,9 +22,8 @@ module.exports = function newLayer(name) {
      * {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification}, {@linkcode MyLayer#colourscale},
      * {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and {@linkcode MyLayer#status}.
      *
-     * @constructor MyLayer
+     * @class MyLayer
      * @memberof! Socioscapes
-     * @instance
      */
     var MyLayer = function() {
         var _myBreaks = 5,
@@ -78,7 +76,6 @@ module.exports = function newLayer(name) {
          *
          * @member views
          * @memberof! MyLayer
-         * @instance
          */
         this.views = _myViews;
         /**
@@ -99,7 +96,6 @@ module.exports = function newLayer(name) {
          *
          * @method status
          * @memberof! MyLayer
-         * @instance
          */
         Object.defineProperty(this, 'status', {
             value: function (name, state) {
@@ -140,7 +136,6 @@ module.exports = function newLayer(name) {
          *
          * @method data
          * @memberof! MyLayer
-         * @instance
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-data-object} and
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -174,7 +169,6 @@ module.exports = function newLayer(name) {
          *
          * @method geom
          * @memberof! MyLayer
-         * @instance
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-geom-object} and a
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -208,7 +202,6 @@ module.exports = function newLayer(name) {
          *
          * @method breaks
          * @memberof! MyLayer
-         * @instance
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Typically, this is set
          * to < = 5.
          */
@@ -241,7 +234,6 @@ module.exports = function newLayer(name) {
          *
          * @method colourscale
          * @memberof! MyLayer
-         * @instance
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
          * @parameter {number} value - Any value that falls within the bounds of {@linkcode myLayer#data}.
          */
@@ -277,7 +269,6 @@ module.exports = function newLayer(name) {
          *
          * @method classification
          * @memberof! MyLayer
-         * @instance
          * @parameter {string} classification - Any valid geostats classification function.
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Convention suggests
          * setting this to < = 5.
@@ -313,7 +304,6 @@ module.exports = function newLayer(name) {
          *
          * @method domain
          * @memberof! MyLayer
-         * @instance
          */
         Object.defineProperty(this, 'domain', {
             value: function () {
@@ -326,7 +316,6 @@ module.exports = function newLayer(name) {
          *
          * @member geostats
          * @memberof! MyLayer
-         * @instance
          */
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
@@ -340,7 +329,6 @@ module.exports = function newLayer(name) {
          *
          * @member views
          * @memberof! MyLayer
-         * @instance
          */
         Object.defineProperty(this, 'views', {
             value: function (viewName, viewFunction, viewConfig) {
