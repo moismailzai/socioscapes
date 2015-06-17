@@ -4,6 +4,7 @@
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
  *
  * @function viewGmap_Labels
+ * @memberof! socioscapes
  * @param {Object} myMap - The map to append this OverlayView to.
  * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
  * @return {Object} myMap - The rendered Google Maps object.

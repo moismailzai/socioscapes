@@ -15,7 +15,7 @@
 * GeoJson and Web Feature Service integration
 > socioscapes.fetchWfs(config, callback)
 * Google Maps, Google Big Query, Google Geocode, and Google Auth integration
-> socioscapes.viewGmap(config)
+> socioscapes.newViewGmap(config)
 * D3 and Crossfilter integration *(to do)*
 * Datatables integration (requires jquery) *(to do)*
 

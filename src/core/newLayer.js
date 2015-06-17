@@ -5,13 +5,13 @@ var chroma = require('../libs/chroma.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 /**
- * This constructor method appends a new object (of class {@linkcode MyLayer}) to the Socioscapes instance.
+ * This constructor method appends a new object (of class {@linkcode MyLayer}) to the socioscapes instance.
  *
  * Requires the modules {@linkcode module:chroma}, {@linkcode module:Geostats}, and {@linkcode module:myPolyfills}.
  *
  * @method newLayer
- * @memberof! Socioscapes
- * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
+ * @memberof! socioscapes
+ * @param {String} name - The name of the layer to be appended to the socioscapes instance.
  * @return {Object} MyLayer
  */
 module.exports = function newLayer(name) {
@@ -21,8 +21,7 @@ module.exports = function newLayer(name) {
      * {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification}, {@linkcode MyLayer#colourscale},
      * {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and {@linkcode MyLayer#status}.
      *
-     * @class MyLayer
-     * @memberof! Socioscapes
+     * @namespace socioscapes.MyLayer
      */
     var MyLayer = function() {
         var _myBreaks = 5,
@@ -74,7 +73,7 @@ module.exports = function newLayer(name) {
          * instance.
          *
          * @member views
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         this.views = _myViews;
         /**
@@ -94,7 +93,7 @@ module.exports = function newLayer(name) {
          * myLayer.status('data', true)
          *
          * @method status
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'status', {
             value: function (name, state) {
@@ -130,11 +129,11 @@ module.exports = function newLayer(name) {
          * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
          *
          * @example
-         * // Calls the 'fetchGoogleBq' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * // Calls the 'fetchGoogleBq' member of the socioscapes instance and passes the 'config' object as parameter.
          * myLayer.data(s.fetchGoogleBq, config)
          *
          * @method data
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-data-object} and
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -163,11 +162,11 @@ module.exports = function newLayer(name) {
          * successful, myLayer.status('geom') will return true.
          *
          * @example
-         * // Calls the 'fetchWfs' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * // Calls the 'fetchWfs' member of the socioscapes instance and passes the 'config' object as parameter.
          * myLayer.geom(s.fetchWfs, config)
          *
          * @method geom
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-geom-object} and a
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -200,7 +199,7 @@ module.exports = function newLayer(name) {
          * myLayer.breaks('3')
          *
          * @method breaks
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Typically, this is set
          * to < = 5.
          */
@@ -217,7 +216,7 @@ module.exports = function newLayer(name) {
         });
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
-         * scale. Socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
+         * scale. socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
          * This setting, along with {@linkcode myLayer#breaks} and {@linkcode myLayer#classifications} constitute the
          * core GIS visualization settings.
          *
@@ -232,7 +231,7 @@ module.exports = function newLayer(name) {
          * myLayer.colourscale()
          *
          * @method colourscale
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
          * @parameter {number} value - Any value that falls within the bounds of {@linkcode myLayer#data}.
          */
@@ -267,7 +266,7 @@ module.exports = function newLayer(name) {
          * myLayer.classification('getStdDeviation', 3)
          *
          * @method classification
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {string} classification - Any valid geostats classification function.
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Convention suggests
          * setting this to < = 5.
@@ -302,7 +301,7 @@ module.exports = function newLayer(name) {
          * This method returns the data domain.
          *
          * @method domain
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'domain', {
             value: function () {
@@ -314,7 +313,7 @@ module.exports = function newLayer(name) {
          * {@linkcode myLayer#data} is successfully set.
          *
          * @member geostats
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
@@ -327,7 +326,7 @@ module.exports = function newLayer(name) {
          *
          *
          * @member views
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'views', {
             value: function (viewName, viewFunction, viewConfig) {

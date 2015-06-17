@@ -4,6 +4,7 @@
  * This METHOD creates a new google.maps object and assigns it to the specified div.
  *
  * @function viewGmap_Map
+ * @memberof! socioscapes
  * @param {Object} geocode - An object with latitude and longitude coordinates.
  * @param {Object} geocode.lat - The latitude around which the map should be centered.
  * @param {Object} geocode.long - The longitude around which the map should be centered.

@@ -5,6 +5,7 @@
  * returns the queried url, the id parameter, and the fetched GeoJson features.
  *
  * @function fetchWfs
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Web Feature Service fetch.
  * @param {String} config.url - The Web Feature Service query url.
  * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).

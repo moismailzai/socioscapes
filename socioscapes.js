@@ -6,13 +6,13 @@ var chroma = require('../libs/chroma.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 /**
- * This constructor method appends a new object (of class {@linkcode MyLayer}) to the Socioscapes instance.
+ * This constructor method appends a new object (of class {@linkcode MyLayer}) to the socioscapes instance.
  *
  * Requires the modules {@linkcode module:chroma}, {@linkcode module:Geostats}, and {@linkcode module:myPolyfills}.
  *
  * @method newLayer
- * @memberof! Socioscapes
- * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
+ * @memberof! socioscapes
+ * @param {String} name - The name of the layer to be appended to the socioscapes instance.
  * @return {Object} MyLayer
  */
 module.exports = function newLayer(name) {
@@ -22,8 +22,7 @@ module.exports = function newLayer(name) {
      * {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification}, {@linkcode MyLayer#colourscale},
      * {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and {@linkcode MyLayer#status}.
      *
-     * @class MyLayer
-     * @memberof! Socioscapes
+     * @namespace socioscapes.MyLayer
      */
     var MyLayer = function() {
         var _myBreaks = 5,
@@ -75,7 +74,7 @@ module.exports = function newLayer(name) {
          * instance.
          *
          * @member views
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         this.views = _myViews;
         /**
@@ -95,7 +94,7 @@ module.exports = function newLayer(name) {
          * myLayer.status('data', true)
          *
          * @method status
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'status', {
             value: function (name, state) {
@@ -131,11 +130,11 @@ module.exports = function newLayer(name) {
          * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
          *
          * @example
-         * // Calls the 'fetchGoogleBq' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * // Calls the 'fetchGoogleBq' member of the socioscapes instance and passes the 'config' object as parameter.
          * myLayer.data(s.fetchGoogleBq, config)
          *
          * @method data
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-data-object} and
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -164,11 +163,11 @@ module.exports = function newLayer(name) {
          * successful, myLayer.status('geom') will return true.
          *
          * @example
-         * // Calls the 'fetchWfs' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * // Calls the 'fetchWfs' member of the socioscapes instance and passes the 'config' object as parameter.
          * myLayer.geom(s.fetchWfs, config)
          *
          * @method geom
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-geom-object} and a
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
@@ -201,7 +200,7 @@ module.exports = function newLayer(name) {
          * myLayer.breaks('3')
          *
          * @method breaks
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Typically, this is set
          * to < = 5.
          */
@@ -218,7 +217,7 @@ module.exports = function newLayer(name) {
         });
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
-         * scale. Socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
+         * scale. socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
          * This setting, along with {@linkcode myLayer#breaks} and {@linkcode myLayer#classifications} constitute the
          * core GIS visualization settings.
          *
@@ -233,7 +232,7 @@ module.exports = function newLayer(name) {
          * myLayer.colourscale()
          *
          * @method colourscale
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
          * @parameter {number} value - Any value that falls within the bounds of {@linkcode myLayer#data}.
          */
@@ -268,7 +267,7 @@ module.exports = function newLayer(name) {
          * myLayer.classification('getStdDeviation', 3)
          *
          * @method classification
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          * @parameter {string} classification - Any valid geostats classification function.
          * @parameter {integer} breaks - The number of classifications for the layer symbology. Convention suggests
          * setting this to < = 5.
@@ -303,7 +302,7 @@ module.exports = function newLayer(name) {
          * This method returns the data domain.
          *
          * @method domain
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'domain', {
             value: function () {
@@ -315,7 +314,7 @@ module.exports = function newLayer(name) {
          * {@linkcode myLayer#data} is successfully set.
          *
          * @member geostats
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
@@ -328,7 +327,7 @@ module.exports = function newLayer(name) {
          *
          *
          * @member views
-         * @memberof! MyLayer
+         * @memberof! socioscapes.MyLayer
          */
         Object.defineProperty(this, 'views', {
             value: function (viewName, viewFunction, viewConfig) {
@@ -368,6 +367,7 @@ module.exports = function newLayer(name) {
  * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
  *
  * @function fetchGoogleAuth
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for Google APIs.
  * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
  * @param {Object} config.client.name - The name of the Google API client to load.
@@ -395,6 +395,7 @@ var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
  * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Google Big Query fetch.
  * @param {String} config.bqClientId - The Google Big Query client id.
  * @param {String} config.bqProjectId - The Google Big Query project id.
@@ -455,6 +456,7 @@ module.exports = function fetchGoogleBq(config) {
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function fetchGoogleBq_Sort
+ * @memberof! socioscapes
  * @param {Object} bqResult - The results of a Google Big Query fetch.
  * @param {Function} callback - This is a mandatory callback that returns each row of the asynchronous fetch.
  */
@@ -482,6 +484,7 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
  * Make sure you obtain Google auth and load the GAPI client first.
  *
  * @function fetchGoogleGeocode
+ * @memberof! socioscapes
  * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
@@ -505,6 +508,7 @@ module.exports = function fetchGoogleGeocode(address) {
  * returns the queried url, the id parameter, and the fetched GeoJson features.
  *
  * @function fetchWfs
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Web Feature Service fetch.
  * @param {String} config.url - The Web Feature Service query url.
  * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).
@@ -1743,22 +1747,31 @@ module.exports = function () {
 /*jslint node: true */
 'use strict';
 var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
-    viewGmap_Labels = require('./viewGmap_Labels.js'),
-    viewGmap_Map = require('./viewGmap_Map.js');
+    viewGmap_Labels = require('./newViewGmap_Labels.js'),
+    viewGmap_Map = require('./newViewGmap_Map.js');
 /**
- * This METHOD creates a new Google Maps view and associates it with the {@linkcode myLayer} instance.
+ * This constructor method appends a new Google Maps object -- of class {@linkcode MyGmapView} -- to the {@linkcode myLayer}
+ * instance.
  *
- * @method viewGmap
+ * @method newViewGmap
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Google Map view.
  * @param {String} config.div - The id of an html div element that will store the map
  * @param {String} config.address - The address around which the map around (eg. 'Toronto, Canada').
  * @param {String} config.styles - An optional array of {"feature": "rule"} declarative styles for map features.
  * @param {String} config.options - An array of valid Google Maps map option.
  * @param {String} config.labelStyles - An optional array of {"feature": "rule"} declarative styles for map labels.
- * @return {Object} MyView - The rendered and configured view object.
+ * @return {Object} MyGmapView - The rendered and configured view object.
  */
-module.exports = function viewGmap(config) {
-    var MyView = function () {
+module.exports = function newViewGmap(config) {
+    /**
+     * Each instance of this class consists of a Google Map object, {@linkcode socioscapes.MyLayer.MyGmapView#map}, the
+     * corresponding div container, {@linkcode socioscapes.MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
+     * data layers, {@linkcode socioscapes.MyLayer.MyGmapView#myGmapLayer}. 
+     *
+     * @namespace socioscapes.MyLayer.MyGmapView
+     */
+    var MyGmapView = function () {
         var _myMap,
             _myGmapLayer,
             _myGmapLayers,
@@ -1777,14 +1790,31 @@ module.exports = function viewGmap(config) {
             viewGmap_Map(returnedAddress, _myDiv, config.styles, config.options, function (returnedMap) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
+                    /**
+                     * This container holds the Google Map data object and all related methods.
+                     *
+                     * @member map
+                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     */
                     Object.defineProperty(that, 'map', {
                         value: _myMap
                     });
+                    /**
+                     * This method can be used to get or set the div for the Google Maps data object.
+                     *
+                     * @method div
+                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     */
                     Object.defineProperty(that, 'div', {
-                        get: function () { return _myDiv; },
-                        set: function (div) {
+                        value: function (div) {
+                            if (!div) {
+                                return _myDiv;
+                            }
                             if (document.getElementById(div)) {
                                 _myDiv = document.getElementById(div);
+                                if (_myMap) {
+                                //TODO add code that moves GMap to a new div and rerenders all existing layers.
+                                }
                             }
                         }
                     });
@@ -1792,7 +1822,12 @@ module.exports = function viewGmap(config) {
             });
         });
 
-        Object.defineProperty(this, 'newGmapLayer', {
+        /**
+         *
+         * @method myGmapLayer
+         * @memberof! socioscapes.MyLayer.MyGmapView
+         */
+        Object.defineProperty(this, 'myGmapLayer', {
             get: function () { return _myGmapLayers; },
             set: function (name, id, url) {
                 if (!_myGmapLayers) {
@@ -1804,7 +1839,11 @@ module.exports = function viewGmap(config) {
                 } else if (!that[name] && id !== "DELETE") {
                     _myGmapLayer = new google.maps.Data();
                     _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
-
+                    /**
+                     *
+                     * @method style
+                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     */
                     Object.defineProperty(that[name], 'style', {
                         get: function () { return _myStyle; },
                         set: function (styleFunction) {
@@ -1812,15 +1851,27 @@ module.exports = function viewGmap(config) {
                             _myStyle = styleFunction;
                         }
                     });
-
+                    /**
+                     *
+                     * @method on
+                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
                     });
-
+                    /**
+                     *
+                     * @method off
+                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
                     });
-
+                    /**
+                     *
+                     * @method onHover
+                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
                             if (_myHoverListenerSet !== undefined) {
@@ -1846,7 +1897,11 @@ module.exports = function viewGmap(config) {
                             });
                         }
                     });
-
+                    /**
+                     *
+                     * @method onClick
+                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
                             // Check to see if a click listener already exists for this layer and remove it / reset properties
@@ -1899,15 +1954,16 @@ module.exports = function viewGmap(config) {
             }
         });
     };
-    return new MyView;
+    return new MyGmapView;
 };
-},{"../fetchers/fetchGoogleGeocode.js":5,"./viewGmap_Labels.js":11,"./viewGmap_Map.js":12}],11:[function(require,module,exports){
+},{"../fetchers/fetchGoogleGeocode.js":5,"./newViewGmap_Labels.js":11,"./newViewGmap_Map.js":12}],11:[function(require,module,exports){
 /*jslint node: true */
 'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
  *
  * @function viewGmap_Labels
+ * @memberof! socioscapes
  * @param {Object} myMap - The map to append this OverlayView to.
  * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
  * @return {Object} myMap - The rendered Google Maps object.
@@ -1963,6 +2019,7 @@ module.exports = function viewGmap_Labels(myMap, styles) {
  * This METHOD creates a new google.maps object and assigns it to the specified div.
  *
  * @function viewGmap_Map
+ * @memberof! socioscapes
  * @param {Object} geocode - An object with latitude and longitude coordinates.
  * @param {Object} geocode.lat - The latitude around which the map should be centered.
  * @param {Object} geocode.long - The longitude around which the map should be centered.
@@ -2098,6 +2155,7 @@ module.exports = function (geocode, div, styles, options) {
     return myMap;
 };
 },{}],13:[function(require,module,exports){
+/*jslint node: true */
 'use strict';
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
@@ -2117,23 +2175,23 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
     fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
     fetchWfs = require('./fetchers/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
-    viewGmap = require('./views/viewGmap.js');
+    viewGmap = require('./views/newViewGmap.js');
 
 /**
- * This is the root Socioscapes namespace and object.
+ * This is the root socioscapes namespace and object.
  *
  * Requires the modules {@link module:fetchGoogleAuth}, {@link module:fetchGoogleGeocode},
- * {@link module:fetchGoogleBq}, {@link module:fetchWfs}, {@link module:newLayer}, and {@link module:viewGmap}.
+ * {@link module:fetchGoogleBq}, {@link module:fetchWfs}, {@link module:newLayer}, and {@link module:newViewGmap}.
  *
- * @namespace Socioscapes
+ * @namespace socioscapes
  * @requires module:fetchGoogleAuth
  * @requires module:fetchGoogleGeocode
  * @requires module:fetchGoogleBq
  * @requires module:fetchWfs
  * @requires module:newLayer
- * @requires module:viewGmap
+ * @requires module:newViewGmap
  */
-module.exports = function () {
+module.exports = function socioscapes() {
     Object.defineProperty(this, 'fetchGoogleAuth', {
         value: fetchGoogleAuth
     });
@@ -2153,5 +2211,5 @@ module.exports = function () {
         value: viewGmap
     });
 };
-},{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/viewGmap.js":10}]},{},[13])(13)
+},{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/newViewGmap.js":10}]},{},[13])(13)
 });

@@ -6,6 +6,7 @@ var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
  * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
+ * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Google Big Query fetch.
  * @param {String} config.bqClientId - The Google Big Query client id.
  * @param {String} config.bqProjectId - The Google Big Query project id.
