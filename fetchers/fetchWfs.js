@@ -1,3 +1,4 @@
+'use strict';
 /**
  * This METHOD asonchronously fetches geometry from a WFS feature server. It expects GeoJson geometry and stores the
  * result in this.data.geoJson and can optionally return it in a callback.

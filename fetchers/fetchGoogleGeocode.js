@@ -1,3 +1,4 @@
+'use strict';
 /**
  * This METHOD executes a Google Geocoder query for 'address' and appends the results to the calling object's
  * .geo_cache.lat and .geo_cache.long members.

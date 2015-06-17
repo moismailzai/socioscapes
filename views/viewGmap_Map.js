@@ -1,3 +1,4 @@
+'use strict';
 /**
  * This METHOD creates a new google.maps object and assigns it to the specified view.
  *

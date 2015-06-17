@@ -1,12 +1,11 @@
+'use strict';
 /**
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function sortBigQuery
  * @param bq {Object} The results of a Google Big Query fetch.
  * @param [callback] {Function} Optional callback.
- * @return this {Object}
  */
-
 module.exports = function (bq, columns, callback){
     var thisRow = {};
     bq.result.rows.forEach (function(row) {

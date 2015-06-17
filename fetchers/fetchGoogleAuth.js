@@ -1,9 +1,12 @@
+'use strict';
 /**
- * This function requests authorization for the Google APIs.
+ * This function requests authorization to use the Google APIs.
  *
  * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
  *
+ * A function in MyNamespace (MyNamespace.myFunction).
  * @function getGoogleAuth
+ * @memberof s
  * @param config {Object} Configuration parameters (.auth and .client) for the gapi.auth and gapi.client apis.
  * @param [callback] {Function} Optional callback.
  * @return this {Object}

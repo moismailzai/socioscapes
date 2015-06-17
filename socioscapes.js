@@ -1,249 +1,401 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**
- * This METHOD creates a new layer which is either returned: myLayer = s.newLayer() or appended to the root socioscapes
- * object: (s.newLayer('myLayer'). Layers are a simple way to organize related data, geometry, and settings; they allow
- * you to easily access your data, analyze it, associate it with specific geometry, and connect it to various views.
- *
- * To create a new layer: s.newLayer('myLayer')
- * To add data: s.myLayer(
- *
- * @function newLayer
- * @param name {String} The name to be used for the layer (eg. s.name).
- * @return myLayer {Object}
- */
+'use strict';
+
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 
+/**
+ * This constructor method appends a new object (of class {@linkcode MyLayer}) to the Socioscapes instance.
+ *
+ * Requires the modules {@linkcode module:chroma}, {@linkcode module:Geostats}, and {@linkcode module:myPolyfills}.
+ *
+ * @method newLayer
+ * @memberof! Socioscapes
+ * @instance
+ * @param {String} name - The name of the layer to be appended to the Socioscapes instance.
+ * @return {Object} MyLayer
+ */
 module.exports = function (name) {
-    var myLayer,
-        _myBreaks = 5,
-        _myClasses,
-        _myClassification = 'getClassJenks',
-        _myColourscale = "YlOrRd",
-        _myData,
-        _myDomain,
-        _myGeom,
-        _myGeostats,
-        _myViews = {},
-        _myLayerStatus = {};
-    Object.defineProperty(_myLayerStatus, 'breaks', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'classes', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'colourscale', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'data', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'domain', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geom', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'geostats', {
-        value: false,
-        configurable: true
-    });
-    Object.defineProperty(_myLayerStatus, 'readyGis', {
-        value: false,
-        configurable: true
-    });
 
-    myLayer = {};
-    myLayer.views = _myViews;
-    console.log(this);
-    Object.defineProperty(myLayer, 'status', {
-        value: function (name, state) {
-            if (!name) {
-                return _myLayerStatus
-            }
-            if (typeof _myLayerStatus[name] === 'boolean' && !state) {
-                return _myLayerStatus[name]
-            }
-            if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
-                delete _myLayerStatus[name];
-                Object.defineProperty(_myLayerStatus, name, {
-                    value: state,
-                    configurable: true
-                });
+    /**
+     * Each instance of this class consists of the two store members {@linkcode MyLayer#data} and
+     * {@linkcode MyLayer#geom}, as well as well as the configuration members {@linkcode MyLayer#breaks},
+     * {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification}, {@linkcode MyLayer#colourscale},
+     * {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and {@linkcode MyLayer#status}.
+     *
+     * @constructor MyLayer
+     * @memberof! Socioscapes
+     * @instance
+     */
+    var MyLayer = function() {
+        var _myBreaks = 5,
+            _myClasses,
+            _myClassification = 'getClassJenks',
+            _myColourscaleName = "YlOrRd",
+            _myColourScaleFunction,
+            _myData,
+            _myDomain,
+            _myGeom,
+            _myGeostats,
+            _myViews = {},
+            _myLayerStatus = {},
+            that = this;
 
-                if (_myLayerStatus.breaks &&
-                _myLayerStatus.classes &&
-                _myLayerStatus.colourscale &&
-                _myLayerStatus.data &&
-                _myLayerStatus.domain &&
-                _myLayerStatus.geom &&
-                _myLayerStatus.geostats) {
-                    delete _myLayerStatus.readyGis;
-                    Object.defineProperty(_myLayerStatus, 'readyGis', {
-                        value: true,
+        Object.defineProperty(_myLayerStatus, 'breaks', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'classification', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'colourscale', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'data', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'domain', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'geom', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'geostats', {
+            value: false,
+            configurable: true
+        });
+        Object.defineProperty(_myLayerStatus, 'readyGis', {
+            value: false,
+            configurable: true
+        });
+
+        /**
+         * This container holds all instances of {@linkcode MyView} that are associated with this {@linkcode MyLayer}
+         * instance.
+         *
+         * @member views
+         * @memberof! MyLayer
+         * @instance
+         */
+        this.views = _myViews;
+
+        /**
+         * This method returns a boolean status for each configurable member of the associated {@linkcode MyLayer}
+         * instance.
+         *
+         * @example
+         * // returns the status of the 'data' member of myLayer.
+         * myLayer.status('data')
+         *
+         * @example
+         * // returns the status of all members of myLayer.
+         * myLayer.status()
+         *
+         * @example
+         * // set the status of 'data' to true.
+         * myLayer.status('data', true)
+         *
+         * @method status
+         * @memberof! MyLayer
+         * @instance
+         */
+        Object.defineProperty(this, 'status', {
+            value: function (name, state) {
+                if (!name) {
+                    return _myLayerStatus
+                }
+                if (typeof _myLayerStatus[name] === 'boolean' && !state) {
+                    return _myLayerStatus[name]
+                }
+                if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
+                    delete _myLayerStatus[name];
+                    Object.defineProperty(_myLayerStatus, name, {
+                        value: state,
                         configurable: true
                     });
+
+                    if (_myLayerStatus.breaks &&
+                        _myLayerStatus.classification &&
+                        _myLayerStatus.colourscale &&
+                        _myLayerStatus.data &&
+                        _myLayerStatus.geom) {
+                        delete _myLayerStatus.readyGis;
+                        Object.defineProperty(_myLayerStatus, 'readyGis', {
+                            value: true,
+                            configurable: true
+                        });
+                    }
                 }
             }
-        }
-    });
+        });
 
-    Object.defineProperty(myLayer, 'data', {
-        value: function (fetcher, config) {
-            var _statusBackup;
-            if (!fetcher || !config) {
-                return _myData.values;
-            }
-            _statusBackup = _myLayerStatus.data;
-            myLayer.status('data', false);
-            fetcher(config, function (result, success) {
-                if (success) {
-                    _myData = result;
-                    _myGeostats = new Geostats(result.values);
-                    myLayer.status('data', true);
-                } else {
-                    myLayer.status('data', _statusBackup);
+        /**
+         * This method sets the data store of the the associated {@linkcode MyLayer} instance. If the fetch is
+         * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
+         *
+         * @example
+         * // Calls the 'fetchGoogleBq' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * myLayer.data(s.fetchGoogleBq, config)
+         *
+         * @method data
+         * @memberof! MyLayer
+         * @instance
+         * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-data-object} and
+         * status boolean (result, success).
+         * @parameter {object} config - All arguments that the fetcher method requires.
+         */
+        Object.defineProperty(this, 'data', {
+            value: function (fetcher, config) {
+                var _statusBackup;
+                if (!fetcher || !config) {
+                    return _myData.values;
                 }
-            });
-        }
-    });
-
-    Object.defineProperty(myLayer, 'geom', {
-        value: function (fetcher, config) {
-            var _statusBackup;
-            if (!fetcher || !config) {
-                return _myGeom.features;
+                _statusBackup = _myLayerStatus.data;
+                that.status('data', false);
+                fetcher(config, function (result, success) {
+                    if (success) {
+                        _myData = result;
+                        _myGeostats = new Geostats(result.values);
+                        that.status('data', true);
+                    } else {
+                        that.status('data', _statusBackup);
+                    }
+                });
             }
-            _statusBackup = _myLayerStatus.geom;
-            myLayer.status('geom', false);
-            fetcher(config, function (result, success) {
-                if (success) {
-                    _myGeom = result;
-                    myLayer.status('geom', true);
-                } else {
-                    myLayer.status('geom', _statusBackup);
+        });
+
+        /**
+         * This method sets the geom store of the the associated {@linkcode MyLayer} instance. If the fetch is
+         * successful, myLayer.status('geom') will return true.
+         *
+         * @example
+         * // Calls the 'fetchWfs' member of the Socioscapes instance and passes the 'config' object as parameter.
+         * myLayer.geom(s.fetchWfs, config)
+         *
+         * @method geom
+         * @memberof! MyLayer
+         * @instance
+         * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-geom-object} and a
+         * status boolean (result, success).
+         * @parameter {object} config - All arguments that the fetcher method requires.
+         */
+        Object.defineProperty(this, 'geom', {
+            value: function (fetcher, config) {
+                var _statusBackup;
+                if (!fetcher || !config) {
+                    return _myGeom.features;
                 }
-            });
-        }
-    });
-
-    Object.defineProperty(myLayer, 'breaks', {
-        value: function (breaks) {
-            if (!breaks) {
-                return _myBreaks;
+                _statusBackup = _myLayerStatus.geom;
+                that.status('geom', false);
+                fetcher(config, function (result, success) {
+                    if (success) {
+                        _myGeom = result;
+                        that.status('geom', true);
+                    } else {
+                        that.status('geom', _statusBackup);
+                    }
+                });
             }
-            if (Number.isInteger(breaks)) {
-                _myBreaks = breaks;
-                myLayer.status('breaks', true);
-            }
-        }
-    });
+        });
 
-    Object.defineProperty(myLayer, 'chromaScale', {
-        value: chroma.scale(_myColourscale).domain(_myDomain).out('hex')
-    });
-
-    Object.defineProperty(myLayer, 'chromaScaleIndex', {
-        value: chroma.scale(_myColourscale).domain(_myDomain, _myBreaks).colors()
-    });
-
-    Object.defineProperty(myLayer, 'classes', {
-        value: function (classes) {
-            if (!classes) {
-                return _myClasses;
-            }
-            if (Object.prototype.toString.call(classes) === '[object Array]') { // http://stackoverflow.com/questions/4775722/check-if-object-is-array
-                _myClasses = classes;
-                myLayer.status('classes', true);
-            }
-        }
-    });
-
-    Object.defineProperty(myLayer, 'classification', {
-        value: function (classification) {
-            var i;
-            if (!classification) {
-                return _myClassification;
-            }
-            if (_myGeostats[classification] && _myData) {
-                myLayer.status('classes', false);
-                myLayer.status('domain', false);
-                _myDomain = [];
-                _myClassification = classification;
-                myLayer.classes(_myGeostats[classification](_myBreaks));
-                for (i = 0; i < _myBreaks; i++) {
-                    _myDomain.push(parseFloat(_myClasses[i]));
+        /**
+         * This method sets the number of breaks for the associated {@linkcode MyLayer} instance. This setting, along
+         * with {@linkcode myLayer#classification} and {@linkcode myLayer#colourscale} constitute the core GIS
+         * visualization settings.
+         *
+         * @example
+         * // sets three breaks
+         * myLayer.breaks('3')
+         *
+         * @method breaks
+         * @memberof! MyLayer
+         * @instance
+         * @parameter {integer} breaks - The number of classifications for the layer symbology. Typically, this is set
+         * to < = 5.
+         */
+        Object.defineProperty(this, 'breaks', {
+            value: function (breaks) {
+                if (!breaks) {
+                    return _myBreaks;
                 }
-                myLayer.status('domain', true);
-                myLayer.status('classes', true);
+                if (Number.isInteger(breaks)) {
+                    _myBreaks = breaks;
+                    that.status('breaks', true);
+                }
             }
-        }
-    });
+        });
 
-    Object.defineProperty(myLayer, 'domain', {
-        value: function () { return _myDomain; }
-    });
-
-    Object.defineProperty(myLayer, 'geostats', {
-        value: _myGeostats
-    });
-
-    Object.defineProperty(myLayer, 'colourscale', {
-        value: function (colourscale) {
-            if (!colourscale) {
-                return _myColourscale;
+        /**
+         * This method is used to set a colour scale and to calculate colours for individual data points based on that
+         * scale. Socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
+         * This setting, along with {@linkcode myLayer#breaks} and {@linkcode myLayer#classifications} constitute the
+         * core GIS visualization settings.
+         *
+         * @example
+         * // returns the hexadecimal value for '100' given the ColourBrew spectrum 'YlOrRd' and five breaks.
+         * myLayer.breaks(5)
+         * myLayer.colourscale('SET', 'YlOrRd')
+         * myLayer.colourscale('GET HEX', 100)
+         *
+         * @example
+         * // returns the current colourscale name
+         * myLayer.colourscale()
+         *
+         * @method colourscale
+         * @memberof! MyLayer
+         * @instance
+         * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
+         * @parameter {number} value - Any value that falls within the bounds of {@linkcode myLayer#data}.
+         */
+        Object.defineProperty(this, 'colourscale', {
+            value: function(action, value) {
+                if (action === 'SET' ) {
+                    that.status('colourscale', false);
+                    _myColourscaleName = value;
+                    that.status('colourscale', true);
+                }
+                if (action === 'GET HEX' && value) {
+                    _myColourScaleFunction = chroma.scale(_myColourscaleName).domain(_myDomain).out('hex');
+                    return _myColourScaleFunction(value);
+                }
+                if (action === 'GET INDEX' && value) {
+                    _myColourScaleFunction = chroma.scale(_myColourscaleName).domain(_myDomain, _myBreaks).colors();
+                    return _myColourScaleFunction(value);
+                }
+                return _myColourscaleName;
             }
-            myLayer.status('colourscale', false);
-            _myColourscale = colourscale;
-            myLayer.status('colourscale', true);
-        }
-    });
+        });
 
-    Object.defineProperty(myLayer, 'views', {
-        value: function (viewName, viewFunction, viewConfig) {
-            if (!viewName) {
-                return _myViews;
+        /**
+         * This method classifies {@linkcode myLayer#data} based on a geostats classification. See
+         * {@linktext https://github.com/simogeo/geostats}.
+         *
+         * @example
+         * // set classification to Jenks
+         * myLayer.classification('getEqInterval')
+         *
+         * @example
+         * // set classification to standard deviation and change breaks to 3
+         * myLayer.classification('getStdDeviation', 3)
+         *
+         * @method classification
+         * @memberof! MyLayer
+         * @instance
+         * @parameter {string} classification - Any valid geostats classification function.
+         * @parameter {integer} breaks - The number of classifications for the layer symbology. Convention suggests
+         * setting this to < = 5.
+         */
+        Object.defineProperty(this, 'classification', {
+            value: function (classification, breaks) {
+                var i;
+                if (!classification) {
+                    return _myClassification;
+                }
+                if (_myData && _myGeostats[classification]) {
+                    that.status('breaks', false);
+                    that.status('classification', false);
+                    that.status('domain', false);
+                    if (breaks) {
+                        that.breaks(breaks);
+                    }
+                    _myDomain = [];
+                    _myClassification = {};
+                    _myClassification.name = classification;
+                    _myClassification.classes = _myGeostats[classification](_myBreaks);
+                    for (i = 0; i < _myBreaks; i++) {
+                        _myDomain.push(parseFloat(_myClasses[i]));
+                    }
+                    that.status('breaks', true);
+                    that.status('domain', true);
+                    that.status('classification', true);
+                }
             }
-            if (viewName && !viewFunction) {
-                if (_myViews[viewName]) {
-                    _myViews[viewName]();
-                } else {
+        });
+
+        /**
+         * This method returns the data domain.
+         *
+         * @method domain
+         * @memberof! MyLayer
+         * @instance
+         */
+        Object.defineProperty(this, 'domain', {
+            value: function () {
+                return _myDomain;
+            }
+        });
+
+        /**
+         * This container stores the {@linkcode myLayer} instance's geostats object. It is calculated each time
+         * {@linkcode myLayer#data} is successfully set.
+         *
+         * @member geostats
+         * @memberof! MyLayer
+         * @instance
+         */
+        Object.defineProperty(this, 'geostats', {
+            value: _myGeostats
+        });
+
+        /**
+         * This method gets or sets a new view based on the {@linkcode myLayer} instance's {@linkcode myLayer#data}
+         * and {@linkcode myLayer#geom}. Views associated with a given {@linkcode myLayer} instance share the same
+         * {@linkcode myLayer#data} and {@linkcode myLayer#geom} but allow you to visualize that information in unique
+         * and complimentary ways.
+         *
+         *
+         * @member views
+         * @memberof! MyLayer
+         * @instance
+         */
+        Object.defineProperty(this, 'views', {
+            value: function (viewName, viewFunction, viewConfig) {
+                if (!viewName) {
                     return _myViews;
                 }
+                if (viewName && !viewFunction) {
+                    if (_myViews[viewName]) {
+                        _myViews[viewName]();
+                    } else {
+                        return _myViews;
+                    }
+                }
+                if (_myViews[viewName] && viewFunction === "DELETE") {
+                    delete(_myViews[viewName]);
+                    return _myViews;
+                }
+                Object.defineProperty(_myViews, viewName, {
+                    value: viewFunction(viewConfig),
+                    enumerable: true,
+                    configurable: true
+                });
             }
-            if (_myViews[viewName] && viewFunction === "DELETE") {
-                delete(_myViews[viewName]);
-                return _myViews;
-            }
-            Object.defineProperty(_myViews, viewName, {
-                value: function () {
-                    viewFunction(viewConfig)
-                },
-                enumerable: true,
-                configurable:true
-            });
-        }
-    });
+        });
+    };
+
     if (name) {
-      this[name] = myLayer;
+      this[name] = new MyLayer;
     }
-    return myLayer;
+
+    return new MyLayer;
 };
 },{"../libs/Geostats.js":7,"../libs/chroma.js":8,"../libs/myPolyfills.js":9}],2:[function(require,module,exports){
+'use strict';
 /**
- * This function requests authorization for the Google APIs.
+ * This function requests authorization to use the Google APIs.
  *
  * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
  *
+ * A function in MyNamespace (MyNamespace.myFunction).
  * @function getGoogleAuth
+ * @memberof s
  * @param config {Object} Configuration parameters (.auth and .client) for the gapi.auth and gapi.client apis.
  * @param [callback] {Function} Optional callback.
  * @return this {Object}
@@ -261,42 +413,48 @@ module.exports = function (config, callback) {
 };
 
 },{}],3:[function(require,module,exports){
+'use strict';
+var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
+    fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
 /**
  * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
- * @param config {Object} Configuration parameters for Google Big Query (bqClientId, bqProjectId, bqQueryString).
+ * @param config {Object} Configuration parameters for Google Big Query.
+ * @param config.bqClientId {String} The Google Big Query client ID.
+ * @param config.bqProjectId {String} The Google Big Query project ID.
+ * @param config.bqQueryColumns {String} The number of Google Big Query columns being queried.
+ * @param config.bqQueryString {String} The Google Big Query query string.
+ * @param config.id {String} The ID column (the values in this column are used to match geom ID values).
  * @return this {Object}
  */
-
-var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
-    fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
-
 module.exports = function (config) {
-    var data, _values, _gapiConfig, _bqClientId, _bqProjectId, _bqQueryString, _gapiConfig, _request, _totalRows, _currentRow;
-    _currentRow = 0;
-    _values = [];
-    _bqClientId = config.bqClientId;
-    _bqProjectId = config.bqProjectId;
-    _bqQueryString = config.bqQueryString;
-    _dataId = config.id;
-    _bqQueryColumns = config.bqQueryColumns || 2;
-    _gapiConfig = {
-        auth: {
-            "client_id": _bqClientId,
-            'scope': ['https://www.googleapis.com/auth/bigquery'],
-            'immediate': true
-        },
-        client: {
-            'name': 'bigquery',
-            'version': 'v2'
-        },
-        query: {
-            'projectId': _bqProjectId,
-            'timeoutMs': '30000',
-            'query': _bqQueryString
-        }
-    };
+    var data,
+        _bqClientId = config.bqClientId,
+        _bqProjectId = config.bqProjectId,
+        _bqQueryColumns = config.bqQueryColumns || 2,
+        _bqQueryString = config.bqQueryString,
+        _currentRow = 0,
+        _dataId = config.id,
+        _request,
+        _totalRows,
+        _values = [],
+        _gapiConfig = {
+            auth: {
+                "client_id": _bqClientId,
+                'scope': ['https://www.googleapis.com/auth/bigquery'],
+                'immediate': true
+            },
+            client: {
+                'name': 'bigquery',
+                'version': 'v2'
+            },
+            query: {
+                'projectId': _bqProjectId,
+                'timeoutMs': '30000',
+                'query': _bqQueryString
+            }
+        };
 
     fetchGoogleAuth(_gapiConfig, function () {
         _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
@@ -318,15 +476,14 @@ module.exports = function (config) {
     });
 };
 },{"./fetchGoogleAuth.js":2,"./fetchGoogleBq_Sort.js":4}],4:[function(require,module,exports){
+'use strict';
 /**
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function sortBigQuery
  * @param bq {Object} The results of a Google Big Query fetch.
  * @param [callback] {Function} Optional callback.
- * @return this {Object}
  */
-
 module.exports = function (bq, columns, callback){
     var thisRow = {};
     bq.result.rows.forEach (function(row) {
@@ -338,6 +495,7 @@ module.exports = function (bq, columns, callback){
     });
 };
 },{}],5:[function(require,module,exports){
+'use strict';
 /**
  * This METHOD executes a Google Geocoder query for 'address' and appends the results to the calling object's
  * .geo_cache.lat and .geo_cache.long members.
@@ -365,6 +523,7 @@ module.exports = function (address) {
     });
 };
 },{}],6:[function(require,module,exports){
+'use strict';
 /**
  * This METHOD asonchronously fetches geometry from a WFS feature server. It expects GeoJson geometry and stores the
  * result in this.data.geoJson and can optionally return it in a callback.
@@ -1605,152 +1764,170 @@ module.exports = function () {
     }
 };
 },{}],10:[function(require,module,exports){
+'use strict';
 /**
- * This METHOD appends a new Google Maps view to the socioscapes object and places it inside the specified div.
+ * This METHOD creates new Google Maps view and returns the object.
  *
- * @method setViewGmap
- * @param viewName {String} This is the name for the new view.
- * @param latLong {Object} Object with latitude and longitude coordinates. [.lat .long]
- * @param div {String} The DIV ID to place this view in (no #).
- * @param [mapOptions] {Object} Optional object with google maps options. See google api docs for formatting.
- * @param callback {Function} Callback.
+ * @method viewGmap
+ * @param config.div Div ID for an empty div or a Google map object.
+ * @param config.address {String} The address to center the map around.
+ * @param config.styles {String} The style options for the Google map.
+ * @param config.options {String} The map options for the Google map.
+ * @param config.labelStyles {String} The style options for the Label layer.
  * @return this {Object}
  */
 
-var fetchGoogleAuth = require('../fetchers/fetchGoogleAuth.js'),
-    fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
-    setViewGmap_Labels = require('./viewGmap_Labels.js'),
-    setViewGmap_Map = require('./viewGmap_Map.js');
+var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
+    viewGmap_Labels = require('./viewGmap_Labels.js'),
+    viewGmap_Map = require('./viewGmap_Map.js');
 
 module.exports = function (config) {
-    var myGmapView, _myDiv, _myMap, _myGmapLayer, _myGmapLayers, _myStyle, _myHoverListenerSet, _myHoverListenerReset, _myOnClickListener, _mySelectedFeatures, _mySelectionLimit, _mySelectionCount, _myFeatureId;
-    _myDiv = document.getElementById(config.div);
 
-    fetchGoogleGeocode(config.address, function (geocodedAddress) {
-        setViewGmap_Map(geocodedAddress, _myDiv, config.styles, config.options, function (mappedAddress) {
-            setViewGmap_Labels(mappedAddress, config.labels, function (myMap) {
-                myGmapView = {};
-                _myMap = myMap;
-                Object.defineProperty(myGmapView, 'div', {
-                    get: function () { return _myDiv; },
-                    set: function (div) {
-                        if (document.getElementById(div)) {
-                            _myDiv = document.getElementById(div);
+    var MyView = function() {
+        var _myMap,
+            _myGmapLayer,
+            _myGmapLayers,
+            _myStyle,
+            _myHoverListenerSet,
+            _myHoverListenerReset,
+            _myOnClickListener,
+            _mySelectedFeatures,
+            _mySelectionLimit,
+            _mySelectionCount,
+            _myFeatureId,
+            _myDiv = document.getElementById(config.div),
+            that = this;
+
+        fetchGoogleGeocode(config.address, function (returnedAddress) {
+            viewGmap_Map(returnedAddress, _myDiv, config.styles, config.options, function (returnedMap) {
+                viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
+                    _myMap = returnedLabeledMap;
+                    Object.defineProperty(that, 'map', {
+                        value: _myMap
+                    });
+                    Object.defineProperty(that, 'div', {
+                        get: function () { return _myDiv; },
+                        set: function (div) {
+                            if (document.getElementById(div)) {
+                                _myDiv = document.getElementById(div);
+                            }
                         }
-                    }
-                });
-                Object.defineProperty(myGmapView, 'map', {
-                    value: function () { return _myMap; }
-                });
-                Object.defineProperty(myGmapView.map, 'newLayer', {
-                    get: function () { return _myGmapLayers; },
-                    set: function (name, id, url) {
-                        if (!myGmapView.map.layers) {
-                            myGmapView.map.layers = {};
-                        }
-                        if (myGmapView.map.layers[name] && id === "DELETE") {
-                            delete(_myGmapLayers[layerName]);
-                            delete(myGmapView.map.layers[name]);
-                        } else if (!myGmapView.map.layers[name] && id !== "DELETE") {
-                            _myGmapLayer = new google.maps.Data();
-                            _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
-                            Object.defineProperty(myGmapView.map.layers, name, {
-                            });
-                            Object.defineProperty(myGmapView.map.layers.name, 'setStyle', {
-                                get: function () { return _myStyle; },
-                                set: function (styleFunction) {
-                                    _myGmapLayer.setStyle(styleFunction);
-                                    _myStyle = styleFunction;
-                                }
-                            });
-                            Object.defineProperty(myGmapView.map.layers.name, 'on', {
-                                value: function () { _myGmapLayer.setMap(_myDiv); }
-                            });
-                            Object.defineProperty(myGmapView.map.layers.name, 'off', {
-                                value: function () { _myGmapLayer.setMap(null); }
-                            });
-                            Object.defineProperty(myGmapView.map.layers.name, 'onHover', {
-                                value: function (callback) {
-                                    if (_myHoverListenerSet !== undefined) {
-                                        _myHoverListenerSet.remove();
-                                        _myHoverListenerReset.remove();
-                                    }
-                                    if (callback === "OFF") {
-                                        return;
-                                    }
-                                    // Set
-                                    _myHoverListenerSet = _myGmapLayer.addListener('mouseover', function (event) {
-                                        event.feature.setProperty('hover', true);
-                                        if (typeof callback === "function") {
-                                            callback(event.feature);
-                                        }
-                                    });
-                                    // Reset
-                                    _myHoverListenerReset = _myGmapLayer.addListener('mouseout', function (event) {
-                                        event.feature.setProperty('hover', false);
-                                        if (typeof callback === "function") {
-                                            callback(event.feature);
-                                        }
-                                    });
-                                }
-                            });
-                            Object.defineProperty(myGmapView.map.layers.name, 'onClick', {
-                                value: function (limit, callback) {
-                                    // Check to see if a click listener already exists for this layer and remove it / reset properties
-                                    if (_myOnClickListener !== undefined) {
-                                        _myOnClickListener.remove();
-                                        for (var _selectedFeature in _mySelectedFeatures) {
-                                            if (_mySelectedFeatures.hasOwnProperty(_selectedFeature)) {
-                                                _mySelectedFeatures[_selectedFeature].setProperty('selected', false);
-                                                delete _mySelectedFeatures[_selectedFeature];
-                                            }
-                                        }
-                                    }
-                                    if (limit === "OFF") {
-                                        return;
-                                    }
-                                    if (limit !== undefined && Number.isInteger(limit) === true) {
-                                        _mySelectionLimit = limit;
-                                    }
-                                    // Create the listener
-                                    _mySelectionCount = 0;
-                                    _myOnClickListener = this.addListener('click', function(event) {
-                                        _myFeatureId = event.feature.getProperty(id);
-                                        // If the clicked feature's isSelected property is TRUE
-                                        if (event.feature.getProperty('selected') === true) {
-                                            event.feature.setProperty('selected', false);
-                                            delete _mySelectedFeatures[_myFeatureId];
-                                            if (_mySelectionLimit !== undefined && _mySelectionLimit > 0) {
-                                                _mySelectionCount  = _mySelectionCount  - 1;
-                                            }
-                                            if (typeof callback === "function") {
-                                                callback(event.feature, false);
-                                            }
-                                        } else {
-                                            if (_mySelectionLimit > _mySelectionCount ) {
-                                                event.feature.setProperty('selected', true);
-                                                _mySelectionCount  = _mySelectionCount  + 1;
-                                                _mySelectedFeatures[_myFeatureId] = event.feature;
-                                            } else if (!_mySelectionLimit){
-                                                event.feature.setProperty('selected', true);
-                                                _mySelectedFeatures[_myFeatureId] = event.feature;
-                                            }
-                                            if (typeof callback === "function") {
-                                                callback(event.feature, true);
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                        return myGmapView;
-                    }
+                    });
                 });
             });
         });
-    });
+
+        Object.defineProperty(this, 'newGmapLayer', {
+            get: function () { return _myGmapLayers; },
+            set: function (name, id, url) {
+                if (!_myGmapLayers) {
+                    _myGmapLayers = {};
+                }
+                if (that[name] && id === "DELETE") {
+                    delete(_myGmapLayers[name]);
+                    delete(that[name]);
+                } else if (!that[name] && id !== "DELETE") {
+                    _myGmapLayer = new google.maps.Data();
+                    _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
+
+                    Object.defineProperty(that[name], 'style', {
+                        get: function () { return _myStyle; },
+                        set: function (styleFunction) {
+                            _myGmapLayer.setStyle(styleFunction);
+                            _myStyle = styleFunction;
+                        }
+                    });
+
+                    Object.defineProperty(that[name], 'on', {
+                        value: function () { _myGmapLayer.setMap(_myDiv); }
+                    });
+
+                    Object.defineProperty(that[name], 'off', {
+                        value: function () { _myGmapLayer.setMap(null); }
+                    });
+
+                    Object.defineProperty(that[name], 'onHover', {
+                        value: function (callback) {
+                            if (_myHoverListenerSet !== undefined) {
+                                _myHoverListenerSet.remove();
+                                _myHoverListenerReset.remove();
+                            }
+                            if (callback === "OFF") {
+                                return;
+                            }
+                            // Set
+                            _myHoverListenerSet = _myGmapLayer.addListener('mouseover', function (event) {
+                                event.feature.setProperty('hover', true);
+                                if (typeof callback === "function") {
+                                    callback(event.feature);
+                                }
+                            });
+                            // Reset
+                            _myHoverListenerReset = _myGmapLayer.addListener('mouseout', function (event) {
+                                event.feature.setProperty('hover', false);
+                                if (typeof callback === "function") {
+                                    callback(event.feature);
+                                }
+                            });
+                        }
+                    });
+
+                    Object.defineProperty(that[name], 'onClick', {
+                        value: function (limit, callback) {
+                            // Check to see if a click listener already exists for this layer and remove it / reset properties
+                            if (_myOnClickListener !== undefined) {
+                                _myOnClickListener.remove();
+                                for (var _selectedFeature in _mySelectedFeatures) {
+                                    if (_mySelectedFeatures.hasOwnProperty(_selectedFeature)) {
+                                        _mySelectedFeatures[_selectedFeature].setProperty('selected', false);
+                                        delete _mySelectedFeatures[_selectedFeature];
+                                    }
+                                }
+                            }
+                            if (limit === "OFF") {
+                                return;
+                            }
+                            if (limit !== undefined && Number.isInteger(limit) === true) {
+                                _mySelectionLimit = limit;
+                            }
+                            // Create the listener
+                            _mySelectionCount = 0;
+                            _myOnClickListener = this.addListener('click', function(event) {
+                                _myFeatureId = event.feature.getProperty(id);
+                                // If the clicked feature's selected property is TRUE
+                                if (event.feature.getProperty('selected') === true) {
+                                    event.feature.setProperty('selected', false);
+                                    delete _mySelectedFeatures[_myFeatureId];
+                                    if (_mySelectionLimit !== undefined && _mySelectionLimit > 0) {
+                                        _mySelectionCount  = _mySelectionCount  - 1;
+                                    }
+                                    if (typeof callback === "function") {
+                                        callback(event.feature, false);
+                                    }
+                                } else {
+                                    if (_mySelectionLimit > _mySelectionCount ) {
+                                        event.feature.setProperty('selected', true);
+                                        _mySelectionCount  = _mySelectionCount  + 1;
+                                        _mySelectedFeatures[_myFeatureId] = event.feature;
+                                    } else if (!_mySelectionLimit){
+                                        event.feature.setProperty('selected', true);
+                                        _mySelectedFeatures[_myFeatureId] = event.feature;
+                                    }
+                                    if (typeof callback === "function") {
+                                        callback(event.feature, true);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    };
+    return new MyView;
 };
-},{"../fetchers/fetchGoogleAuth.js":2,"../fetchers/fetchGoogleGeocode.js":5,"./setViewGmap_Labels.js":11,"./setViewGmap_Map.js":12}],11:[function(require,module,exports){
+},{"../fetchers/fetchGoogleGeocode.js":5,"./viewGmap_Labels.js":11,"./viewGmap_Map.js":12}],11:[function(require,module,exports){
+'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
  *
@@ -1808,6 +1985,7 @@ module.exports = function (mapObject, styles) {
     return mapObject;
 };
 },{}],12:[function(require,module,exports){
+'use strict';
 /**
  * This METHOD creates a new google.maps object and assigns it to the specified view.
  *
@@ -1949,15 +2127,16 @@ module.exports = function (geocode, div, styles, options) {
     return myMap;
 };
 },{}],13:[function(require,module,exports){
+'use strict';
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
- * sandboxed environment.
+ * extendable sandbox.
  *
- *    Source code...................... http://github.com/moismailzai/SocioscapesGIS
+ *    Source code...................... http://github.com/moismailzai/socioscapes
  *    Reference implementation......... http://app.socioscapes.com
  *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................ Copies have no rights
+ *    Copyright........................
  *
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
  * University of Toronto.
@@ -1967,36 +2146,41 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
     fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
     fetchWfs = require('./fetchers/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
-    setViewGmap = require('./views/viewGmap.js');
+    viewGmap = require('./views/viewGmap.js');
 
-module.exports = function (pluginModule) {
-
-    var s = {};
-
-    Object.defineProperty(s, 'fetchGoogleAuth', {
+/**
+ * This is the root Socioscapes namespace and object.
+ *
+ * Requires the modules {@link module:fetchGoogleAuth}, {@link module:fetchGoogleGeocode},
+ * {@link module:fetchGoogleBq}, {@link module:fetchWfs}, {@link module:newLayer}, and {@link module:viewGmap}.
+ *
+ * @namespace Socioscapes
+ * @requires module:fetchGoogleAuth
+ * @requires module:fetchGoogleGeocode
+ * @requires module:fetchGoogleBq
+ * @requires module:fetchWfs
+ * @requires module:newLayer
+ * @requires module:viewGmap
+ */
+module.exports = function () {
+    Object.defineProperty(this, 'fetchGoogleAuth', {
         value: fetchGoogleAuth
     });
-    Object.defineProperty(s, 'fetchGoogleGeocode', {
+    Object.defineProperty(this, 'fetchGoogleGeocode', {
         value: fetchGoogleGeocode
     });
-    Object.defineProperty(s, 'fetchGoogleBq', {
+    Object.defineProperty(this, 'fetchGoogleBq', {
         value: fetchGoogleBq
     });
-    Object.defineProperty(s, 'fetchWfs', {
+    Object.defineProperty(this, 'fetchWfs', {
         value: fetchWfs
     });
-    Object.defineProperty(s, 'newLayer', {
+    Object.defineProperty(this, 'newLayer', {
         value: newLayer
     });
-    Object.defineProperty(s, 'setViewGmap', {
-        value: setViewGmap
+    Object.defineProperty(this, 'viewGmap', {
+        value: viewGmap
     });
-
-    if (pluginModule) {
-        return pluginModule(s);
-    }
-    return s;
 };
-
-},{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/setViewGmap.js":10}]},{},[13])(13)
+},{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/viewGmap.js":10}]},{},[13])(13)
 });
