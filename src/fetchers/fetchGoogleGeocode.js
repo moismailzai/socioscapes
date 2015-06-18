@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require, geocode, maps*/
 'use strict';
 /**
  * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.

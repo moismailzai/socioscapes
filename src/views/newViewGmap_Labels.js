@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.

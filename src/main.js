@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global module, google, require*/
 'use strict';
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
@@ -34,23 +35,23 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
  * @requires module:newLayer
  * @requires module:newViewGmap
  */
-module.exports = function socioscapes() {
-    Object.defineProperty(this, 'fetchGoogleAuth', {
-        value: fetchGoogleAuth
-    });
-    Object.defineProperty(this, 'fetchGoogleGeocode', {
-        value: fetchGoogleGeocode
-    });
-    Object.defineProperty(this, 'fetchGoogleBq', {
-        value: fetchGoogleBq
-    });
-    Object.defineProperty(this, 'fetchWfs', {
-        value: fetchWfs
-    });
-    Object.defineProperty(this, 'newLayer', {
-        value: newLayer
-    });
-    Object.defineProperty(this, 'viewGmap', {
-        value: viewGmap
-    });
-};
+var socioscapes = {};
+Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
+    value: fetchGoogleAuth
+});
+Object.defineProperty(socioscapes, 'fetchGoogleGeocode', {
+    value: fetchGoogleGeocode
+});
+Object.defineProperty(socioscapes, 'fetchGoogleBq', {
+    value: fetchGoogleBq
+});
+Object.defineProperty(socioscapes, 'fetchWfs', {
+    value: fetchWfs
+});
+Object.defineProperty(socioscapes, 'newLayer', {
+    value: newLayer
+});
+Object.defineProperty(socioscapes, 'viewGmap', {
+    value: viewGmap
+});
+module.exports = socioscapes;

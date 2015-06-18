@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].

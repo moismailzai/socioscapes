@@ -1,11 +1,11 @@
 /*jslint node: true */
+/*global socioscapes, module, google, feature, event, require*/
 'use strict';
 var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
     viewGmap_Labels = require('./newViewGmap_Labels.js'),
     viewGmap_Map = require('./newViewGmap_Map.js');
 /**
- * This constructor method appends a new Google Maps object -- of class {@linkcode MyGmapView} -- to the {@linkcode myLayer}
- * instance.
+ * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *
  * @method newViewGmap
  * @memberof! socioscapes
@@ -19,11 +19,11 @@ var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
  */
 module.exports = function newViewGmap(config) {
     /**
-     * Each instance of this class consists of a Google Map object, {@linkcode socioscapes.MyLayer.MyGmapView#map}, the
-     * corresponding div container, {@linkcode socioscapes.MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode socioscapes.MyLayer.MyGmapView#myGmapLayer}. 
+     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView#map}, the
+     * corresponding div container, {@linkcode MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
+     * data layers, {@linkcode MyLayer.MyGmapView#myGmapLayer}. 
      *
-     * @namespace socioscapes.MyLayer.MyGmapView
+     * @namespace MyLayer.MyGmapView
      */
     var MyGmapView = function () {
         var _myMap,
@@ -45,10 +45,12 @@ module.exports = function newViewGmap(config) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
-                     * This container holds the Google Map data object and all related methods.
+                     * This container holds the Google Map data object and all related methods. See
+                     * {@link https://developers.google.com/maps/documentation/javascript/reference} for more details on
+                     * the Google Maps class.
                      *
                      * @member map
-                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     * @memberof! MyLayer.MyGmapView
                      */
                     Object.defineProperty(that, 'map', {
                         value: _myMap
@@ -57,7 +59,7 @@ module.exports = function newViewGmap(config) {
                      * This method can be used to get or set the div for the Google Maps data object.
                      *
                      * @method div
-                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     * @memberof! MyLayer.MyGmapView
                      */
                     Object.defineProperty(that, 'div', {
                         value: function (div) {
@@ -79,13 +81,15 @@ module.exports = function newViewGmap(config) {
         /**
          *
          * @method myGmapLayer
-         * @memberof! socioscapes.MyLayer.MyGmapView
+         * @memberof! MyLayer.MyGmapView
          */
         Object.defineProperty(this, 'myGmapLayer', {
-            get: function () { return _myGmapLayers; },
-            set: function (name, id, url) {
+            value: function (name, id, url) {
                 if (!_myGmapLayers) {
                     _myGmapLayers = {};
+                }
+                if (!name) {
+                    return _myGmapLayers;
                 }
                 if (that[name] && id === "DELETE") {
                     delete(_myGmapLayers[name]);
@@ -96,11 +100,13 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method style
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
-                        get: function () { return _myStyle; },
-                        set: function (styleFunction) {
+                        value: function (styleFunction) {
+                            if (!styleFunction) {
+                                return _myStyle;
+                            }
                             _myGmapLayer.setStyle(styleFunction);
                             _myStyle = styleFunction;
                         }
@@ -108,7 +114,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method on
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
@@ -116,7 +122,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method off
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
@@ -124,7 +130,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method onHover
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -154,7 +160,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method onClick
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {

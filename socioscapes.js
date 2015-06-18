@@ -1,28 +1,29 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 var chroma = require('../libs/chroma.js'),
     Geostats = require('../libs/Geostats.js'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 /**
- * This constructor method appends a new object (of class {@linkcode MyLayer}) to the socioscapes instance.
+ * This constructor method returns a new object of class {@linkcode MyLayer}.
  *
- * Requires the modules {@linkcode module:chroma}, {@linkcode module:Geostats}, and {@linkcode module:myPolyfills}.
+ * Requires the modules {@link https://github.com/gka/chroma.js}, {@link https://github.com/simogeo/geostats}, and
+ * {@linkcode module:myPolyfills}.
  *
  * @method newLayer
  * @memberof! socioscapes
- * @param {String} name - The name of the layer to be appended to the socioscapes instance.
  * @return {Object} MyLayer
  */
-module.exports = function newLayer(name) {
+module.exports = function newLayer() {
     /**
-     * Each instance of this class consists of the two store members {@linkcode MyLayer#data} and
-     * {@linkcode MyLayer#geom}, as well as well as the configuration members {@linkcode MyLayer#breaks},
-     * {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification}, {@linkcode MyLayer#colourscale},
-     * {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and {@linkcode MyLayer#status}.
+     * Each MyLayer consists of the two store members {@linkcode MyLayer#data} and {@linkcode MyLayer#geom}, and the
+     * configuration members {@linkcode MyLayer#breaks}, {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification},
+     * {@linkcode MyLayer#colourscale}, {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and
+     * {@linkcode MyLayer#status}.
      *
-     * @namespace socioscapes.MyLayer
+     * @namespace MyLayer
      */
     var MyLayer = function() {
         var _myBreaks = 5,
@@ -69,35 +70,27 @@ module.exports = function newLayer(name) {
             value: false,
             configurable: true
         });
+
         /**
-         * This container holds all instances of {@linkcode MyView} that are associated with this {@linkcode MyLayer}
-         * instance.
-         *
-         * @member views
-         * @memberof! socioscapes.MyLayer
-         */
-        this.views = _myViews;
-        /**
-         * This method returns a boolean status for each configurable member of the associated {@linkcode MyLayer}
-         * instance.
+         * This method returns a boolean status for each configurable member of {@linkcode MyLayer}.
          *
          * @example
-         * // returns the status of the 'data' member of myLayer.
-         * myLayer.status('data')
+         * // returns the status of the 'data' member of MyLayer.
+         * MyLayer.status('data')
          *
          * @example
-         * // returns the status of all members of myLayer.
-         * myLayer.status()
+         * // returns the status of all members of MyLayer.
+         * MyLayer.status()
          *
          * @example
          * // set the status of 'data' to true.
-         * myLayer.status('data', true)
+         * MyLayer.status('data', true)
          *
          * @method status
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          */
         Object.defineProperty(this, 'status', {
-            value: function (name, state) {
+            value: function(name, state) {
                 if (!name) {
                     return _myLayerStatus
                 }
@@ -121,91 +114,168 @@ module.exports = function newLayer(name) {
                             value: true,
                             configurable: true
                         });
+                        //TODO an api-wide event firing strategy so status events like this can trigger renders in the dom
                     }
                 }
             }
         });
         /**
-         * This method sets the data store of the the associated {@linkcode MyLayer} instance. If the fetch is
-         * succesful, myLayer.status('data') and myLayer.status('geostats') will both return true.
+         * This method sets the data store of the the associated {@linkcode MyLayer}. If the fetch is succesful,
+         * MyLayer.status('data') and MyLayer.status('geostats') will both return true. If no parameters are provided,
+         * the method returns the currently stored data values, if any exist.The method can take two parameters, the
+         * first can be a string name for any valid socioscapes data fetcher, a function that returns a valid
+         * {@linkcode socioscapes-data-object}, or a valid {@linkcode socioscapes-data-object}. The second parameter
+         * should be an object that provides all necessary configuration options for the first.
          *
          * @example
-         * // Calls the 'fetchGoogleBq' member of the socioscapes instance and passes the 'config' object as parameter.
-         * myLayer.data(s.fetchGoogleBq, config)
+         * // calls socioscapes.fetchGoogleBq and passes the 'config' object as parameter.
+         * MyLayer.data('fetchGoogleBq', config)
+         *
+         * @example
+         * // calls myFetchFunction and passes the 'config' object as parameter.
+         * MyLayer.data(myFetchFunction, config)
+         *
+         * @example
+         * // returns _myData.values
+         * MyLayer.data()
          *
          * @method data
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-data-object} and
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
          */
         Object.defineProperty(this, 'data', {
-            value: function (fetcher, config) {
-                var _statusBackup;
+            value: function(fetcher, config) {
+                //set the statuses for data and geostats to false so that any dom components that react to a fully
+                //ready status state can do what they need to do when these objects are not ready (eg. go from a green
+                // 'ready' button to a faded red 'loading' button.
+                var _statusBackupData = _myLayerStatus.data,
+                    _statusBackupGeostats = _myLayerStatus.geostats;
                 if (!fetcher || !config) {
                     return _myData.values;
                 }
-                _statusBackup = _myLayerStatus.data;
-                that.status('data', false);
-                fetcher(config, function (result, success) {
-                    if (success) {
-                        _myData = result;
+                if (fetcher && config && typeof fetcher === "function" ) {
+                    that.status('data', false);
+                    that.status('geostats', false);
+                    fetcher(config, function (result, success) {
+                        if (success) {
+                            _myData = result;
+                            _myGeostats = new Geostats(result.values);
+                            that.status('data', true);
+                            that.status('geostats', true);
+                        } else {
+                            that.status('data', _statusBackupData);
+                            that.status('data', _statusBackupGeostats);
+                        }
+                    });
+                } else if (fetcher && !config && typeof fetcher === "object" ) {
+                    if (fetcher.url && fetcher.id && fetcher.values) {
+                        that.status('data', false);
+                        that.status('geostats', false);
+                        _myData = fetcher;
                         _myGeostats = new Geostats(result.values);
                         that.status('data', true);
-                    } else {
-                        that.status('data', _statusBackup);
+                        that.status('geostats', true);
                     }
-                });
+                } else if (fetcher && config && typeof fetcher === "string" ) {
+                    if (typeof socioscapes[fetcher] === "function") {
+                        that.status('data', false);
+                        that.status('geostats', false);
+                        socioscapes[fetcher](config, function (result, success) {
+                            if (success) {
+                                _myData = result;
+                                _myGeostats = new Geostats(result.values);
+                                that.status('data', true);
+                                that.status('geostats', true);
+                            } else {
+                                that.status('data', _statusBackupData);
+                                that.status('data', _statusBackupGeostats);
+                            }
+                        });
+                    }
+                }
             }
         });
         /**
-         * This method sets the geom store of the the associated {@linkcode MyLayer} instance. If the fetch is
-         * successful, myLayer.status('geom') will return true.
+         * This method sets the geom store of {@linkcode MyLayer}. If the fetch is successful, MyLayer.status('geom')
+         * will return true. If no parameters are provided, the method returns the currently stored geom features, if
+         * any exist. The method can take two parameters, the first can be a string name for any valid socioscapes data
+         * fetcher, a function that returns a valid {@linkcode socioscapes-geom-object}, or a valid
+         * {@linkcode socioscapes-geom-object}. The second parameter should be an object that provides all necessary
+         * configuration options for the first.
          *
          * @example
-         * // Calls the 'fetchWfs' member of the socioscapes instance and passes the 'config' object as parameter.
-         * myLayer.geom(s.fetchWfs, config)
+         * // Calls socioscapes.fetchWfs and passes the 'config' object as parameter.
+         * MyLayer.geom(s.fetchWfs, config)
+         *
+         * @example
+         * // calls myFetchFunction and passes the 'config' object as parameter.
+         * MyLayer.geom(myFetchFunction, config)
+         *
+         * @example
+         * // returns _myGeom.features
+         * MyLayer.geom()
          *
          * @method geom
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          * @parameter {function} fetcher - Any function that returns a valid {@linkcode socioscapes-geom-object} and a
          * status boolean (result, success).
          * @parameter {object} config - All arguments that the fetcher method requires.
          */
         Object.defineProperty(this, 'geom', {
-            value: function (fetcher, config) {
-                var _statusBackup;
+            value: function(fetcher, config) {
+                var _statusBackup = _myLayerStatus.geom;
                 if (!fetcher || !config) {
                     return _myGeom.features;
                 }
-                _statusBackup = _myLayerStatus.geom;
-                that.status('geom', false);
-                fetcher(config, function (result, success) {
-                    if (success) {
-                        _myGeom = result;
+                if (fetcher && config && typeof fetcher === "function" ) {
+                    that.status('geom', false);
+                    fetcher(config, function (result, success) {
+                        if (success) {
+                            _myGeom = result;
+                            that.status('geom', true);
+                        } else {
+                            that.status('geom', _statusBackup);
+                        }
+                    });
+                } else if (fetcher && !config && typeof fetcher === "object" ) {
+                    if (fetcher.url && fetcher.id && fetcher.features) {
+                        that.status('geom', false);
+                        _myGeom = fetcher;
                         that.status('geom', true);
-                    } else {
-                        that.status('geom', _statusBackup);
                     }
-                });
+                } else if (fetcher && config && typeof fetcher === "string" ) {
+                    if (typeof socioscapes[fetcher] === "function") {
+                        that.status('geom', false);
+                        socioscapes[fetcher](config, function (result, success) {
+                            if (success) {
+                                _myGeom = result;
+                                that.status('geom', true);
+                            } else {
+                                that.status('geom', _statusBackup);
+                            }
+                        });
+                    }
+                }
             }
         });
         /**
-         * This method sets the number of breaks for the associated {@linkcode MyLayer} instance. This setting, along
-         * with {@linkcode myLayer#classification} and {@linkcode myLayer#colourscale} constitute the core GIS
-         * visualization settings.
+         * This method sets the number of breaks for the data in {@linkcode MyLayer}. This setting, along with
+         * {@linkcode MyLayer#classification} and {@linkcode MyLayer#colourscale} constitute the core GIS visualization
+         * settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/html/comp_class.html} for general
+         * information about geospatial classification and groupings.
          *
          * @example
          * // sets three breaks
-         * myLayer.breaks('3')
+         * MyLayer.breaks('3')
          *
          * @method breaks
-         * @memberof! socioscapes.MyLayer
-         * @parameter {integer} breaks - The number of classifications for the layer symbology. Typically, this is set
-         * to < = 5.
+         * @memberof! MyLayer
+         * @parameter {integer} breaks - The number of groups for the layer's symbology. Typically, this is set to < = 5.
          */
         Object.defineProperty(this, 'breaks', {
-            value: function (breaks) {
+            value: function(breaks) {
                 if (!breaks) {
                     return _myBreaks;
                 }
@@ -218,23 +288,24 @@ module.exports = function newLayer(name) {
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
          * scale. socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
-         * This setting, along with {@linkcode myLayer#breaks} and {@linkcode myLayer#classifications} constitute the
-         * core GIS visualization settings.
+         * This setting, along with {@linkcode MyLayer#breaks} and {@linkcode MyLayer#classifications} constitute the
+         * core GIS visualization settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for
+         * general information about geospatial visualization.
          *
          * @example
          * // returns the hexadecimal value for '100' given the ColourBrew spectrum 'YlOrRd' and five breaks.
-         * myLayer.breaks(5)
-         * myLayer.colourscale('SET', 'YlOrRd')
-         * myLayer.colourscale('GET HEX', 100)
+         * MyLayer.breaks(5)
+         * MyLayer.colourscale('SET', 'YlOrRd')
+         * MyLayer.colourscale('GET HEX', 100)
          *
          * @example
          * // returns the current colourscale name
-         * myLayer.colourscale()
+         * MyLayer.colourscale()
          *
          * @method colourscale
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
-         * @parameter {number} value - Any value that falls within the bounds of {@linkcode myLayer#data}.
+         * @parameter {number} value - Any value that falls within the bounds of {@linkcode MyLayer#data}.
          */
         Object.defineProperty(this, 'colourscale', {
             value: function(action, value) {
@@ -255,21 +326,22 @@ module.exports = function newLayer(name) {
             }
         });
         /**
-         * This method classifies {@linkcode myLayer#data} based on a geostats classification. See
-         * {@linktext https://github.com/simogeo/geostats}.
+         * This method classifies {@linkcode MyLayer#data} based on a geostats classification function. See
+         * {@link https://github.com/simogeo/geostats} for more on geostats classification functions and
+         * {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for general data classification guidelines.
          *
          * @example
          * // set classification to Jenks
-         * myLayer.classification('getEqInterval')
+         * MyLayer.classification('getEqInterval')
          *
          * @example
          * // set classification to standard deviation and change breaks to 3
-         * myLayer.classification('getStdDeviation', 3)
+         * MyLayer.classification('getStdDeviation', 3)
          *
          * @method classification
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          * @parameter {string} classification - Any valid geostats classification function.
-         * @parameter {integer} breaks - The number of classifications for the layer symbology. Convention suggests
+         * @parameter {integer} [breaks] - The number of classifications for the layer symbology. Convention suggests
          * setting this to < = 5.
          */
         Object.defineProperty(this, 'classification', {
@@ -299,10 +371,11 @@ module.exports = function newLayer(name) {
             }
         });
         /**
-         * This method returns the data domain.
+         * This method returns the data domain. The data domain stores the spread of the data and is used in many GIS
+         * calculations.
          *
          * @method domain
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          */
         Object.defineProperty(this, 'domain', {
             value: function () {
@@ -310,24 +383,24 @@ module.exports = function newLayer(name) {
             }
         });
         /**
-         * This container stores the {@linkcode myLayer} instance's geostats object. It is calculated each time
-         * {@linkcode myLayer#data} is successfully set.
+         * This container stores the {@linkcode MyLayer} instance's geostats object. It is calculated each time
+         * {@linkcode MyLayer#data} is successfully set. See {@link https://github.com/simogeo/geostats} for more on
+         * geostats
          *
          * @member geostats
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          */
         Object.defineProperty(this, 'geostats', {
             value: _myGeostats
         });
         /**
-         * This method gets or sets a new view based on the {@linkcode myLayer} instance's {@linkcode myLayer#data}
-         * and {@linkcode myLayer#geom}. Views associated with a given {@linkcode myLayer} instance share the same
-         * {@linkcode myLayer#data} and {@linkcode myLayer#geom} but allow you to visualize that information in unique
-         * and complimentary ways.
-         *
+         * This method gets or sets a new view based on {@linkcode MyLayer}'s {@linkcode MyLayer#data} and
+         * {@linkcode MyLayer#geom} stores. Views associated with {@linkcode MyLayer} share the same
+         * {@linkcode MyLayer#data} and {@linkcode MyLayer#geom} but can each visualize the values in those stores in
+         * unique and complimentary ways.
          *
          * @member views
-         * @memberof! socioscapes.MyLayer
+         * @memberof! MyLayer
          */
         Object.defineProperty(this, 'views', {
             value: function (viewName, viewFunction, viewConfig) {
@@ -360,6 +433,7 @@ module.exports = function newLayer(name) {
 };
 },{"../libs/Geostats.js":7,"../libs/chroma.js":8,"../libs/myPolyfills.js":9}],2:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This function requests authorization to use a Google API, and if received, loads that API client.
@@ -388,6 +462,7 @@ module.exports = function fetchGoogleAuth(config, callback) {
 
 },{}],3:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
@@ -451,6 +526,7 @@ module.exports = function fetchGoogleBq(config) {
 };
 },{"./fetchGoogleAuth.js":2,"./fetchGoogleBq_Sort.js":4}],4:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
@@ -477,6 +553,7 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
 };
 },{}],5:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require, geocode, maps*/
 'use strict';
 /**
  * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.
@@ -502,6 +579,7 @@ module.exports = function fetchGoogleGeocode(address) {
 };
 },{}],6:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
@@ -1745,13 +1823,13 @@ module.exports = function () {
 };
 },{}],10:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, feature, event, require*/
 'use strict';
 var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
     viewGmap_Labels = require('./newViewGmap_Labels.js'),
     viewGmap_Map = require('./newViewGmap_Map.js');
 /**
- * This constructor method appends a new Google Maps object -- of class {@linkcode MyGmapView} -- to the {@linkcode myLayer}
- * instance.
+ * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *
  * @method newViewGmap
  * @memberof! socioscapes
@@ -1765,11 +1843,11 @@ var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
  */
 module.exports = function newViewGmap(config) {
     /**
-     * Each instance of this class consists of a Google Map object, {@linkcode socioscapes.MyLayer.MyGmapView#map}, the
-     * corresponding div container, {@linkcode socioscapes.MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode socioscapes.MyLayer.MyGmapView#myGmapLayer}. 
+     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView#map}, the
+     * corresponding div container, {@linkcode MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
+     * data layers, {@linkcode MyLayer.MyGmapView#myGmapLayer}. 
      *
-     * @namespace socioscapes.MyLayer.MyGmapView
+     * @namespace MyLayer.MyGmapView
      */
     var MyGmapView = function () {
         var _myMap,
@@ -1791,10 +1869,12 @@ module.exports = function newViewGmap(config) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
-                     * This container holds the Google Map data object and all related methods.
+                     * This container holds the Google Map data object and all related methods. See
+                     * {@link https://developers.google.com/maps/documentation/javascript/reference} for more details on
+                     * the Google Maps class.
                      *
                      * @member map
-                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     * @memberof! MyLayer.MyGmapView
                      */
                     Object.defineProperty(that, 'map', {
                         value: _myMap
@@ -1803,7 +1883,7 @@ module.exports = function newViewGmap(config) {
                      * This method can be used to get or set the div for the Google Maps data object.
                      *
                      * @method div
-                     * @memberof! socioscapes.MyLayer.MyGmapView
+                     * @memberof! MyLayer.MyGmapView
                      */
                     Object.defineProperty(that, 'div', {
                         value: function (div) {
@@ -1825,13 +1905,15 @@ module.exports = function newViewGmap(config) {
         /**
          *
          * @method myGmapLayer
-         * @memberof! socioscapes.MyLayer.MyGmapView
+         * @memberof! MyLayer.MyGmapView
          */
         Object.defineProperty(this, 'myGmapLayer', {
-            get: function () { return _myGmapLayers; },
-            set: function (name, id, url) {
+            value: function (name, id, url) {
                 if (!_myGmapLayers) {
                     _myGmapLayers = {};
+                }
+                if (!name) {
+                    return _myGmapLayers;
                 }
                 if (that[name] && id === "DELETE") {
                     delete(_myGmapLayers[name]);
@@ -1842,11 +1924,13 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method style
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
-                        get: function () { return _myStyle; },
-                        set: function (styleFunction) {
+                        value: function (styleFunction) {
+                            if (!styleFunction) {
+                                return _myStyle;
+                            }
                             _myGmapLayer.setStyle(styleFunction);
                             _myStyle = styleFunction;
                         }
@@ -1854,7 +1938,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method on
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
@@ -1862,7 +1946,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method off
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
@@ -1870,7 +1954,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method onHover
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -1900,7 +1984,7 @@ module.exports = function newViewGmap(config) {
                     /**
                      *
                      * @method onClick
-                     * @memberof! socioscapes.MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.myGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
@@ -1958,6 +2042,7 @@ module.exports = function newViewGmap(config) {
 };
 },{"../fetchers/fetchGoogleGeocode.js":5,"./newViewGmap_Labels.js":11,"./newViewGmap_Map.js":12}],11:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
@@ -2014,6 +2099,7 @@ module.exports = function viewGmap_Labels(myMap, styles) {
 };
 },{}],12:[function(require,module,exports){
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD creates a new google.maps object and assigns it to the specified div.
@@ -2156,6 +2242,7 @@ module.exports = function (geocode, div, styles, options) {
 };
 },{}],13:[function(require,module,exports){
 /*jslint node: true */
+/*global module, google, require*/
 'use strict';
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
@@ -2191,25 +2278,25 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
  * @requires module:newLayer
  * @requires module:newViewGmap
  */
-module.exports = function socioscapes() {
-    Object.defineProperty(this, 'fetchGoogleAuth', {
-        value: fetchGoogleAuth
-    });
-    Object.defineProperty(this, 'fetchGoogleGeocode', {
-        value: fetchGoogleGeocode
-    });
-    Object.defineProperty(this, 'fetchGoogleBq', {
-        value: fetchGoogleBq
-    });
-    Object.defineProperty(this, 'fetchWfs', {
-        value: fetchWfs
-    });
-    Object.defineProperty(this, 'newLayer', {
-        value: newLayer
-    });
-    Object.defineProperty(this, 'viewGmap', {
-        value: viewGmap
-    });
-};
+var socioscapes = {};
+Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
+    value: fetchGoogleAuth
+});
+Object.defineProperty(socioscapes, 'fetchGoogleGeocode', {
+    value: fetchGoogleGeocode
+});
+Object.defineProperty(socioscapes, 'fetchGoogleBq', {
+    value: fetchGoogleBq
+});
+Object.defineProperty(socioscapes, 'fetchWfs', {
+    value: fetchWfs
+});
+Object.defineProperty(socioscapes, 'newLayer', {
+    value: newLayer
+});
+Object.defineProperty(socioscapes, 'viewGmap', {
+    value: viewGmap
+});
+module.exports = socioscapes;
 },{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/newViewGmap.js":10}]},{},[13])(13)
 });

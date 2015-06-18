@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');

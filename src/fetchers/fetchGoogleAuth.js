@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This function requests authorization to use a Google API, and if received, loads that API client.

@@ -1,4 +1,5 @@
 /*jslint node: true */
+/*global socioscapes, module, google, require*/
 'use strict';
 /**
  * This METHOD creates a new google.maps object and assigns it to the specified div.
