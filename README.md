@@ -63,6 +63,13 @@
 
 **vancity.colourscale('YlOrRd');**
 
+// *check the status of vancity's various members*
+
+**vancity.status();**
+
+// *return vancity's data values*
+
+**vancity.data();**
 
 ***
 
