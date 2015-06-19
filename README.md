@@ -10,7 +10,6 @@
    
 >**Copyright**:       &copy; 2015 Mo Ismailzai
 
-***
 
 ### Examples
 
