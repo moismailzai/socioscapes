@@ -39,29 +39,29 @@
 ***
 
 #### Usage:  
-// *create a new socioscapes layer object called 'van'*
+// *create a new socioscapes layer object called 'vancity'*
 
-**van = s.newLayer();**
+**vancity = s.newLayer();**
 
-// *fetch some wfs geom for van*
+// *fetch some wfs geom for vancity*
 
-**van.geom('fetchWfs', wfsgeom);**
+**vancity.geom('fetchWfs', wfsgeom);**
 
-// *fetch some bq data for van*
+// *fetch some bq data for vancity*
 
-**van.data('fetchGoogleBq', bqdata);**
+**vancity.data('fetchGoogleBq', bqdata);**
 
 // *set 5 breaks for van's visualization*
 
-**van.breaks(5);**
+**vancity.breaks(5);**
 
-// *calculate jenks classifications for van*
+// *calculate jenks classifications for vancity*
 
-**van.classification('getJenks');**
+**vancity.classification('getJenks');**
 
-// *set the Yellow-Orange-Red colorbrew colour scale for van's visualization*
+// *set the Yellow-Orange-Red colorbrew colour scale for vancity's visualization*
 
-**van.colourscale('YlOrRd');**
+**vancity.colourscale('YlOrRd');**
 
 
 ***
