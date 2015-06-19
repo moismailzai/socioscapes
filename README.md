@@ -24,15 +24,15 @@
 
 **var data = {};**
 
-**wfsgeom.url = 'http://www.mywfsserver.com&cql_filter=cmaname=%27Vancouver%27';** 
+**wfsgeom.url = 'http://www.example.com&cql_filter=example;** 
 
 **wfsgeom.id = 'dauid';** 
 
 **bqdata.id = 'dauid';**
 
-**bqdata.clientId = 'exampleid.apps.googleusercontent.com';**
+**bqdata.clientId = 'example.apps.googleusercontent.com';**
 
-**bqdata.projectId = 'exampleid';** 
+**bqdata.projectId = 'example';** 
 
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
 
