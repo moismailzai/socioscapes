@@ -14,7 +14,7 @@
 ### Examples
 ***
 
-#### config:
+#### Config:
 // *for easier reference & less typing*
 
 **var s = socioscapes;**
@@ -38,7 +38,7 @@
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
 ***
 
-#### usage:  
+#### Usage:  
 // *create a new socioscapes layer object called 'van'*
 
 **van = s.newLayer();**
