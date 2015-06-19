@@ -59,15 +59,15 @@
 
 **vancity.breaks(5);**
 
-// *calculate jenks classifications for vancity*
+// *configure vancity to use jenks classifications for any subsequent visualizations*
 
 **vancity.classification('getJenks');**
 
-// *set the Yellow-Orange-Red colorbrew colour scale for vancity's visualization*
+// *configure vancity to use the Yellow-Orange-Red colorbrew colour scale for any subsequent visualizations*
 
 **vancity.colourscale('YlOrRd');**
 
-// *check the status of vancity's various members*
+// *check the status of the vancity layer's various members*
 
 **vancity.status();**
 
