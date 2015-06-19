@@ -55,7 +55,7 @@
 
 **vancity.data();**
 
-// *set 5 breaks for van's visualization*
+// *configure vancity to use 5 groups in any subsequent visualizations*
 
 **vancity.breaks(5);**
 
