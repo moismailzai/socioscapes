@@ -1,5 +1,4 @@
 # Socioscapes.js  -  a Javascript GIS library
-***
 
 ### Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.
 
@@ -10,6 +9,8 @@
 >**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") *(free as in beer & speech)*
    
 >**Copyright**:       &copy; 2015 Mo Ismailzai
+
+***
 
 ### Examples
 
