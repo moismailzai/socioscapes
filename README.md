@@ -51,6 +51,10 @@
 
 **vancity.data('fetchGoogleBq', bqdata);**
 
+// *return vancity's data values*
+
+**vancity.data();**
+
 // *set 5 breaks for van's visualization*
 
 **vancity.breaks(5);**
@@ -66,10 +70,6 @@
 // *check the status of vancity's various members*
 
 **vancity.status();**
-
-// *return vancity's data values*
-
-**vancity.data();**
 
 ***
 
