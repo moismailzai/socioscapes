@@ -12,6 +12,7 @@
 
 
 ### Examples
+***
 
 #### config:
 // *for easier reference & less typing*
@@ -35,7 +36,7 @@
 **bqdata.projectId = 'example';** 
 
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
-
+***
 
 #### usage:  
 // *create a new socioscapes layer object called 'van'*
