@@ -17,9 +17,8 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
     }
     callback = (typeof callback === 'function') ? callback : function () { };
     bqResult.result.rows.forEach(function (row) {
-        thisRow[0] = parseFloat(row.f[0].v);
-        for (i = 1; i < row.f.length; i++) {
-            thisRow[i] = parseFloat(row.f[i].v);
+        for (i = 0; i < row.f.length; i++) {
+            thisRow[i] = row.f[i].v;
         }
         callback(thisRow);
     });

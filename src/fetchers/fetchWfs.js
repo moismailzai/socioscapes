@@ -15,19 +15,17 @@
  */
 module.exports = function fetchWfs(config, callback) {
     var _xobj = new XMLHttpRequest(),
-        _url = config.url,
-        _id = config.id,
         geom;
     callback = (typeof callback === 'function') ? callback : function () { };
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-    _xobj.open('GET', _url, true);
+    _xobj.open('GET', config.url, true);
     _xobj.onreadystatechange = function () {
-        if (_xobj.readyState === 4 && _xobj.status === "200") {
+        if (_xobj.readyState == 4 && _xobj.status == "200") {
             geom = {};
             geom.features = _xobj.responseText;
-            geom.url = _url;
-            geom.id = _id;
-            callback(geom, true);
+            geom.url = config.url;
+            geom.id = config.id;
+            callback(geom);
         }
     };
     _xobj.send(null);

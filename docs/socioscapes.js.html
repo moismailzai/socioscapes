@@ -186,16 +186,11 @@ module.exports = function newLayer() {
                 if (fetcher &amp;&amp; config &amp;&amp; typeof fetcher === "function" ) {
                     that.status('data', false);
                     that.status('geostats', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
+                    fetcher(config, function (result) {
                             _myData = result;
                             _myGeostats = new Geostats(result.values);
                             that.status('data', true);
                             that.status('geostats', true);
-                        } else {
-                            that.status('data', _statusBackupData);
-                            that.status('data', _statusBackupGeostats);
-                        }
                     });
                 } else if (fetcher &amp;&amp; !config &amp;&amp; typeof fetcher === "object" ) {
                     if (fetcher.url &amp;&amp; fetcher.id &amp;&amp; fetcher.values) {
@@ -210,18 +205,16 @@ module.exports = function newLayer() {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('data', false);
                         that.status('geostats', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myData = result;
-                                _myGeostats = new Geostats(result.values);
-                                that.status('data', true);
-                                that.status('geostats', true);
-                            } else {
-                                that.status('data', _statusBackupData);
-                                that.status('data', _statusBackupGeostats);
-                            }
+                        socioscapes[fetcher](config, function (result) {
+                            _myData = result;
+                            _myGeostats = new Geostats(result.values);
+                            that.status('data', true);
+                            that.status('geostats', true);
                         });
                     }
+                } else {
+                    that.status('data', _statusBackupData);
+                    that.status('data', _statusBackupGeostats);
                 }
             }
         });
@@ -259,13 +252,10 @@ module.exports = function newLayer() {
                 }
                 if (fetcher &amp;&amp; config &amp;&amp; typeof fetcher === "function" ) {
                     that.status('geom', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
-                            _myGeom = result;
-                            that.status('geom', true);
-                        } else {
-                            that.status('geom', _statusBackup);
-                        }
+                    fetcher(config, function (result) {
+                        _myGeom = result;
+                        that.status('geom', true);
+                        that.status('geom', _statusBackup);
                     });
                 } else if (fetcher &amp;&amp; !config &amp;&amp; typeof fetcher === "object" ) {
                     if (fetcher.url &amp;&amp; fetcher.id &amp;&amp; fetcher.features) {
@@ -276,13 +266,9 @@ module.exports = function newLayer() {
                 } else if (fetcher &amp;&amp; config &amp;&amp; typeof fetcher === "string" ) {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('geom', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myGeom = result;
-                                that.status('geom', true);
-                            } else {
-                                that.status('geom', _statusBackup);
-                            }
+                        socioscapes[fetcher](config, function (result) {
+                            _myGeom = result;
+                            that.status('geom', true);
                         });
                     }
                 }
@@ -544,7 +530,7 @@ module.exports = function fetchGoogleBq(config) {
                     data.values = _values;
                     data.url = _bqQueryString;
                     data.id = _dataId;
-                    return [data, true];
+                    return data;
                 }
             });
         });
@@ -621,19 +607,17 @@ module.exports = function fetchGoogleGeocode(address) {
  */
 module.exports = function fetchWfs(config, callback) {
     var _xobj = new XMLHttpRequest(),
-        _url = config.url,
-        _id = config.id,
         geom;
     callback = (typeof callback === 'function') ? callback : function () { };
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-    _xobj.open('GET', _url, true);
+    _xobj.open('GET', config.url, true);
     _xobj.onreadystatechange = function () {
         if (_xobj.readyState === 4 &amp;&amp; _xobj.status === "200") {
             geom = {};
             geom.features = _xobj.responseText;
-            geom.url = _url;
-            geom.id = _id;
-            callback(geom, true);
+            geom.url = config.url;
+            geom.id = config.id;
+            callback(geom);
         }
     };
     _xobj.send(null);
@@ -2382,7 +2366,7 @@ module.exports = socioscapes;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jun 19 2015 14:34:39 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jun 19 2015 15:03:17 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -28,7 +28,7 @@ module.exports = function newLayer() {
     var MyLayer = function() {
         var _myBreaks = 5,
             _myClasses,
-            _myClassification = 'getClassJenks',
+            _myClassification = 'getJenks',
             _myColourscaleName = "YlOrRd",
             _myColourScaleFunction,
             _myData,
@@ -43,11 +43,11 @@ module.exports = function newLayer() {
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'classification', {
-            value: false,
+            value: true,
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'colourscale', {
-            value: false,
+            value: true,
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'data', {
@@ -158,19 +158,26 @@ module.exports = function newLayer() {
                 if (fetcher && config && typeof fetcher === "function" ) {
                     that.status('data', false);
                     that.status('geostats', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
-                            _myData = result;
-                            _myGeostats = new Geostats(result.values);
-                            that.status('data', true);
-                            that.status('geostats', true);
-                        } else {
+                    fetcher(config, function (result) {
+                        if (typeof result.values[0] !== 'number') {
+                            alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
                             that.status('data', _statusBackupData);
                             that.status('data', _statusBackupGeostats);
+                            return
                         }
+                        _myData = result;
+                        _myGeostats = new Geostats(result.values);
+                        that.status('data', true);
+                        that.status('geostats', true);
                     });
                 } else if (fetcher && !config && typeof fetcher === "object" ) {
                     if (fetcher.url && fetcher.id && fetcher.values) {
+                        if (typeof result.values[0] !== 'number') {
+                            alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
+                            that.status('data', _statusBackupData);
+                            that.status('data', _statusBackupGeostats);
+                            return
+                        }
                         that.status('data', false);
                         that.status('geostats', false);
                         _myData = fetcher;
@@ -182,18 +189,22 @@ module.exports = function newLayer() {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('data', false);
                         that.status('geostats', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myData = result;
-                                _myGeostats = new Geostats(result.values);
-                                that.status('data', true);
-                                that.status('geostats', true);
-                            } else {
+                        socioscapes[fetcher](config, function (result) {
+                            if (typeof result.values[0] !== 'number') {
+                                alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
                                 that.status('data', _statusBackupData);
                                 that.status('data', _statusBackupGeostats);
+                                return
                             }
+                            _myData = result;
+                            _myGeostats = new Geostats(result.values);
+                            that.status('data', true);
+                            that.status('geostats', true);
                         });
                     }
+                } else {
+                    that.status('data', _statusBackupData);
+                    that.status('data', _statusBackupGeostats);
                 }
             }
         });
@@ -231,13 +242,10 @@ module.exports = function newLayer() {
                 }
                 if (fetcher && config && typeof fetcher === "function" ) {
                     that.status('geom', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
-                            _myGeom = result;
-                            that.status('geom', true);
-                        } else {
-                            that.status('geom', _statusBackup);
-                        }
+                    fetcher(config, function (geom) {
+                        _myGeom = geom;
+                        that.status('geom', true);
+                        that.status('geom', _statusBackup);
                     });
                 } else if (fetcher && !config && typeof fetcher === "object" ) {
                     if (fetcher.url && fetcher.id && fetcher.features) {
@@ -248,13 +256,9 @@ module.exports = function newLayer() {
                 } else if (fetcher && config && typeof fetcher === "string" ) {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('geom', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myGeom = result;
-                                that.status('geom', true);
-                            } else {
-                                that.status('geom', _statusBackup);
-                            }
+                        socioscapes[fetcher](config, function (geom) {
+                            _myGeom = geom;
+                            that.status('geom', true);
                         });
                     }
                 }
@@ -351,6 +355,7 @@ module.exports = function newLayer() {
                     return _myClassification;
                 }
                 if (_myData && _myGeostats[classification]) {
+                    console.log('yes');
                     that.status('breaks', false);
                     that.status('classification', false);
                     that.status('domain', false);
@@ -466,30 +471,29 @@ module.exports = function fetchGoogleAuth(config, callback) {
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
 /**
- * This method authorizes and fetches a BigQuery request and parses the results.
+ * This method authorizes and fetches a BigQuery request, parses the results, and returns them to a callback.
  *
  * @function fetchGoogleBq
  * @memberof! socioscapes
  * @param {Object} config - An object with configuration options for the Google Big Query fetch.
- * @param {String} config.bqClientId - The Google Big Query client id.
- * @param {String} config.bqProjectId - The Google Big Query project id.
- * @param {String} config.bqQueryString - The Google Big Query query string.
+ * @param {String} config.clientId - The Google Big Query client id.
+ * @param {String} config.projectId - The Google Big Query project id.
+ * @param {String} config.queryString - The Google Big Query query string.
  * @param {String} config.id - The id column (the values in this column are used to match the geom id property).
  * @return {Array} data - An object with .values, .url, and .id members. This can be used to populate myLayer.data.
  */
-module.exports = function fetchGoogleBq(config) {
-    var data,
-        _bqClientId = config.bqClientId,
-        _bqProjectId = config.bqProjectId,
-        _bqQueryString = config.bqQueryString,
-        _currentRow = 0,
+module.exports = function fetchGoogleBq(config, callback) {
+    var data = {},
+        _clientId = config.clientId,
         _dataId = config.id,
+        _projectId = config.projectId,
+        _queryString = config.queryString,
         _request,
         _totalRows,
         _values = [],
         _gapiConfig = {
             auth: {
-                "client_id": _bqClientId,
+                "client_id": _clientId,
                 'scope': ['https://www.googleapis.com/auth/bigquery'],
                 'immediate': true
             },
@@ -498,25 +502,24 @@ module.exports = function fetchGoogleBq(config) {
                 'version': 'v2'
             },
             query: {
-                'projectId': _bqProjectId,
+                'projectId': _projectId,
                 'timeoutMs': '30000',
-                'query': _bqQueryString
+                'query': _queryString
             }
         };
+    callback = (typeof callback === 'function') ? callback : function () { };
 
     fetchGoogleAuth(_gapiConfig, function () {
         _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
         _request.execute(function (bqResult) {
-            _totalRows = bqResult.result.totalRows;
+            _totalRows = parseFloat(bqResult.result.totalRows);
             fetchGoogleBq_Sort(bqResult, function (sortedResult) {
                 _values.push(sortedResult);
-                _currentRow++;
-                if (_currentRow === _totalRows) {
-                    data = {};
+                if (_values.length === _totalRows) {
                     data.values = _values;
-                    data.url = _bqQueryString;
+                    data.url = _queryString;
                     data.id = _dataId;
-                    return [data, true];
+                    callback(data);
                 }
             });
         });
@@ -542,9 +545,8 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
     }
     callback = (typeof callback === 'function') ? callback : function () { };
     bqResult.result.rows.forEach(function (row) {
-        thisRow[0] = parseFloat(row.f[0].v);
-        for (i = 1; i < row.f.length; i++) {
-            thisRow[i] = parseFloat(row.f[i].v);
+        for (i = 0; i < row.f.length; i++) {
+            thisRow[i] = row.f[i].v;
         }
         callback(thisRow);
     });
@@ -593,19 +595,17 @@ module.exports = function fetchGoogleGeocode(address) {
  */
 module.exports = function fetchWfs(config, callback) {
     var _xobj = new XMLHttpRequest(),
-        _url = config.url,
-        _id = config.id,
         geom;
     callback = (typeof callback === 'function') ? callback : function () { };
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-    _xobj.open('GET', _url, true);
+    _xobj.open('GET', config.url, true);
     _xobj.onreadystatechange = function () {
-        if (_xobj.readyState === 4 && _xobj.status === "200") {
+        if (_xobj.readyState == 4 && _xobj.status == "200") {
             geom = {};
             geom.features = _xobj.responseText;
-            geom.url = _url;
-            geom.id = _id;
-            callback(geom, true);
+            geom.url = config.url;
+            geom.id = config.id;
+            callback(geom);
         }
     };
     _xobj.send(null);

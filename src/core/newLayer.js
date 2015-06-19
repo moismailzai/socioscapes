@@ -27,7 +27,7 @@ module.exports = function newLayer() {
     var MyLayer = function() {
         var _myBreaks = 5,
             _myClasses,
-            _myClassification = 'getClassJenks',
+            _myClassification = 'getJenks',
             _myColourscaleName = "YlOrRd",
             _myColourScaleFunction,
             _myData,
@@ -42,11 +42,11 @@ module.exports = function newLayer() {
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'classification', {
-            value: false,
+            value: true,
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'colourscale', {
-            value: false,
+            value: true,
             configurable: true
         });
         Object.defineProperty(_myLayerStatus, 'data', {
@@ -157,19 +157,26 @@ module.exports = function newLayer() {
                 if (fetcher && config && typeof fetcher === "function" ) {
                     that.status('data', false);
                     that.status('geostats', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
-                            _myData = result;
-                            _myGeostats = new Geostats(result.values);
-                            that.status('data', true);
-                            that.status('geostats', true);
-                        } else {
+                    fetcher(config, function (result) {
+                        if (typeof result.values[0] !== 'number') {
+                            alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
                             that.status('data', _statusBackupData);
                             that.status('data', _statusBackupGeostats);
+                            return
                         }
+                        _myData = result;
+                        _myGeostats = new Geostats(result.values);
+                        that.status('data', true);
+                        that.status('geostats', true);
                     });
                 } else if (fetcher && !config && typeof fetcher === "object" ) {
                     if (fetcher.url && fetcher.id && fetcher.values) {
+                        if (typeof result.values[0] !== 'number') {
+                            alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
+                            that.status('data', _statusBackupData);
+                            that.status('data', _statusBackupGeostats);
+                            return
+                        }
                         that.status('data', false);
                         that.status('geostats', false);
                         _myData = fetcher;
@@ -181,18 +188,22 @@ module.exports = function newLayer() {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('data', false);
                         that.status('geostats', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myData = result;
-                                _myGeostats = new Geostats(result.values);
-                                that.status('data', true);
-                                that.status('geostats', true);
-                            } else {
+                        socioscapes[fetcher](config, function (result) {
+                            if (typeof result.values[0] !== 'number') {
+                                alert(result.values[0] + ' is not a numerical value. Please select a data column with numerical values.')
                                 that.status('data', _statusBackupData);
                                 that.status('data', _statusBackupGeostats);
+                                return
                             }
+                            _myData = result;
+                            _myGeostats = new Geostats(result.values);
+                            that.status('data', true);
+                            that.status('geostats', true);
                         });
                     }
+                } else {
+                    that.status('data', _statusBackupData);
+                    that.status('data', _statusBackupGeostats);
                 }
             }
         });
@@ -230,13 +241,10 @@ module.exports = function newLayer() {
                 }
                 if (fetcher && config && typeof fetcher === "function" ) {
                     that.status('geom', false);
-                    fetcher(config, function (result, success) {
-                        if (success) {
-                            _myGeom = result;
-                            that.status('geom', true);
-                        } else {
-                            that.status('geom', _statusBackup);
-                        }
+                    fetcher(config, function (geom) {
+                        _myGeom = geom;
+                        that.status('geom', true);
+                        that.status('geom', _statusBackup);
                     });
                 } else if (fetcher && !config && typeof fetcher === "object" ) {
                     if (fetcher.url && fetcher.id && fetcher.features) {
@@ -247,13 +255,9 @@ module.exports = function newLayer() {
                 } else if (fetcher && config && typeof fetcher === "string" ) {
                     if (typeof socioscapes[fetcher] === "function") {
                         that.status('geom', false);
-                        socioscapes[fetcher](config, function (result, success) {
-                            if (success) {
-                                _myGeom = result;
-                                that.status('geom', true);
-                            } else {
-                                that.status('geom', _statusBackup);
-                            }
+                        socioscapes[fetcher](config, function (geom) {
+                            _myGeom = geom;
+                            that.status('geom', true);
                         });
                     }
                 }
@@ -350,6 +354,7 @@ module.exports = function newLayer() {
                     return _myClassification;
                 }
                 if (_myData && _myGeostats[classification]) {
+                    console.log('yes');
                     that.status('breaks', false);
                     that.status('classification', false);
                     that.status('domain', false);
