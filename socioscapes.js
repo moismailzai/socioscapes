@@ -272,7 +272,7 @@ module.exports = function newLayer() {
          *
          * @example
          * // sets three breaks
-         * MyLayer.breaks('3')
+         * MyLayer.breaks(3)
          *
          * @method breaks
          * @memberof! MyLayer
@@ -1843,14 +1843,14 @@ module.exports = function newViewGmap(config) {
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
      * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode MyGmapLayer}.
+     * data layers, {@linkcode MyGmapDataLayer}.
      *
      * @namespace MyGmapView
      */
     var MyGmapView = function () {
         var _myMap,
-            _myGmapLayer,
-            _myGmapLayers,
+            _myGmapDataLayer,
+            _myGmapDataLayers,
             _myStyle,
             _myHoverListenerSet,
             _myHoverListenerReset,
@@ -1867,7 +1867,7 @@ module.exports = function newViewGmap(config) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
-                     * This container holds the Google Map data object and all related methods. To learn more about the
+                     * This container stores the Google Map data object and all related methods. To learn more about the
                      * Google Maps object, see {@link https://developers.google.com/maps/documentation/javascript/reference}.
                      *
                      * @member map
@@ -1877,7 +1877,7 @@ module.exports = function newViewGmap(config) {
                         value: _myMap
                     });
                     /**
-                     * This method can be used to get or set the div for the Google Maps data object.
+                     * This method sets or returns the DOM div object that stores the Google Map object.
                      *
                      * @example
                      * // set the google maps div to 'map-container'
@@ -1904,84 +1904,97 @@ module.exports = function newViewGmap(config) {
         });
 
         /**
-         * This constructor method appends a new Google Maps data layer of class {@linkcode MyGmapLayer} to
-         * {@linkcode MyGmapView}. This method expects three arguments: a name for the new layer, the property to treat
-         * as a feature identifier, and a link to a valid GeoJSON URL. To learn more about Google Maps data layers, see
-         * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
+         * This constructor method appends a new Google Maps data layer ({@linkcode MyGmapDataLayer}) to
+         * {@linkcode MyGmapView}. It expects three arguments: a name for the new layer, the property by which geometry
+         * features should be identified, and a link to a valid GeoJSON URL. To learn more about Google Maps data layers,
+         * see {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
          *
          * @example
          * //fetches and loads GeoJSON features using the 'dauid' property as an identifier
-         * MyGmapLayer('myLayerName', 'dauid', 'http://www.mygeojsonfiles.com/myfile.json')
+         * MyGmapDataLayer('myLayerName', 'dauid', 'http://www.mygeojsonfiles.com/myfile.json')
          *
-         * @namespace MyGmapLayer
+         * @method newGmapDataLayer
+         * @memberof! MyGmapView
+         * @return {Object} MyGmapDataLayer
          */
-        Object.defineProperty(this, 'MyGmapLayer', {
+        Object.defineProperty(this, 'newGmapDataLayer', {
             value: function (name, id, url) {
-                if (!_myGmapLayers) {
-                    _myGmapLayers = {};
+                if (!_myGmapDataLayers) {
+                    _myGmapDataLayers = {};
                 }
                 if (!name) {
-                    return _myGmapLayers;
+                    return _myGmapDataLayers;
                 }
                 if (that[name] && id === "DELETE") {
-                    delete(_myGmapLayers[name]);
+                    delete(_myGmapDataLayers[name]);
                     delete(that[name]);
                 } else if (!that[name] && id !== "DELETE") {
-                    _myGmapLayer = new google.maps.Data();
-                    _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
                     /**
-                     * This method allows you to use a setStyle() function to create declarative style rules for
-                     * {@linkcode MyGmapLayer}. To learn more about styling Google Maps data layers, see
+                     * Each MyGmapDataLayer is made up of a Google Maps Data Layer object as well as the
+                     * {@link MyGmapDataLayer.on}, {@link MyGmapDataLayer.off}, {@link MyGmapDataLayer.onHover},
+                     * {@link MyGmapDataLayer.onClick}, and {@link MyGmapDataLayer.style} methods. To learn more about
+                     * Google Map Data Layers, see
+                     * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
+                     *
+                     * @namespace MyGmapDataLayer
+                     */
+                    _myGmapDataLayer = new google.maps.Data();
+                    _myGmapDataLayer.loadGeoJson(url, {idPropertyName: id});
+                    /**
+                     * This method calls the Google Maps Data Layer setStyle() function to create declarative style rules
+                     * for {@linkcode MyGmapDataLayer}. To learn more about styling Google Maps Data Layers, see
                      * {@linkcode https://developers.google.com/maps/documentation/javascript/datalayer}.
                      *
                      * @method style
-                     * @memberof! MyGmapLayer
+                     * @memberof! MyGmapDataLayer
                      */
                     Object.defineProperty(that[name], 'style', {
                         value: function (styleFunction) {
                             if (!styleFunction) {
                                 return _myStyle;
                             }
-                            _myGmapLayer.setStyle(styleFunction);
+                            _myGmapDataLayer.setStyle(styleFunction);
                             _myStyle = styleFunction;
                         }
                     });
                     /**
-                     * This method allows you to turn {@linkcode MyGmapLayer} visibility on.
+                     * This method renders {@linkcode MyGmapDataLayer} in {@linkcode MyGmapView.div}.
                      *
                      * @example
-                     * // shows MyGmapLayer
-                     * MyGmapLayer.on()
+                     * // shows MyGmapDataLayer
+                     * MyGmapDataLayer.on()
                      *
                      * @method on
-                     * @memberof! MyGmapLayer
+                     * @memberof! MyGmapDataLayer
                      */
                     Object.defineProperty(that[name], 'on', {
-                        value: function () { _myGmapLayer.setMap(_myDiv); }
+                        value: function () { _myGmapDataLayer.setMap(_myDiv); }
                     });
                     /**
-                     * This method allows you to turn {@linkcode MyGmapLayer} visibility off.
+                     * This method hides {@linkcode MyGmapDataLayer}.
                      *
                      * @example
-                     * // hides MyGmapLayer
-                     * MyGmapLayer.off()
+                     * // hides MyGmapDataLayer
+                     * MyGmapDataLayer.off()
                      *
                      * @method off
-                     * @memberof! MyGmapLayer
+                     * @memberof! MyGmapDataLayer
                      */
                     Object.defineProperty(that[name], 'off', {
-                        value: function () { _myGmapLayer.setMap(null); }
+                        value: function () { _myGmapDataLayer.setMap(null); }
                     });
                     /**
-                     * This method creates an onHover listener that restyles {@linkcode MyGmapLayer} geometry based on
-                     * {@linkcode MyGmapLayer}'s onHover style.
+                     * This method creates a Google Maps listener that sets the 'hover' property of a
+                     * {@linkcode MyGmapDataLayer} feature to 'true' when a user hovers over it. To learn more about
+                     * Google Map listeners, see {@link https://developers.google.com/maps/documentation/javascript/events}.
                      *
                      * @example
                      * // turns on the onHover listener
-                     * MyGmapLayer.onHover()
+                     * MyGmapDataLayer.onHover()
                      *
                      * @method onHover
-                     * @memberof! MyGmapLayer
+                     * @memberof! MyGmapDataLayer
+                     * @param {Function} [callback] - This is an optional callback to send 'event.feature' to.
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -1993,14 +2006,14 @@ module.exports = function newViewGmap(config) {
                                 return;
                             }
                             // Set
-                            _myHoverListenerSet = _myGmapLayer.addListener('mouseover', function (event) {
+                            _myHoverListenerSet = _myGmapDataLayer.addListener('mouseover', function (event) {
                                 event.feature.setProperty('hover', true);
                                 if (typeof callback === "function") {
                                     callback(event.feature);
                                 }
                             });
                             // Reset
-                            _myHoverListenerReset = _myGmapLayer.addListener('mouseout', function (event) {
+                            _myHoverListenerReset = _myGmapDataLayer.addListener('mouseout', function (event) {
                                 event.feature.setProperty('hover', false);
                                 if (typeof callback === "function") {
                                     callback(event.feature);
@@ -2009,21 +2022,31 @@ module.exports = function newViewGmap(config) {
                         }
                     });
                     /**
-                     * This method creates an onClick listener that restyles {@linkcode MyGmapLayer} geometry based on
-                     * {@linkcode MyGmapLayer}'s onClick style. When a geometry feature is clicked, it remains in a
-                     * selected state until it is clicked again. Calling this method with an integer parameter sets a
-                     * limit for the total number of simultaneously selected geometry features.
+                     * This method creates a Google Maps listener that sets the 'selected' property of a
+                     * {@linkcode MyGmapDataLayer} feature to 'true' when a user clicks it. When a geometry feature is
+                     * clicked, it remains in a selected state until it is clicked again. Calling this method with an
+                     * integer parameter sets a limit for the total number of simultaneously selected geometry features.
+                     * To learn more about Google Map listeners, see
+                     * {@link https://developers.google.com/maps/documentation/javascript/events}.
                      *
                      * @example
                      * // turns on the onClick listener
-                     * MyGmapLayer.onClick()
+                     * MyGmapDataLayer.onClick()
+                     *
+                     * @example
+                     * // turns off the onClick listener
+                     * MyGmapDataLayer.onClick('OFF')
                      *
                      * @example
                      * // turns on the onClick listener and sets the maximum number of selected geometry features to 2
-                     * MyGmapLayer.onClick(2)
+                     * MyGmapDataLayer.onClick(2)
                      *
                      * @method onClick
-                     * @memberof! MyGmapLayer
+                     * @memberof! MyGmapDataLayer
+                     * @param {Number} [limit] - This optional parameter can be used either to set a limit for the total
+                     * number of simultaneously selected features, by entering an integer value, or to turn off the
+                     * listener, by entering the string 'OFF'.
+                     * @param {Function} [callback] - This is an optional callback to send 'event.feature' to.
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
@@ -2037,7 +2060,7 @@ module.exports = function newViewGmap(config) {
                                     }
                                 }
                             }
-                            if (limit === "OFF") {
+                            if (limit === 'OFF') {
                                 return;
                             }
                             if (limit !== undefined && Number.isInteger(limit) === true) {
@@ -2070,6 +2093,16 @@ module.exports = function newViewGmap(config) {
                                 }
                             });
                         }
+                    });
+                    /**
+                     * This container stores all features that have been set to a 'selected' state by
+                     * {@linkcode MyGmapDataLayer.onClick}.
+                     *
+                     * @member selectedFeatures
+                     * @memberof! MyGmapDataLayer
+                     */
+                    Object.defineProperty(that[name], 'selectedFeatures', {
+                        value: _mySelectedFeatures
                     });
                 }
             }

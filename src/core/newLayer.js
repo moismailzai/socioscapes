@@ -271,7 +271,7 @@ module.exports = function newLayer() {
          *
          * @example
          * // sets three breaks
-         * MyLayer.breaks('3')
+         * MyLayer.breaks(3)
          *
          * @method breaks
          * @memberof! MyLayer
