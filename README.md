@@ -25,7 +25,7 @@
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [2011_census_of_canada.ontario_da] GROUP BY Topic, Characteristic;';** // *example bq query*
 
 >
-##### usage: 
+##### usage:  
 **van = s.newLayer();** // *create a new socioscapes layer object called 'van'*
 **van.geom('fetchWfs', wfsgeom);** // *fetch some wfs geom for van*
 **van.data('fetchGoogleBq', bqdata);** // *fetch some bq data for van*
