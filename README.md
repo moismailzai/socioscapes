@@ -11,12 +11,27 @@
    
 >**Copyright**:       &copy; 2015 Mo Ismailzai
 
-### Features:
-* GeoJson and Web Feature Service integration
->> socioscapes.fetchWfs(config, callback)
-* Google Maps, Google Big Query, Google Geocode, and Google Auth integration
->> socioscapes.newViewGmap(config)
-* D3 and Crossfilter integration *(to do)*
-* Datatables integration (requires jquery) *(to do)*
+### Example
+>
+##### config:
+........... **var s = socioscapes;** // *for easier reference & less typing*
+........... **var geom = {};** // *create a config object*
+........... **var data = {};** // *create a config object*
+........... **wfsgeom.url = 'http://www.mywfsserver.com&cql_filter=cmaname=%27Vancouver%27';** // *example url*
+........... **wfsgeom.id = 'dauid';** // *example id property. this should match the data id property*
+........... **bqdata.id = 'dauid';** // *example id property. this should match the geom id property*
+........... **bqdata.clientId = 'exampleid.apps.googleusercontent.com';** // *example bq clientid*
+........... **bqdata.projectId = 'exampleid';** // *example bq project id*
+........... **bqdata.queryString = 'SELECT Topic, Characteristic FROM [2011_census_of_canada.ontario_da] GROUP BY Topic, Characteristic;';** // *example bq query*
+
+>
+##### usage:
+........... **van = s.newLayer();** // *create a new socioscapes layer object called 'van'*
+........... **van.geom('fetchWfs', wfsgeom);** // *fetch some wfs geom for van*
+........... **van.data('fetchGoogleBq', bqdata);** // *fetch some bq data for van*
+........... **van.breaks(5);** // *set 5 breaks for van's visualization*
+........... **van.classification('getJenks');** // *calculate jenks classifications for van*
+........... **van.colourscale('YlOrRd');** // *set the Yellow-Orange-Red colorbrew colour scale for van's visualization*
+
 
 *This software was written as partial fulfilment of the Masters Research Paper, a degree requirement for the Masters of Arts in Sociology at the University of Toronto.*
