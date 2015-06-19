@@ -436,9 +436,8 @@ module.exports = function newLayer() {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This function requests authorization to use a Google API, and if received, loads that API client.
- *
- * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
+ * This function requests authorization to use a Google API, and if received, loads that API client. For more information
+ * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
  *
  * @function fetchGoogleAuth
  * @memberof! socioscapes
@@ -467,7 +466,7 @@ module.exports = function fetchGoogleAuth(config, callback) {
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
 /**
- * This method authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
+ * This method authorizes and fetches a BigQuery request and parses the results.
  *
  * @function fetchGoogleBq
  * @memberof! socioscapes
@@ -529,7 +528,7 @@ module.exports = function fetchGoogleBq(config) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This method sorts the results of a Google Big Query fetch to fit the format [key: value].
+ * This method parses and sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function fetchGoogleBq_Sort
  * @memberof! socioscapes
@@ -582,8 +581,8 @@ module.exports = function fetchGoogleGeocode(address) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
- * returns the queried url, the id parameter, and the fetched GeoJson features.
+ * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
+ * queried url, the id parameter, and the fetched features.
  *
  * @function fetchWfs
  * @memberof! socioscapes
@@ -1845,9 +1844,9 @@ module.exports = function newViewGmap(config) {
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
      * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode MyLayer.MyGmapView.MyGmapLayer}.
+     * data layers, {@linkcode MyGmapLayer}.
      *
-     * @namespace MyLayer.MyGmapView
+     * @namespace MyGmapView
      */
     var MyGmapView = function () {
         var _myMap,
@@ -1873,7 +1872,7 @@ module.exports = function newViewGmap(config) {
                      * Google Maps object, see {@link https://developers.google.com/maps/documentation/javascript/reference}.
                      *
                      * @member map
-                     * @memberof! MyLayer.MyGmapView
+                     * @memberof! MyGmapView
                      */
                     Object.defineProperty(that, 'map', {
                         value: _myMap
@@ -1886,7 +1885,7 @@ module.exports = function newViewGmap(config) {
                      * MyLayer.MyGmapView.div('map-container')
                      *
                      * @method div
-                     * @memberof! MyLayer.MyGmapView
+                     * @memberof! MyGmapView
                      */
                     Object.defineProperty(that, 'div', {
                         value: function (div) {
@@ -1910,8 +1909,7 @@ module.exports = function newViewGmap(config) {
          * {@linkcode MyGmapView}. To learn more about Google Maps data layers, see
          * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
          *
-         * @method MyGmapLayer
-         * @memberof! MyLayer.MyGmapView
+         * @namespace MyGmapLayer
          */
         Object.defineProperty(this, 'MyGmapLayer', {
             value: function (name, id, url) {
@@ -1933,7 +1931,7 @@ module.exports = function newViewGmap(config) {
                      * {@linkcode https://developers.google.com/maps/documentation/javascript/datalayer}.
                      *
                      * @method style
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
                         value: function (styleFunction) {
@@ -1952,7 +1950,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.on()
                      *
                      * @method on
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
@@ -1965,7 +1963,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.off()
                      *
                      * @method off
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
@@ -1979,7 +1977,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.onHover()
                      *
                      * @method onHover
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -2021,7 +2019,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.onClick(2)
                      *
                      * @method onClick
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
@@ -2305,8 +2303,9 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
 /**
  * This is the root socioscapes namespace and object.
  *
- * Requires the modules {@link module:fetchGoogleAuth}, {@link module:fetchGoogleGeocode},
- * {@link module:fetchGoogleBq}, {@link module:fetchWfs}, {@link module:newLayer}, and {@link module:newViewGmap}.
+ * Requires the modules {@link socioscapes.fetchGoogleAuth}, {@link socioscapes.fetchGoogleGeocode},
+ * {@link socioscapes.fetchGoogleBq}, {@link socioscapes.fetchWfs}, {@link socioscapes.newLayer}, and
+ * {@link socioscapes.newViewGmap}.
  *
  * @namespace socioscapes
  * @requires module:fetchGoogleAuth

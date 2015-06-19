@@ -4,7 +4,7 @@
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
 /**
- * This method authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
+ * This method authorizes and fetches a BigQuery request and parses the results.
  *
  * @function fetchGoogleBq
  * @memberof! socioscapes

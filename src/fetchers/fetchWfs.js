@@ -2,8 +2,8 @@
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
- * returns the queried url, the id parameter, and the fetched GeoJson features.
+ * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
+ * queried url, the id parameter, and the fetched features.
  *
  * @function fetchWfs
  * @memberof! socioscapes

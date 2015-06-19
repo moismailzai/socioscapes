@@ -21,9 +21,9 @@ module.exports = function newViewGmap(config) {
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
      * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode MyLayer.MyGmapView.MyGmapLayer}.
+     * data layers, {@linkcode MyGmapLayer}.
      *
-     * @namespace MyLayer.MyGmapView
+     * @namespace MyGmapView
      */
     var MyGmapView = function () {
         var _myMap,
@@ -49,7 +49,7 @@ module.exports = function newViewGmap(config) {
                      * Google Maps object, see {@link https://developers.google.com/maps/documentation/javascript/reference}.
                      *
                      * @member map
-                     * @memberof! MyLayer.MyGmapView
+                     * @memberof! MyGmapView
                      */
                     Object.defineProperty(that, 'map', {
                         value: _myMap
@@ -62,7 +62,7 @@ module.exports = function newViewGmap(config) {
                      * MyLayer.MyGmapView.div('map-container')
                      *
                      * @method div
-                     * @memberof! MyLayer.MyGmapView
+                     * @memberof! MyGmapView
                      */
                     Object.defineProperty(that, 'div', {
                         value: function (div) {
@@ -86,8 +86,7 @@ module.exports = function newViewGmap(config) {
          * {@linkcode MyGmapView}. To learn more about Google Maps data layers, see
          * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
          *
-         * @method MyGmapLayer
-         * @memberof! MyLayer.MyGmapView
+         * @namespace MyGmapLayer
          */
         Object.defineProperty(this, 'MyGmapLayer', {
             value: function (name, id, url) {
@@ -109,7 +108,7 @@ module.exports = function newViewGmap(config) {
                      * {@linkcode https://developers.google.com/maps/documentation/javascript/datalayer}.
                      *
                      * @method style
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
                         value: function (styleFunction) {
@@ -128,7 +127,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.on()
                      *
                      * @method on
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
@@ -141,7 +140,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.off()
                      *
                      * @method off
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
@@ -155,7 +154,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.onHover()
                      *
                      * @method onHover
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -197,7 +196,7 @@ module.exports = function newViewGmap(config) {
                      * MyGmapLayer.onClick(2)
                      *
                      * @method onClick
-                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
+                     * @memberof! MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {

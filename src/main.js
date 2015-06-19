@@ -24,8 +24,9 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
 /**
  * This is the root socioscapes namespace and object.
  *
- * Requires the modules {@link module:fetchGoogleAuth}, {@link module:fetchGoogleGeocode},
- * {@link module:fetchGoogleBq}, {@link module:fetchWfs}, {@link module:newLayer}, and {@link module:newViewGmap}.
+ * Requires the modules {@link socioscapes.fetchGoogleAuth}, {@link socioscapes.fetchGoogleGeocode},
+ * {@link socioscapes.fetchGoogleBq}, {@link socioscapes.fetchWfs}, {@link socioscapes.newLayer}, and
+ * {@link socioscapes.newViewGmap}.
  *
  * @namespace socioscapes
  * @requires module:fetchGoogleAuth

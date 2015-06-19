@@ -2,9 +2,8 @@
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This function requests authorization to use a Google API, and if received, loads that API client.
- *
- * See http://developers.google.com/api-client-library/javascript/reference/referencedocs.
+ * This function requests authorization to use a Google API, and if received, loads that API client. For more information
+ * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
  *
  * @function fetchGoogleAuth
  * @memberof! socioscapes

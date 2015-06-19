@@ -2,7 +2,7 @@
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This method sorts the results of a Google Big Query fetch to fit the format [key: value].
+ * This method parses and sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function fetchGoogleBq_Sort
  * @memberof! socioscapes
