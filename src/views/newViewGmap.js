@@ -19,9 +19,9 @@ var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
  */
 module.exports = function newViewGmap(config) {
     /**
-     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView#map}, the
-     * corresponding div container, {@linkcode MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode MyLayer.MyGmapView#myGmapLayer}. 
+     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
+     * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map
+     * data layers, {@linkcode MyLayer.MyGmapView.MyGmapLayer}.
      *
      * @namespace MyLayer.MyGmapView
      */
@@ -45,9 +45,8 @@ module.exports = function newViewGmap(config) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
-                     * This container holds the Google Map data object and all related methods. See
-                     * {@link https://developers.google.com/maps/documentation/javascript/reference} for more details on
-                     * the Google Maps class.
+                     * This container holds the Google Map data object and all related methods. To learn more about the
+                     * Google Maps object, see {@link https://developers.google.com/maps/documentation/javascript/reference}.
                      *
                      * @member map
                      * @memberof! MyLayer.MyGmapView
@@ -57,6 +56,10 @@ module.exports = function newViewGmap(config) {
                     });
                     /**
                      * This method can be used to get or set the div for the Google Maps data object.
+                     *
+                     * @example
+                     * // set the google maps div to 'map-container'
+                     * MyLayer.MyGmapView.div('map-container')
                      *
                      * @method div
                      * @memberof! MyLayer.MyGmapView
@@ -79,11 +82,14 @@ module.exports = function newViewGmap(config) {
         });
 
         /**
+         * This constructor method appends a new Google Maps data layer of class {@linkcode MyGmapLayer} to
+         * {@linkcode MyGmapView}. To learn more about Google Maps data layers, see
+         * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
          *
-         * @method myGmapLayer
+         * @method MyGmapLayer
          * @memberof! MyLayer.MyGmapView
          */
-        Object.defineProperty(this, 'myGmapLayer', {
+        Object.defineProperty(this, 'MyGmapLayer', {
             value: function (name, id, url) {
                 if (!_myGmapLayers) {
                     _myGmapLayers = {};
@@ -98,9 +104,12 @@ module.exports = function newViewGmap(config) {
                     _myGmapLayer = new google.maps.Data();
                     _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
                     /**
+                     * This method allows you to use a setStyle() function to create declarative style rules for
+                     * {@linkcode MyGmapLayer}. To learn more about styling Google Maps data layers, see
+                     * {@linkcode https://developers.google.com/maps/documentation/javascript/datalayer}.
                      *
                      * @method style
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
                         value: function (styleFunction) {
@@ -112,25 +121,41 @@ module.exports = function newViewGmap(config) {
                         }
                     });
                     /**
+                     * This method allows you to turn {@linkcode MyGmapLayer} visibility on.
+                     *
+                     * @example
+                     * // shows MyGmapLayer
+                     * MyGmapLayer.on()
                      *
                      * @method on
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
                     });
                     /**
+                     * This method allows you to turn {@linkcode MyGmapLayer} visibility off.
+                     *
+                     * @example
+                     * // hides MyGmapLayer
+                     * MyGmapLayer.off()
                      *
                      * @method off
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
                     });
                     /**
+                     * This method creates an onHover listener that restyles {@linkcode MyGmapLayer} geometry based on
+                     * {@linkcode MyGmapLayer}'s onHover style.
+                     *
+                     * @example
+                     * // turns on the onHover listener
+                     * MyGmapLayer.onHover()
                      *
                      * @method onHover
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -158,9 +183,21 @@ module.exports = function newViewGmap(config) {
                         }
                     });
                     /**
+                     * This method creates an onClick listener that restyles {@linkcode MyGmapLayer} geometry based on
+                     * {@linkcode MyGmapLayer}'s onClick style. When a geometry feature is clicked, it remains in a
+                     * selected state until it is clicked again. Calling this method with an integer parameter sets a
+                     * limit for the total number of simultaneously selected geometry features.
+                     *
+                     * @example
+                     * // turns on the onClick listener
+                     * MyGmapLayer.onClick()
+                     *
+                     * @example
+                     * // turns on the onClick listener and sets the maximum number of selected geometry features to 2
+                     * MyGmapLayer.onClick(2)
                      *
                      * @method onClick
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {

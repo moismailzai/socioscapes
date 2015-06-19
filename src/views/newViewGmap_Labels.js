@@ -2,12 +2,13 @@
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
+ * This method creates a new google.maps.OverlayView and loads it on top of the other layers; all map elements except
+ * labels are hidden.
  *
  * @function viewGmap_Labels
  * @memberof! socioscapes
  * @param {Object} myMap - The map to append this OverlayView to.
- * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map labels.
  * @return {Object} myMap - The rendered Google Maps object.
  */
 module.exports = function viewGmap_Labels(myMap, styles) {

@@ -2,7 +2,7 @@
 /*global socioscapes, module, google, require, geocode, maps*/
 'use strict';
 /**
- * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.
+ * This method executes a Google Geocoder query for 'address' and returns the results in an object.
  *
  * Make sure you obtain Google auth and load the GAPI client first.
  *

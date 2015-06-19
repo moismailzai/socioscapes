@@ -17,10 +17,10 @@ myPolyfills();
  */
 module.exports = function newLayer() {
     /**
-     * Each MyLayer consists of the two store members {@linkcode MyLayer#data} and {@linkcode MyLayer#geom}, and the
-     * configuration members {@linkcode MyLayer#breaks}, {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification},
-     * {@linkcode MyLayer#colourscale}, {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and
-     * {@linkcode MyLayer#status}.
+     * Each MyLayer consists of the two store members {@linkcode MyLayer.data} and {@linkcode MyLayer.geom}, and the
+     * configuration members {@linkcode MyLayer.breaks}, {@linkcode MyLayer.classes}, {@linkcode MyLayer.classification},
+     * {@linkcode MyLayer.colourscale}, {@linkcode MyLayer.domain}, {@linkcode MyLayer.geostats}, and
+     * {@linkcode MyLayer.status}.
      *
      * @namespace MyLayer
      */
@@ -82,7 +82,7 @@ module.exports = function newLayer() {
          * MyLayer.status()
          *
          * @example
-         * // set the status of 'data' to true.
+         * // sets the status of 'data' to true.
          * MyLayer.status('data', true)
          *
          * @method status
@@ -261,7 +261,7 @@ module.exports = function newLayer() {
         });
         /**
          * This method sets the number of breaks for the data in {@linkcode MyLayer}. This setting, along with
-         * {@linkcode MyLayer#classification} and {@linkcode MyLayer#colourscale} constitute the core GIS visualization
+         * {@linkcode MyLayer.classification} and {@linkcode MyLayer.colourscale} constitute the core GIS visualization
          * settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/html/comp_class.html} for general
          * information about geospatial classification and groupings.
          *
@@ -287,7 +287,7 @@ module.exports = function newLayer() {
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
          * scale. socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
-         * This setting, along with {@linkcode MyLayer#breaks} and {@linkcode MyLayer#classifications} constitute the
+         * This setting, along with {@linkcode MyLayer.breaks} and {@linkcode MyLayer.classifications} constitute the
          * core GIS visualization settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for
          * general information about geospatial visualization.
          *
@@ -304,7 +304,7 @@ module.exports = function newLayer() {
          * @method colourscale
          * @memberof! MyLayer
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
-         * @parameter {number} value - Any value that falls within the bounds of {@linkcode MyLayer#data}.
+         * @parameter {number} value - Any value that falls within the bounds of {@linkcode MyLayer.data}.
          */
         Object.defineProperty(this, 'colourscale', {
             value: function(action, value) {
@@ -325,7 +325,7 @@ module.exports = function newLayer() {
             }
         });
         /**
-         * This method classifies {@linkcode MyLayer#data} based on a geostats classification function. See
+         * This method classifies {@linkcode MyLayer.data} based on a geostats classification function. See
          * {@link https://github.com/simogeo/geostats} for more on geostats classification functions and
          * {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for general data classification guidelines.
          *
@@ -383,7 +383,7 @@ module.exports = function newLayer() {
         });
         /**
          * This container stores the {@linkcode MyLayer} instance's geostats object. It is calculated each time
-         * {@linkcode MyLayer#data} is successfully set. See {@link https://github.com/simogeo/geostats} for more on
+         * {@linkcode MyLayer.data} is successfully set. See {@link https://github.com/simogeo/geostats} for more on
          * geostats
          *
          * @member geostats
@@ -393,9 +393,9 @@ module.exports = function newLayer() {
             value: _myGeostats
         });
         /**
-         * This method gets or sets a new view based on {@linkcode MyLayer}'s {@linkcode MyLayer#data} and
-         * {@linkcode MyLayer#geom} stores. Views associated with {@linkcode MyLayer} share the same
-         * {@linkcode MyLayer#data} and {@linkcode MyLayer#geom} but can each visualize the values in those stores in
+         * This method gets or sets a new view based on {@linkcode MyLayer}'s {@linkcode MyLayer.data} and
+         * {@linkcode MyLayer.geom} stores. Views associated with {@linkcode MyLayer} share the same
+         * {@linkcode MyLayer.data} and {@linkcode MyLayer.geom} but can each visualize the values in those stores in
          * unique and complimentary ways.
          *
          * @member views

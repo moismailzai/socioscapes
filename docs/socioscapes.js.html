@@ -46,10 +46,10 @@ myPolyfills();
  */
 module.exports = function newLayer() {
     /**
-     * Each MyLayer consists of the two store members {@linkcode MyLayer#data} and {@linkcode MyLayer#geom}, and the
-     * configuration members {@linkcode MyLayer#breaks}, {@linkcode MyLayer#classes}, {@linkcode MyLayer#classification},
-     * {@linkcode MyLayer#colourscale}, {@linkcode MyLayer#domain}, {@linkcode MyLayer#geostats}, and
-     * {@linkcode MyLayer#status}.
+     * Each MyLayer consists of the two store members {@linkcode MyLayer.data} and {@linkcode MyLayer.geom}, and the
+     * configuration members {@linkcode MyLayer.breaks}, {@linkcode MyLayer.classes}, {@linkcode MyLayer.classification},
+     * {@linkcode MyLayer.colourscale}, {@linkcode MyLayer.domain}, {@linkcode MyLayer.geostats}, and
+     * {@linkcode MyLayer.status}.
      *
      * @namespace MyLayer
      */
@@ -98,14 +98,7 @@ module.exports = function newLayer() {
             value: false,
             configurable: true
         });
-        /**
-         * This container holds all views associated with {@linkcode MyLayer}. Views are DOM-connected visualizations
-         * that are based on {@linkcode MyLayer#data} and/or {@linkcode MyLayer#geom}.
-         *
-         * @member views
-         * @memberof! MyLayer
-         */
-        this.views = _myViews;
+
         /**
          * This method returns a boolean status for each configurable member of {@linkcode MyLayer}.
          *
@@ -118,7 +111,7 @@ module.exports = function newLayer() {
          * MyLayer.status()
          *
          * @example
-         * // set the status of 'data' to true.
+         * // sets the status of 'data' to true.
          * MyLayer.status('data', true)
          *
          * @method status
@@ -297,7 +290,7 @@ module.exports = function newLayer() {
         });
         /**
          * This method sets the number of breaks for the data in {@linkcode MyLayer}. This setting, along with
-         * {@linkcode MyLayer#classification} and {@linkcode MyLayer#colourscale} constitute the core GIS visualization
+         * {@linkcode MyLayer.classification} and {@linkcode MyLayer.colourscale} constitute the core GIS visualization
          * settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/html/comp_class.html} for general
          * information about geospatial classification and groupings.
          *
@@ -323,7 +316,7 @@ module.exports = function newLayer() {
         /**
          * This method is used to set a colour scale and to calculate colours for individual data points based on that
          * scale. socioscapes includes support for all valid colourbrew colour scales {@link http://colorbrewer2.org/}.
-         * This setting, along with {@linkcode MyLayer#breaks} and {@linkcode MyLayer#classifications} constitute the
+         * This setting, along with {@linkcode MyLayer.breaks} and {@linkcode MyLayer.classifications} constitute the
          * core GIS visualization settings. See {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for
          * general information about geospatial visualization.
          *
@@ -340,7 +333,7 @@ module.exports = function newLayer() {
          * @method colourscale
          * @memberof! MyLayer
          * @parameter {string} action - Can be 'SET', 'GET HEX', or 'GET INDEX'.
-         * @parameter {number} value - Any value that falls within the bounds of {@linkcode MyLayer#data}.
+         * @parameter {number} value - Any value that falls within the bounds of {@linkcode MyLayer.data}.
          */
         Object.defineProperty(this, 'colourscale', {
             value: function(action, value) {
@@ -361,7 +354,7 @@ module.exports = function newLayer() {
             }
         });
         /**
-         * This method classifies {@linkcode MyLayer#data} based on a geostats classification function. See
+         * This method classifies {@linkcode MyLayer.data} based on a geostats classification function. See
          * {@link https://github.com/simogeo/geostats} for more on geostats classification functions and
          * {@link http://www.ncgia.ucsb.edu/cctp/units/unit47/47_f.html} for general data classification guidelines.
          *
@@ -419,7 +412,7 @@ module.exports = function newLayer() {
         });
         /**
          * This container stores the {@linkcode MyLayer} instance's geostats object. It is calculated each time
-         * {@linkcode MyLayer#data} is successfully set. See {@link https://github.com/simogeo/geostats} for more on
+         * {@linkcode MyLayer.data} is successfully set. See {@link https://github.com/simogeo/geostats} for more on
          * geostats
          *
          * @member geostats
@@ -429,9 +422,9 @@ module.exports = function newLayer() {
             value: _myGeostats
         });
         /**
-         * This method gets or sets a new view based on {@linkcode MyLayer}'s {@linkcode MyLayer#data} and
-         * {@linkcode MyLayer#geom} stores. Views associated with {@linkcode MyLayer} share the same
-         * {@linkcode MyLayer#data} and {@linkcode MyLayer#geom} but can each visualize the values in those stores in
+         * This method gets or sets a new view based on {@linkcode MyLayer}'s {@linkcode MyLayer.data} and
+         * {@linkcode MyLayer.geom} stores. Views associated with {@linkcode MyLayer} share the same
+         * {@linkcode MyLayer.data} and {@linkcode MyLayer.geom} but can each visualize the values in those stores in
          * unique and complimentary ways.
          *
          * @member views
@@ -502,7 +495,7 @@ module.exports = function fetchGoogleAuth(config, callback) {
 var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
     fetchGoogleBq_Sort = require('./fetchGoogleBq_Sort.js');
 /**
- * This METHOD authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
+ * This method authorizes and fetches a BigQuery request, then sends the returned data to be error checked and parsed.
  *
  * @function fetchGoogleBq
  * @memberof! socioscapes
@@ -564,7 +557,7 @@ module.exports = function fetchGoogleBq(config) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This METHOD sorts the results of a Google Big Query fetch to fit the format [key: value].
+ * This method sorts the results of a Google Big Query fetch to fit the format [key: value].
  *
  * @function fetchGoogleBq_Sort
  * @memberof! socioscapes
@@ -591,7 +584,7 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
 /*global socioscapes, module, google, require, geocode, maps*/
 'use strict';
 /**
- * This METHOD executes a Google Geocoder query for 'address' and returns the results in an object.
+ * This method executes a Google Geocoder query for 'address' and returns the results in an object.
  *
  * Make sure you obtain Google auth and load the GAPI client first.
  *
@@ -617,7 +610,7 @@ module.exports = function fetchGoogleGeocode(address) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This METHOD asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
+ * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson geometry and
  * returns the queried url, the id parameter, and the fetched GeoJson features.
  *
  * @function fetchWfs
@@ -1878,9 +1871,9 @@ var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
  */
 module.exports = function newViewGmap(config) {
     /**
-     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView#map}, the
-     * corresponding div container, {@linkcode MyLayer.MyGmapView#div}, and an arbitrary number of Google Map
-     * data layers, {@linkcode MyLayer.MyGmapView#myGmapLayer}. 
+     * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
+     * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map
+     * data layers, {@linkcode MyLayer.MyGmapView.MyGmapLayer}.
      *
      * @namespace MyLayer.MyGmapView
      */
@@ -1904,9 +1897,8 @@ module.exports = function newViewGmap(config) {
                 viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
-                     * This container holds the Google Map data object and all related methods. See
-                     * {@link https://developers.google.com/maps/documentation/javascript/reference} for more details on
-                     * the Google Maps class.
+                     * This container holds the Google Map data object and all related methods. To learn more about the
+                     * Google Maps object, see {@link https://developers.google.com/maps/documentation/javascript/reference}.
                      *
                      * @member map
                      * @memberof! MyLayer.MyGmapView
@@ -1916,6 +1908,10 @@ module.exports = function newViewGmap(config) {
                     });
                     /**
                      * This method can be used to get or set the div for the Google Maps data object.
+                     *
+                     * @example
+                     * // set the google maps div to 'map-container'
+                     * MyLayer.MyGmapView.div('map-container')
                      *
                      * @method div
                      * @memberof! MyLayer.MyGmapView
@@ -1938,11 +1934,14 @@ module.exports = function newViewGmap(config) {
         });
 
         /**
+         * This constructor method appends a new Google Maps data layer of class {@linkcode MyGmapLayer} to
+         * {@linkcode MyGmapView}. To learn more about Google Maps data layers, see
+         * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
          *
-         * @method myGmapLayer
+         * @method MyGmapLayer
          * @memberof! MyLayer.MyGmapView
          */
-        Object.defineProperty(this, 'myGmapLayer', {
+        Object.defineProperty(this, 'MyGmapLayer', {
             value: function (name, id, url) {
                 if (!_myGmapLayers) {
                     _myGmapLayers = {};
@@ -1957,9 +1956,12 @@ module.exports = function newViewGmap(config) {
                     _myGmapLayer = new google.maps.Data();
                     _myGmapLayer.loadGeoJson(url, {idPropertyName: id});
                     /**
+                     * This method allows you to use a setStyle() function to create declarative style rules for
+                     * {@linkcode MyGmapLayer}. To learn more about styling Google Maps data layers, see
+                     * {@linkcode https://developers.google.com/maps/documentation/javascript/datalayer}.
                      *
                      * @method style
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'style', {
                         value: function (styleFunction) {
@@ -1971,25 +1973,41 @@ module.exports = function newViewGmap(config) {
                         }
                     });
                     /**
+                     * This method allows you to turn {@linkcode MyGmapLayer} visibility on.
+                     *
+                     * @example
+                     * // shows MyGmapLayer
+                     * MyGmapLayer.on()
                      *
                      * @method on
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'on', {
                         value: function () { _myGmapLayer.setMap(_myDiv); }
                     });
                     /**
+                     * This method allows you to turn {@linkcode MyGmapLayer} visibility off.
+                     *
+                     * @example
+                     * // hides MyGmapLayer
+                     * MyGmapLayer.off()
                      *
                      * @method off
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'off', {
                         value: function () { _myGmapLayer.setMap(null); }
                     });
                     /**
+                     * This method creates an onHover listener that restyles {@linkcode MyGmapLayer} geometry based on
+                     * {@linkcode MyGmapLayer}'s onHover style.
+                     *
+                     * @example
+                     * // turns on the onHover listener
+                     * MyGmapLayer.onHover()
                      *
                      * @method onHover
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onHover', {
                         value: function (callback) {
@@ -2017,9 +2035,21 @@ module.exports = function newViewGmap(config) {
                         }
                     });
                     /**
+                     * This method creates an onClick listener that restyles {@linkcode MyGmapLayer} geometry based on
+                     * {@linkcode MyGmapLayer}'s onClick style. When a geometry feature is clicked, it remains in a
+                     * selected state until it is clicked again. Calling this method with an integer parameter sets a
+                     * limit for the total number of simultaneously selected geometry features.
+                     *
+                     * @example
+                     * // turns on the onClick listener
+                     * MyGmapLayer.onClick()
+                     *
+                     * @example
+                     * // turns on the onClick listener and sets the maximum number of selected geometry features to 2
+                     * MyGmapLayer.onClick(2)
                      *
                      * @method onClick
-                     * @memberof! MyLayer.MyGmapView.myGmapLayer
+                     * @memberof! MyLayer.MyGmapView.MyGmapLayer
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
@@ -2080,12 +2110,13 @@ module.exports = function newViewGmap(config) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This METHOD creates a new google.maps.OverlayView which is loaded on top of the symbology layer as labels.
+ * This method creates a new google.maps.OverlayView and loads it on top of the other layers; all map elements except
+ * labels are hidden.
  *
  * @function viewGmap_Labels
  * @memberof! socioscapes
  * @param {Object} myMap - The map to append this OverlayView to.
- * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map labels.
  * @return {Object} myMap - The rendered Google Maps object.
  */
 module.exports = function viewGmap_Labels(myMap, styles) {
@@ -2137,7 +2168,7 @@ module.exports = function viewGmap_Labels(myMap, styles) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This METHOD creates a new google.maps object and assigns it to the specified div.
+ * This method creates a new google.maps object and assigns it to the specified div.
  *
  * @function viewGmap_Map
  * @memberof! socioscapes
@@ -2350,7 +2381,7 @@ module.exports = socioscapes;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Thu Jun 18 2015 19:10:59 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Jun 19 2015 11:36:36 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
