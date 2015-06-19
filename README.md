@@ -21,12 +21,19 @@
 // *create some config objects*
 
 **var geom = {};** 
+
 **var data = {};**
+
 **wfsgeom.url = 'http://www.mywfsserver.com&cql_filter=cmaname=%27Vancouver%27';** 
+
 **wfsgeom.id = 'dauid';** 
+
 **bqdata.id = 'dauid';**
+
 **bqdata.clientId = 'exampleid.apps.googleusercontent.com';**
+
 **bqdata.projectId = 'exampleid';** 
+
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [2011_census_of_canada.ontario_da] GROUP BY Topic, Characteristic;';**
 
 
