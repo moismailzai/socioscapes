@@ -34,7 +34,7 @@
 
 **bqdata.projectId = 'exampleid';** 
 
-**bqdata.queryString = 'SELECT Topic, Characteristic FROM [2011_census_of_canada.ontario_da] GROUP BY Topic, Characteristic;';**
+**bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
 
 
 #### usage:  
