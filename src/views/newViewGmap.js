@@ -83,8 +83,13 @@ module.exports = function newViewGmap(config) {
 
         /**
          * This constructor method appends a new Google Maps data layer of class {@linkcode MyGmapLayer} to
-         * {@linkcode MyGmapView}. To learn more about Google Maps data layers, see
+         * {@linkcode MyGmapView}. This method expects three arguments: a name for the new layer, the property to treat
+         * as a feature identifier, and a link to a valid GeoJSON URL. To learn more about Google Maps data layers, see
          * {@link https://developers.google.com/maps/documentation/javascript/datalayer}.
+         *
+         * @example
+         * //fetches and loads GeoJSON features using the 'dauid' property as an identifier
+         * MyGmapLayer('myLayerName', 'dauid', 'http://www.mygeojsonfiles.com/myfile.json')
          *
          * @namespace MyGmapLayer
          */
@@ -200,7 +205,7 @@ module.exports = function newViewGmap(config) {
                      */
                     Object.defineProperty(that[name], 'onClick', {
                         value: function (limit, callback) {
-                            // Check to see if a click listener already exists for this layer and remove it / reset properties
+                            // Check for existing listener
                             if (_myOnClickListener !== undefined) {
                                 _myOnClickListener.remove();
                                 for (var _selectedFeature in _mySelectedFeatures) {
@@ -216,11 +221,9 @@ module.exports = function newViewGmap(config) {
                             if (limit !== undefined && Number.isInteger(limit) === true) {
                                 _mySelectionLimit = limit;
                             }
-                            // Create the listener
                             _mySelectionCount = 0;
                             _myOnClickListener = this.addListener('click', function(event) {
                                 _myFeatureId = event.feature.getProperty(id);
-                                // If the clicked feature's selected property is TRUE
                                 if (event.feature.getProperty('selected') === true) {
                                     event.feature.setProperty('selected', false);
                                     delete _mySelectedFeatures[_myFeatureId];

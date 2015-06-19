@@ -19,7 +19,7 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
     fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
     fetchWfs = require('./fetchers/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
-    viewGmap = require('./views/newViewGmap.js');
+    newViewGmap = require('./views/newViewGmap.js');
 
 /**
  * This is the root socioscapes namespace and object.
@@ -52,7 +52,7 @@ Object.defineProperty(socioscapes, 'fetchWfs', {
 Object.defineProperty(socioscapes, 'newLayer', {
     value: newLayer
 });
-Object.defineProperty(socioscapes, 'viewGmap', {
-    value: viewGmap
+Object.defineProperty(socioscapes, 'newViewGmap', {
+    value: newViewGmap
 });
 module.exports = socioscapes;

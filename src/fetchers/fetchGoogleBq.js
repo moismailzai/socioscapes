@@ -45,7 +45,6 @@ module.exports = function fetchGoogleBq(config) {
     fetchGoogleAuth(_gapiConfig, function () {
         _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
         _request.execute(function (bqResult) {
-            console.log(bqResult);
             _totalRows = bqResult.result.totalRows;
             fetchGoogleBq_Sort(bqResult, function (sortedResult) {
                 _values.push(sortedResult);
