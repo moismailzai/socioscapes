@@ -2005,7 +2005,7 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
  * @requires module:newLayer
  * @requires module:newViewGmap
  */
-var socioscapes = {};
+window.socioscapes = {};
 Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
     value: fetchGoogleAuth
 });
