@@ -3,7 +3,6 @@
 ### Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.
 
 ### Details
-***
 >**Current version**:     0.1.4
 
 >**Source code**:     [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
@@ -15,7 +14,6 @@
 >**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 ### Installation
-***
 > **Standalone**: \<script src="path/to/socioscapes.js"\>\</script\>
  
 > **NodeJS**: [npm install socioscapes](https://www.npmjs.com/package/socioscapes)
@@ -23,7 +21,6 @@
 > **Bower**: [bower install socioscapes](http://bower.io/search/?q=socioscapes)
 
 ### Examples
-***
 
 #### Config:
 // *for easier reference & less typing*
