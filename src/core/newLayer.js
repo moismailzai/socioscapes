@@ -1,8 +1,8 @@
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
-var chroma = require('../libs/chroma.js'),
-    Geostats = require('../libs/Geostats.js'),
+var chroma = require('chroma'),
+    Geostats = require('geostats'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 /**

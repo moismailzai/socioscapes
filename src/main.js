@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, google, require*/
+/*global module, google, require, define, define.amd*/
 'use strict';
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
@@ -20,7 +20,6 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
     fetchWfs = require('./fetchers/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
     newViewGmap = require('./views/newViewGmap.js');
-
 /**
  * This is the root socioscapes namespace and object.
  *
@@ -55,4 +54,18 @@ Object.defineProperty(socioscapes, 'newLayer', {
 Object.defineProperty(socioscapes, 'newViewGmap', {
     value: newViewGmap
 });
-module.exports = socioscapes;
+// Some magic borrowed from Simon Georget (https://github.com/simogeo/geostats), this is a self-executing function
+// that's run with the socioscapes object as a parameter. First it checks to see if the 'exports' object exists, and if
+// it does, it exports socioscapes through module.exports. If not, it checks to see if the 'define' function exists, and
+// if it does, defines socioscapes. If neither of the first two are true, it exposes socioscapes to the browser.
+(function (definition) {
+    if (typeof exports === "object") {
+        module.exports = definition();
+    } else if (typeof define === "function" && define.amd) {
+        define(definition);
+    } else {
+        socioscapes = definition();
+    }
+})(function () {
+    return socioscapes;
+});

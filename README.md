@@ -10,6 +10,10 @@
    
 >**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
+### Installation
+> **Standalone**: \<script src="path/to/socioscapes.js"\>\</script\>
+> **NodeJS**: [npm install socioscapes](https://www.npmjs.com/package/socioscapes)
+> **Bower**: [bower install socioscapes](http://bower.io/search/?q=socioscapes)
 
 ### Examples
 ***

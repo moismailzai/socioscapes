@@ -1,9 +1,859 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],2:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = setTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            currentQueue[queueIndex].run();
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    clearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],3:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],4:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":3,"_process":2,"inherits":1}],5:[function(require,module,exports){
+var
+	util = require('util'),
+	color_map = [
+		'black',
+		'red',
+		'green',
+		'yellow',
+		'blue',
+		'magenta',
+		'cyan',
+		'white'
+	],
+	color_weights = [
+		[0, 0, 0],
+		[255, 0, 0],
+		[0, 255, 0],
+		[255, 255, 0],
+		[0, 0, 255],
+		[255, 0, 255],
+		[0, 255, 255],
+		[255, 255, 255]
+	],
+	reset = '\x1b[30m';
+
+function hex_to_rgb ( hex ) {
+	var
+		base_16;
+
+	if ( hex.indexOf('#') === 0 ) {
+		hex = hex.slice(1);
+	}
+	base_16 = parseInt(hex, 16);
+	if ( isNaN(base_16) ) {
+		base_16 = 0;
+	}
+	return [
+		( base_16 >> 16 ) & 255,
+		( base_16 >> 8 ) & 255,
+		base_16 & 255
+	];
+}
+
+function get_fitness ( source, target ) {
+	return Math.abs(source - target);
+}
+
+function get_closest_color ( red, green, blue ) {
+	var
+		current_color,
+		best_color = null,
+		current_fit,
+		best_fit = 765,
+		index = color_map.length;
+
+	while ( index -- ) {
+		current_color = color_weights [index];
+		current_fit = get_fitness(red, current_color [0]) + get_fitness(green, current_color [1]) + get_fitness(blue, current_color [2]);
+		if ( current_fit <= best_fit ) {
+			best_fit = current_fit;
+			best_color = color_map [index];
+		}
+	}
+	return best_color;
+}
+
+function generate ( color ) {
+	var
+		resolved_color,
+		index;
+
+	function colorize ( text ) {
+		if ( typeof text !== 'string' ) {
+			text = util.format(text);
+		}
+		return resolved_color + text + reset;
+	}
+
+	index = color_map.indexOf(color);
+	if ( index !== -1 ) {
+		resolved_color = '\x1b[3' + index + 'm';
+	}
+	else {
+		resolved_color = reset;
+	}
+
+	return colorize;
+}
+
+function create_color ( color, green, blue ) {
+	var
+		index,
+		resolved_color;
+
+	if ( typeof color === 'string' ) {
+		if ( color [0] === '#' ) {
+			resolved_color = get_closest_color.apply(null, hex_to_rgb(color));
+		}
+	}
+	else if ( typeof color === 'number' ) {
+		resolved_color = get_closest_color(color, green, blue);
+	}
+	else {
+		resolved_color = reset;
+	}
+	
+	return generate(resolved_color);
+}
+
+color_map.map(function ( item ) {
+	create_color [item] = generate(item);
+});
+
+module.exports = create_color;
+
+},{"util":4}],6:[function(require,module,exports){
+var isInt=function(e){return"number"===typeof e&&parseFloat(e)==parseInt(e,10)&&!isNaN(e)},_t=function(e){return e},inArray=function(e,a){for(var b=0;b<a.length;b++)if(a[b]==e)return!0;return!1},geostats=function(e){this.objectId="";this.legendSeparator=this.separator=" - ";this.method="";this.precision=0;this.precisionflag="auto";this.roundlength=2;this.debug=this.is_uniqueValues=!1;this.bounds=[];this.ranges=[];this.inner_ranges=null;this.colors=[];this.counter=[];this.stat_cov=this.stat_stddev=
+this.stat_variance=this.stat_pop=this.stat_min=this.stat_max=this.stat_sum=this.stat_median=this.stat_mean=this.stat_sorted=null;this.log=function(a){!0==this.debug&&console.log(this.objectID+"(object id) :: "+a)};this.setBounds=function(a){this.log("Setting bounds ("+a.length+") : "+a.join());this.bounds=[];this.bounds=a};this.setSerie=function(a){this.log("Setting serie ("+a.length+") : "+a.join());this.serie=[];this.serie=a;this.setPrecision()};this.setColors=function(a){this.log("Setting color ramp ("+
+a.length+") : "+a.join());this.colors=a};this.doCount=function(){if(!this._nodata()){var a=this.sorted();this.counter=[];for(i=0;i<this.bounds.length-1;i++)this.counter[i]=0;for(j=0;j<a.length;j++){var b=this.getClass(a[j]);this.counter[b]++}}};this.setPrecision=function(a){"undefined"!==typeof a&&(this.precisionflag="manual",this.precision=a);if("auto"==this.precisionflag)for(a=0;a<this.serie.length;a++){var b=isNaN(this.serie[a]+"")||-1==(this.serie[a]+"").toString().indexOf(".")?0:(this.serie[a]+
+"").split(".")[1].length;b>this.precision&&(this.precision=b)}this.log("Calling setPrecision(). Mode : "+this.precisionflag+" - Decimals : "+this.precision);this.serie=this.decimalFormat(this.serie)};this.decimalFormat=function(a){for(var b=[],c=0;c<a.length;c++)isNaN(a[c]+"")?b[c]=a[c]:b[c]=parseFloat(a[c]).toFixed(this.precision);return b};this.setRanges=function(){this.ranges=[];for(i=0;i<this.bounds.length-1;i++)this.ranges[i]=this.bounds[i]+this.separator+this.bounds[i+1]};this.min=function(){if(!this._nodata())return this.stat_min=
+Math.min.apply(null,this.serie)};this.max=function(){return this.stat_max=Math.max.apply(null,this.serie)};this.sum=function(){if(!this._nodata()){if(null==this.stat_sum)for(i=this.stat_sum=0;i<this.pop();i++)this.stat_sum+=parseFloat(this.serie[i]);return this.stat_sum}};this.pop=function(){if(!this._nodata())return null==this.stat_pop&&(this.stat_pop=this.serie.length),this.stat_pop};this.mean=function(){if(!this._nodata())return null==this.stat_mean&&(this.stat_mean=parseFloat(this.sum()/this.pop())),
+this.stat_mean};this.median=function(){if(!this._nodata()){if(null==this.stat_median){this.stat_median=0;var a=this.sorted();this.stat_median=a.length%2?parseFloat(a[Math.ceil(a.length/2)-1]):(parseFloat(a[a.length/2-1])+parseFloat(a[a.length/2]))/2}return this.stat_median}};this.variance=function(){round="undefined"===typeof round?!0:!1;if(!this._nodata()){if(null==this.stat_variance){for(var a=0,b=0;b<this.pop();b++)a+=Math.pow(this.serie[b]-this.mean(),2);this.stat_variance=a/this.pop();!0==round&&
+(this.stat_variance=Math.round(this.stat_variance*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))}return this.stat_variance}};this.stddev=function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==this.stat_stddev&&(this.stat_stddev=Math.sqrt(this.variance()),!0==a&&(this.stat_stddev=Math.round(this.stat_stddev*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),this.stat_stddev};this.cov=function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==
+this.stat_cov&&(this.stat_cov=this.stddev()/this.mean(),!0==a&&(this.stat_cov=Math.round(this.stat_cov*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),this.stat_cov};this._nodata=function(){return 0==this.serie.length?(alert("Error. You should first enter a serie!"),1):0};this.sorted=function(){null==this.stat_sorted&&(this.stat_sorted=!1==this.is_uniqueValues?this.serie.sort(function(a,b){return a-b}):this.serie.sort(function(a,b){var c=a.toString().toLowerCase(),d=b.toString().toLowerCase();
+return c<d?-1:c>d?1:0}));return this.stat_sorted};this.info=function(){if(!this._nodata()){var a;a=""+(_t("Population")+" : "+this.pop()+" - ["+_t("Min")+" : "+this.min()+" | "+_t("Max")+" : "+this.max()+"]\n");a+=_t("Mean")+" : "+this.mean()+" - "+_t("Median")+" : "+this.median()+"\n";return a+=_t("Variance")+" : "+this.variance()+" - "+_t("Standard deviation")+" : "+this.stddev()+" - "+_t("Coefficient of variation")+" : "+this.cov()+"\n"}};this.getEqInterval=function(a){if(!this._nodata()){this.method=
+_t("eq. intervals")+" ("+a+" "+_t("classes")+")";var b=this.max(),c=[],d=this.min(),g=(b-this.min())/a;for(i=0;i<=a;i++)c[i]=d,d+=g;c[a]=b;this.setBounds(c);this.setRanges();return this.bounds}};this.getQuantile=function(a){if(!this._nodata()){this.method=_t("quantile")+" ("+a+" "+_t("classes")+")";var b=[],c=this.sorted(),d=Math.round(this.pop()/a),g=d,f=0;b[0]=c[0];for(f=1;f<a;f++)b[f]=c[g],g+=d;b.push(c[c.length-1]);this.setBounds(b);this.setRanges();return this.bounds}};this.getStdDeviation=function(a){if(!this._nodata()){this.method=
+_t("std deviation")+" ("+a+" "+_t("classes")+")";this.max();this.min();var b=[];if(1==a%2){var c=Math.floor(a/2),d=c+1;b[c]=this.mean()-this.stddev()/2;b[d]=this.mean()+this.stddev()/2;i=c-1}else d=a/2,b[d]=this.mean(),i=d-1;for(;0<i;i--)c=b[i+1]-this.stddev(),b[i]=c;for(i=d+1;i<a;i++)c=b[i-1]+this.stddev(),b[i]=c;b[0]=this.min();b[a]=this.max();this.setBounds(b);this.setRanges();return this.bounds}};this.getArithmeticProgression=function(a){if(!this._nodata()){this.method=_t("arithmetic progression")+
+" ("+a+" "+_t("classes")+")";var b=0;for(i=1;i<=a;i++)b+=i;var c=[],d=this.min(),b=(this.max()-d)/b;for(i=0;i<=a;i++)c[i]=0==i?d:c[i-1]+i*b;this.setBounds(c);this.setRanges();return this.bounds}};this.getJenks=function(a){if(!this._nodata()){this.method=_t("Jenks")+" ("+a+" "+_t("classes")+")";dataList=this.sorted();for(var b=[],c=0,d=dataList.length+1;c<d;c++){for(var g=[],f=0,e=a+1;f<e;f++)g.push(0);b.push(g)}c=[];d=0;for(g=dataList.length+1;d<g;d++){for(var f=[],e=0,l=a+1;e<l;e++)f.push(0);c.push(f)}d=
+1;for(g=a+1;d<g;d++){b[0][d]=1;c[0][d]=0;for(var h=1,f=dataList.length+1;h<f;h++)c[h][d]=Infinity;h=0}d=2;for(g=dataList.length+1;d<g;d++){for(var l=e=f=0,m=1,q=d+1;m<q;m++){var n=d-m+1,h=parseFloat(dataList[n-1]),e=e+h*h,f=f+h,l=l+1,h=e-f*f/l,p=n-1;if(0!=p)for(var k=2,r=a+1;k<r;k++)c[d][k]>=h+c[p][k-1]&&(b[d][k]=n,c[d][k]=h+c[p][k-1])}b[d][1]=1;c[d][1]=h}h=dataList.length;c=[];d=0;for(g=a+1;d<g;d++)c.push(0);c[a]=parseFloat(dataList[dataList.length-1]);for(c[0]=parseFloat(dataList[0]);2<=a;)d=parseInt(b[h][a]-
+2),c[a-1]=dataList[d],h=parseInt(b[h][a]-1),a-=1;c[0]==c[1]&&(c[0]=0);this.setBounds(c);this.setRanges();return this.bounds}};this.getUniqueValues=function(){if(!this._nodata()){this.method=_t("unique values");this.is_uniqueValues=!0;var a=this.sorted(),b=[];for(i=0;i<this.pop();i++)inArray(a[i],b)||b.push(a[i]);return this.bounds=b}};this.getClass=function(a){for(i=0;i<this.bounds.length;i++)if(!0==this.is_uniqueValues){if(a==this.bounds[i])return i}else if(parseFloat(a)<=this.bounds[i+1])return i;
+return _t("Unable to get value's class.")};this.getRanges=function(){return this.ranges};this.getRangeNum=function(a){var b,c;for(c=0;c<this.ranges.length;c++)if(b=this.ranges[c].split(/ - /),a<=parseFloat(b[1]))return c};this.getInnerRanges=function(){if(null!=this.inner_ranges)return this.inner_ranges;var a=[],b=this.sorted(),c=1;for(i=0;i<b.length;i++){if(0==i)var d=b[i];parseFloat(b[i])>parseFloat(this.bounds[c])&&(a[c-1]=""+d+this.separator+b[i-1],d=b[i],c++);if(c==this.bounds.length-1)return a[c-
+1]=""+d+this.separator+b[b.length-1],this.inner_ranges=a}};this.getSortedlist=function(){return this.sorted().join(", ")};this.getHtmlLegend=function(a,b,c,d,e){var f="";this.doCount();ccolors=null!=a?a:this.colors;lg=null!=b?b:"Legend";getcounter=null!=c?!0:!1;fn=null!=d?d:function(a){return a};null==e&&(e="default");if("discontinuous"==e&&(this.getInnerRanges(),-1!==this.counter.indexOf(0))){alert(_t("Geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!"));
+return}if(ccolors.length<this.ranges.length)alert(_t("The number of colors should fit the number of ranges. Exit!"));else{a='<div class="geostats-legend"><div class="geostats-legend-title">'+_t(lg)+"</div>";if(!1==this.is_uniqueValues)for(i=0;i<this.ranges.length;i++)!0===getcounter&&(f=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),c=this.ranges[i].split(this.separator),b=parseFloat(c[0]).toFixed(this.precision),c=parseFloat(c[1]).toFixed(this.precision),"distinct"==e&&0!=
+i&&(isInt(b)?b=parseInt(b)+1:(b=parseFloat(b)+1/Math.pow(10,this.precision),b=parseFloat(b).toFixed(this.precision))),"discontinuous"==e&&(c=this.inner_ranges[i].split(this.separator),console.log("Ranges : "+this.inner_ranges[i]),b=parseFloat(c[0]).toFixed(this.precision),c=parseFloat(c[1]).toFixed(this.precision)),b=fn(b)+this.legendSeparator+fn(c),a+='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+b+f+"</div>";else for(i=0;i<this.bounds.length;i++)!0===
+getcounter&&(f=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),b=fn(this.bounds[i]),a+='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+b+f+"</div>";return a+"</div>"}};this.objectID=(new Date).getUTCMilliseconds();this.log("Creating new geostats object");"undefined"!==typeof e&&0<e.length?(this.serie=e,this.setPrecision(),this.log("Setting serie ("+e.length+") : "+e.join())):this.serie=[]};
+
+},{}],7:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
-var chroma = require('../libs/chroma.js'),
-    Geostats = require('../libs/Geostats.js'),
+var chroma = require('chroma'),
+    Geostats = require('geostats'),
     myPolyfills = require('../libs/myPolyfills.js');
 myPolyfills();
 /**
@@ -436,7 +1286,7 @@ module.exports = function newLayer() {
     }
     return new MyLayer;
 };
-},{"../libs/Geostats.js":7,"../libs/chroma.js":8,"../libs/myPolyfills.js":9}],2:[function(require,module,exports){
+},{"../libs/myPolyfills.js":13,"chroma":5,"geostats":6}],8:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -464,7 +1314,7 @@ module.exports = function fetchGoogleAuth(config, callback) {
     });
 };
 
-},{}],3:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -525,7 +1375,7 @@ module.exports = function fetchGoogleBq(config, callback) {
         });
     });
 };
-},{"./fetchGoogleAuth.js":2,"./fetchGoogleBq_Sort.js":4}],4:[function(require,module,exports){
+},{"./fetchGoogleAuth.js":8,"./fetchGoogleBq_Sort.js":10}],10:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -551,7 +1401,7 @@ module.exports = function fetchGoogleBq_Sort(bqResult, callback) {
         callback(thisRow);
     });
 };
-},{}],5:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require, geocode, maps*/
 'use strict';
@@ -577,7 +1427,7 @@ module.exports = function fetchGoogleGeocode(address) {
         alert('Error: Google Geocoder was unable to locate ' + address);
     });
 };
-},{}],6:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -610,1201 +1460,7 @@ module.exports = function fetchWfs(config, callback) {
     };
     _xobj.send(null);
 };
-},{}],7:[function(require,module,exports){
-/**
-* geostats() is a tiny and standalone javascript library for classification 
-* Project page - https://github.com/simogeo/geostats
-* Copyright (c) 2011 Simon Georget, http://www.empreinte-urbaine.eu
-* Licensed under the MIT license
-*/
-
-
-(function (definition) {
-    // This file will function properly as a <script> tag, or a module
-    // using CommonJS and NodeJS or RequireJS module formats.
-
-    // CommonJS
-    if (typeof exports === "object") {
-        module.exports = definition();
-
-    // RequireJS
-    } else if (typeof define === "function" && define.amd) {
-        define(definition);
-
-    // <script>
-    } else {
-        geostats = definition();
-    }
-
-})(function () {
-
-var isInt = function(n) {
-   return typeof n === 'number' && parseFloat(n) == parseInt(n, 10) && !isNaN(n);
-} // 6 characters
-
-var _t = function(str) {
-	return str;
-};
-
-//taking from http://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
-var isNumber = function(n) {
-	  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-
-
-//indexOf polyfill
-// from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
-if (!Array.prototype.indexOf) {
-    Array.prototype.indexOf = function (searchElement, fromIndex) {
-      if ( this === undefined || this === null ) {
-        throw new TypeError( '"this" is null or not defined' );
-      }
-
-      var length = this.length >>> 0; // Hack to convert object.length to a UInt32
-
-      fromIndex = +fromIndex || 0;
-
-      if (Math.abs(fromIndex) === Infinity) {
-        fromIndex = 0;
-      }
-
-      if (fromIndex < 0) {
-        fromIndex += length;
-        if (fromIndex < 0) {
-          fromIndex = 0;
-        }
-      }
-
-      for (;fromIndex < length; fromIndex++) {
-        if (this[fromIndex] === searchElement) {
-          return fromIndex;
-        }
-      }
-
-      return -1;
-    };
-  }
-
-var geostats = function(a) {
-
-	this.objectId = '';
-	this.separator = ' - ';
-	this.legendSeparator = this.separator;
-	this.method  = '';
-	this.precision = 0;
-	this.precisionflag = 'auto';
-	this.roundlength 	= 2; // Number of decimals, round values
-	this.is_uniqueValues = false;
-	this.debug =  false;
-	
-	this.bounds  = Array();
-	this.ranges  = Array();
-	this.inner_ranges  = null;
-	this.colors  = Array();
-	this.counter = Array();
-	
-	// statistics information
-	this.stat_sorted	= null;
-	this.stat_mean 		= null;
-	this.stat_median 	= null;
-	this.stat_sum 		= null;
-	this.stat_max 		= null;
-	this.stat_min 		= null;
-	this.stat_pop 		= null;
-	this.stat_variance	= null;
-	this.stat_stddev	= null;
-	this.stat_cov		= null;
-
-	
-	/**
-	 * logging method
-	 */
-	this.log = function(msg) {
-	
-		if(this.debug == true)
-			console.log(this.objectID + "(object id) :: " + msg);
-		
-	};
-	
-	/**
-	 * Set bounds
-	 */
-	this.setBounds = function(a) {
-		
-		this.log('Setting bounds (' + a.length + ') : ' + a.join());
-	
-		this.bounds = Array() // init empty array to prevent bug when calling classification after another with less items (sample getQuantile(6) and getQuantile(4))
-		
-		this.bounds = a;
-		//this.bounds = this.decimalFormat(a);
-		
-	};
-	
-	/**
-	 * Set a new serie
-	 */
-	this.setSerie = function(a) {
-		
-		this.log('Setting serie (' + a.length + ') : ' + a.join());
-	
-		this.serie = Array() // init empty array to prevent bug when calling classification after another with less items (sample getQuantile(6) and getQuantile(4))
-		this.serie = a;
-		this.setPrecision();
-		
-	};
-	
-	/**
-	 * Set colors
-	 */
-	this.setColors = function(colors) {
-		
-		this.log('Setting color ramp (' + colors.length + ') : '  + colors.join());
-		
-		this.colors = colors;
-		
-	};
-	
-	/**
-	 * Get feature count
-	 * With bounds array(0, 0.75, 1.5, 2.25, 3); 
-	 * should populate this.counter with 5 keys
-	 * and increment counters for each key
-	 */
-	this.doCount = function() {
-
-		if (this._nodata())
-			return;
-		
-
-		var tmp = this.sorted();
-		
-		this.counter = new Array();
-		
-		// we init counter with 0 value
-		for(i = 0; i < this.bounds.length -1; i++) {
-			this.counter[i]= 0;
-		}
-		
-		for(j=0; j < tmp.length; j++) {
-			
-			// get current class for value to increment the counter
-			var cclass = this.getClass(tmp[j]);
-			this.counter[cclass]++;
-
-		}
-
-	};
-	
-	/**
-	 * Set decimal precision according to user input
-	 * or automatcally determined according
-	 * to the given serie.
-	 */
-	this.setPrecision = function(decimals) {
-		
-		// only when called from user
-		if(typeof decimals !== "undefined") {
-			this.precisionflag = 'manual';
-			this.precision = decimals;
-		}
-		
-		// we calculate the maximal decimal length on given serie
-		if(this.precisionflag == 'auto') {
-			
-			for (var i = 0; i < this.serie.length; i++) {
-				
-				// check if the given value is a number and a float
-				if (!isNaN((this.serie[i]+"")) && (this.serie[i]+"").toString().indexOf('.') != -1) {
-					var precision = (this.serie[i] + "").split(".")[1].length;
-				} else {
-					var precision = 0;
-				}
-				
-				if(precision > this.precision) {
-					this.precision = precision;
-				}
-				
-			}
-			
-		}
-
-		this.log('Calling setPrecision(). Mode : ' + this.precisionflag + ' - Decimals : '+ this.precision);
-		
-		this.serie = this.decimalFormat(this.serie);
-		
-	};
-	
-	/**
-	 * Format array numbers regarding to precision
-	 */
-	this.decimalFormat = function(a) {
-		
-		var b = new Array();
-		
-		for (var i = 0; i < a.length; i++) {
-			// check if the given value is a number
-			if (isNumber(a[i])) {
-                b[i] = parseFloat(a[i]).toFixed(this.precision);
-			} else {
-				b[i] = a[i];
-			}
-		}
-		
-		return b;
-	}
-	
-	/**
-	 * Transform a bounds array to a range array the following array : array(0,
-	 * 0.75, 1.5, 2.25, 3); becomes : array('0-0.75', '0.75-1.5', '1.5-2.25',
-	 * '2.25-3');
-	 */
-	this.setRanges = function() {
-	
-		this.ranges = Array(); // init empty array to prevent bug when calling classification after another with less items (sample getQuantile(6) and getQuantile(4))
-		
-		for (i = 0; i < (this.bounds.length - 1); i++) {
-			this.ranges[i] = this.bounds[i] + this.separator + this.bounds[i + 1];
-		}
-	};
-
-	/** return min value */
-	this.min = function() {
-		
-		if (this._nodata())
-			return;
-		
-		this.stat_min = Math.min.apply(null, this.serie);
-		
-		return this.stat_min;
-	};
-
-	/** return max value */
-	this.max = function() {
-		
-		this.stat_max = Math.max.apply(null, this.serie);
-		
-		return this.stat_max;
-	};
-
-	/** return sum value */
-	this.sum = function() {
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_sum  == null) {
-			
-			this.stat_sum = 0;
-			for (i = 0; i < this.pop(); i++) {
-				this.stat_sum += parseFloat(this.serie[i]);
-			}
-			
-		}
-		
-		return this.stat_sum;
-	};
-
-	/** return population number */
-	this.pop = function() {
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_pop  == null) {
-			
-			this.stat_pop = this.serie.length;
-			
-		}
-		
-		return this.stat_pop;
-	};
-
-	/** return mean value */
-	this.mean = function() {
-		
-		if (this._nodata())
-			return;
-
-		if (this.stat_mean  == null) {
-			
-			this.stat_mean = parseFloat(this.sum() / this.pop());
-			
-		}
-		
-		return this.stat_mean;
-	};
-
-	/** return median value */
-	this.median = function() {
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_median  == null) {
-			
-			this.stat_median = 0;
-			var tmp = this.sorted();
-			
-			// serie pop is odd
-			if (tmp.length % 2) {
-				this.stat_median = parseFloat(tmp[(Math.ceil(tmp.length / 2) - 1)]);
-				
-			// serie pop is even
-			} else {
-				this.stat_median = ( parseFloat(tmp[((tmp.length / 2) - 1)]) + parseFloat(tmp[(tmp.length / 2)]) ) / 2;
-			}
-			
-		}
-		
-		return this.stat_median;
-	};
-
-	/** return variance value */
-	this.variance = function() {
-		
-		round = (typeof round === "undefined") ? true : false;
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_variance  == null) {
-
-			var tmp = 0;
-			for (var i = 0; i < this.pop(); i++) {
-				tmp += Math.pow( (this.serie[i] - this.mean()), 2 );
-			}
-
-			this.stat_variance =  tmp /	this.pop();
-			
-			if(round == true) {
-				this.stat_variance = Math.round(this.stat_variance * Math.pow(10,this.roundlength) )/ Math.pow(10,this.roundlength);
-			}
-			
-		}
-		
-		return this.stat_variance;
-	};
-	
-	/** return standard deviation value */
-	this.stddev = function(round) {
-		
-		round = (typeof round === "undefined") ? true : false;
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_stddev  == null) {
-			
-			this.stat_stddev = Math.sqrt(this.variance());
-			
-			if(round == true) {
-				this.stat_stddev = Math.round(this.stat_stddev * Math.pow(10,this.roundlength) )/ Math.pow(10,this.roundlength);
-			}
-			
-		}
-		
-		return this.stat_stddev;
-	};
-	
-	/** coefficient of variation - measure of dispersion */
-	this.cov = function(round) {
-		
-		round = (typeof round === "undefined") ? true : false;
-		
-		if (this._nodata())
-			return;
-		
-		if (this.stat_cov  == null) {
-			
-			this.stat_cov = this.stddev() / this.mean();
-			
-			if(round == true) {
-				this.stat_cov = Math.round(this.stat_cov * Math.pow(10,this.roundlength) )/ Math.pow(10,this.roundlength);
-			}
-			
-		}
-		
-		return this.stat_cov;
-	};
-	
-	/** data test */
-	this._nodata = function() {
-		if (this.serie.length == 0) {
-			
-			alert("Error. You should first enter a serie!");
-			return 1;
-		} else
-			return 0;
-		
-	};
-	
-	/** check if the serie contains negative value */
-	this._hasNegativeValue = function() {
-		
-		for (i = 0; i < this.serie.length; i++) {
-	    	if(this.serie[i] < 0)
-	    		return true;
-	    }
-
-		return false;
-	};
-	
-	/** check if the serie contains zero value */
-	this._hasZeroValue = function() {
-		
-		for (i = 0; i < this.serie.length; i++) {
-	    	if(parseFloat(this.serie[i]) === 0)
-	    		return true;
-	    }
-
-		return false;
-	};
-
-	/** return sorted values (as array) */
-	this.sorted = function() {
-		
-		if (this.stat_sorted  == null) {
-			
-			if(this.is_uniqueValues == false) {
-				this.stat_sorted = this.serie.sort(function(a, b) {
-					return a - b;
-				});
-			} else {
-				this.stat_sorted = this.serie.sort(function(a,b){
-					var nameA=a.toString().toLowerCase(), nameB=b.toString().toLowerCase();
-				    if(nameA < nameB) return -1;
-				    if(nameA > nameB) return 1;
-				    return 0;
-				})
-			}
-		}
-		
-		return this.stat_sorted;
-		
-	};
-
-	/** return all info */
-	this.info = function() {
-		
-		if (this._nodata())
-			return;
-		
-		var content = '';
-		content += _t('Population') + ' : ' + this.pop() + ' - [' + _t('Min')
-				+ ' : ' + this.min() + ' | ' + _t('Max') + ' : ' + this.max()
-				+ ']' + "\n";
-		content += _t('Mean') + ' : ' + this.mean() + ' - ' + _t('Median')	+ ' : ' + this.median() + "\n";
-		content += _t('Variance') + ' : ' + this.variance() + ' - ' + _t('Standard deviation')	+ ' : ' + this.stddev()  
-				+ ' - ' + _t('Coefficient of variation')	+ ' : ' + this.cov() + "\n";
-
-		return content;
-	};
-	
-	/**
-	 * Set Manual classification Return an array with bounds : ie array(0,
-	 * 0.75, 1.5, 2.25, 3);
-	 * Set ranges and prepare data for displaying legend
-	 * 
-	 */
-	this.setClassManually = function(array) {
-
-		if (this._nodata())
-	        return;
-
-	    if(array[0] !== this.min() || array[array.length-1] !== this.max()) {
-	    	alert(_t('Given bounds may not be correct! please check your input.\nMin value : ' + this.min() + ' / Max value : ' + this.max()));
-	    	return; 
-	    }
-
-	    this.setBounds(array);
-	    this.setRanges();
-	    
-	    // we specify the classification method
-	    this.method = _t('manual classification') + ' (' + (array.length -1) + ' ' + _t('classes') + ')';
-
-	    return this.bounds;
-	};
-
-	/**
-	 * Equal intervals classification Return an array with bounds : ie array(0,
-	 * 0.75, 1.5, 2.25, 3);
-	 */
-	this.getClassEqInterval = function(nbClass, forceMin, forceMax) {
-
-		if (this._nodata())
-	        return;
-
-		var tmpMin = (typeof forceMin === "undefined") ? this.min() : forceMin;
-		var tmpMax = (typeof forceMax === "undefined") ? this.max() : forceMax;
-		
-	    var a = Array();
-	    var val = tmpMin;
-	    var interval = (tmpMax - tmpMin) / nbClass;
-
-	    for (i = 0; i <= nbClass; i++) {
-	        a[i] = val;
-	        val += interval;
-	    }
-
-	    //-> Fix last bound to Max of values
-	    a[nbClass] = tmpMax;
-
-	    this.setBounds(a);
-	    this.setRanges();
-	    
-	    // we specify the classification method
-	    this.method = _t('eq. intervals') + ' (' + nbClass + ' ' + _t('classes') + ')';
-
-	    return this.bounds;
-	};
-	
-
-	this.getQuantiles = function(nbClass) {
-		var tmp = this.sorted();
-		var quantiles = [];
-
-		var step = this.pop() / nbClass;
-		for (var i = 1; i < nbClass; i++) {
-			var qidx = Math.round(i*step+0.49);
-			quantiles.push(tmp[qidx-1]); // zero-based
-		}
-
-		return quantiles;
-	};
-
-	/**
-	 * Quantile classification Return an array with bounds : ie array(0, 0.75,
-	 * 1.5, 2.25, 3);
-	 */
-	this.getClassQuantile = function(nbClass) {
-
-		if (this._nodata())
-			return;
-
-		var tmp = this.sorted();
-		var bounds = this.getQuantiles(nbClass);
-		bounds.unshift(tmp[0]);
-
-		if (bounds[tmp.length - 1] !== tmp[tmp.length - 1])
-			bounds.push(tmp[tmp.length - 1]);
-
-		this.setBounds(bounds);
-		this.setRanges();
-
-		// we specify the classification method
-		this.method = _t('quantile') + ' (' + nbClass + ' ' + _t('classes') + ')';
-
-		return this.bounds;
-
-	};
-	
-	/**
-	 * Standard Deviation classification
-	 * Return an array with bounds : ie array(0,
-	 * 0.75, 1.5, 2.25, 3);
-	 */
-	this.getClassStdDeviation = function(nbClass) {
-
-		if (this._nodata())
-	        return;
-
-	    var tmpMax = this.max();
-	    var tmpMin = this.min();
-	    
-	    var a = Array();
-	    
-	    // number of classes is odd
-	    if(nbClass % 2 == 1) {
-
-	    	// Euclidean division to get the inferior bound
-	    	var infBound = Math.floor(nbClass / 2);
-	    	
-	    	var supBound = infBound + 1;
-	    	
-	    	// we set the central bounds
-	    	a[infBound] = this.mean() - ( this.stddev() / 2);
-	    	a[supBound] = this.mean() + ( this.stddev() / 2);
-	    	
-	    	// Values < to infBound, except first one
-	    	for (i = infBound - 1; i > 0; i--) {
-	    		var val = a[i+1] - this.stddev();
-		        a[i] = val;
-		    }
-	    	
-	    	// Values > to supBound, except last one
-	    	for (i = supBound + 1; i < nbClass; i++) {
-	    		var val = a[i-1] + this.stddev();
-		        a[i] = val;
-		    }
-	    	
-	    	// number of classes is even
-	    } else {
-	    	
-	    	var meanBound = nbClass / 2;
-	    	
-	    	// we get the mean value
-	    	a[meanBound] = this.mean();
-	    	
-	    	// Values < to the mean, except first one
-	    	for (i = meanBound - 1; i > 0; i--) {
-	    		var val = a[i+1] - this.stddev();
-		        a[i] = val;
-		    }
-	    	
-	    	// Values > to the mean, except last one
-	    	for (i = meanBound + 1; i < nbClass; i++) {
-	    		var val = a[i-1] + this.stddev();
-		        a[i] = val;
-		    }
-	    }
-	    
-	    
-	    // we finally set the first value
-    	a[0] = this.min();
-    	
-    	// we finally set the last value
-    	a[nbClass] = this.max();
-
-	    this.setBounds(a);
-	    this.setRanges();
-	    
-	    // we specify the classification method
-	    this.method = _t('std deviation') + ' (' + nbClass + ' ' + _t('classes')+ ')'; 
-	    
-	    return this.bounds;
-	};
-	
-	
-	/**
-	 * Geometric Progression classification 
-	 * http://en.wikipedia.org/wiki/Geometric_progression
-	 * Return an array with bounds : ie array(0,
-	 * 0.75, 1.5, 2.25, 3);
-	 */
-	this.getClassGeometricProgression = function(nbClass) {
-
-		if (this._nodata())
-	        return;
-
-	    if(this._hasNegativeValue() || this._hasZeroValue()) {
-	    	alert(_t('geometric progression can\'t be applied with a serie containing negative or zero values.'));
-	    	return;
-	    }
-	    
-	    var a = Array();
-	    var tmpMin = this.min();
-	    var tmpMax = this.max();
-	    
-	    var logMax = Math.log(tmpMax) / Math.LN10; // max decimal logarithm (or base 10)
-	    var logMin = Math.log(tmpMin) / Math.LN10;; // min decimal logarithm (or base 10)
-	    
-	    var interval = (logMax - logMin) / nbClass;
-	    
-	    // we compute log bounds
-	    for (i = 0; i < nbClass; i++) {
-	    	if(i == 0) {
-	    		a[i] = logMin;
-	    	} else {
-	    		a[i] = a[i-1] + interval;
-	    	}
-	    }
-	    
-	    // we compute antilog
-	    a = a.map(function(x) { return Math.pow(10, x); });
-	    
-	    // and we finally add max value
-	    a.push(this.max());
-	    
-	    this.setBounds(a);
-	    this.setRanges();
-	    
-	    // we specify the classification method
-	    this.method = _t('geometric progression') + ' (' + nbClass + ' ' + _t('classes') + ')';
-
-	    return this.bounds;
-	};
-	
-	/**
-	 * Arithmetic Progression classification 
-	 * http://en.wikipedia.org/wiki/Arithmetic_progression
-	 * Return an array with bounds : ie array(0,
-	 * 0.75, 1.5, 2.25, 3);
-	 */
-	this.getClassArithmeticProgression = function(nbClass) {
-
-		if (this._nodata())
-	        return;
-	    
-	    var denominator = 0;
-	    
-	    // we compute the (french) "Raison"
-	    for (i = 1; i <= nbClass; i++) {
-	        denominator += i;
-	    }
-
-	    var a = Array();
-	    var tmpMin = this.min();
-	    var tmpMax = this.max();
-	    
-	    var interval = (tmpMax - tmpMin) / denominator;
-
-	    for (i = 0; i <= nbClass; i++) {
-	    	if(i == 0) {
-	    		a[i] = tmpMin;
-	    	} else {
-	    		a[i] = a[i-1] + (i * interval);
-	    	}
-	    }
-
-	    this.setBounds(a);
-	    this.setRanges();
-	    
-	    // we specify the classification method
-	    this.method = _t('arithmetic progression') + ' (' + nbClass + ' ' + _t('classes') + ')';
-
-	    return this.bounds;
-	};
-	
-	/**
-	 * Credits : Doug Curl (javascript) and Daniel J Lewis (python implementation)
-	 * http://www.arcgis.com/home/item.html?id=0b633ff2f40d412995b8be377211c47b
-	 * http://danieljlewis.org/2010/06/07/jenks-natural-breaks-algorithm-in-python/
-	 */
-	this.getClassJenks = function(nbClass) {
-	
-		if (this._nodata())
-			return;
-		
-		dataList = this.sorted();
-
-		// now iterate through the datalist:
-		// determine mat1 and mat2
-		// really not sure how these 2 different arrays are set - the code for
-		// each seems the same!
-		// but the effect are 2 different arrays: mat1 and mat2
-		var mat1 = []
-		for ( var x = 0, xl = dataList.length + 1; x < xl; x++) {
-			var temp = []
-			for ( var j = 0, jl = nbClass + 1; j < jl; j++) {
-				temp.push(0)
-			}
-			mat1.push(temp)
-		}
-
-		var mat2 = []
-		for ( var i = 0, il = dataList.length + 1; i < il; i++) {
-			var temp2 = []
-			for ( var c = 0, cl = nbClass + 1; c < cl; c++) {
-				temp2.push(0)
-			}
-			mat2.push(temp2)
-		}
-
-		// absolutely no idea what this does - best I can tell, it sets the 1st
-		// group in the
-		// mat1 and mat2 arrays to 1 and 0 respectively
-		for ( var y = 1, yl = nbClass + 1; y < yl; y++) {
-			mat1[0][y] = 1
-			mat2[0][y] = 0
-			for ( var t = 1, tl = dataList.length + 1; t < tl; t++) {
-				mat2[t][y] = Infinity
-			}
-			var v = 0.0
-		}
-
-		// and this part - I'm a little clueless on - but it works
-		// pretty sure it iterates across the entire dataset and compares each
-		// value to
-		// one another to and adjust the indices until you meet the rules:
-		// minimum deviation
-		// within a class and maximum separation between classes
-		for ( var l = 2, ll = dataList.length + 1; l < ll; l++) {
-			var s1 = 0.0
-			var s2 = 0.0
-			var w = 0.0
-			for ( var m = 1, ml = l + 1; m < ml; m++) {
-				var i3 = l - m + 1
-				var val = parseFloat(dataList[i3 - 1])
-				s2 += val * val
-				s1 += val
-				w += 1
-				v = s2 - (s1 * s1) / w
-				var i4 = i3 - 1
-				if (i4 != 0) {
-					for ( var p = 2, pl = nbClass + 1; p < pl; p++) {
-						if (mat2[l][p] >= (v + mat2[i4][p - 1])) {
-							mat1[l][p] = i3
-							mat2[l][p] = v + mat2[i4][p - 1]
-						}
-					}
-				}
-			}
-			mat1[l][1] = 1
-			mat2[l][1] = v
-		}
-
-		var k = dataList.length
-		var kclass = []
-
-		// fill the kclass (classification) array with zeros:
-		for (i = 0; i <= nbClass; i++) {
-			kclass.push(0);
-		}
-
-		// this is the last number in the array:
-		kclass[nbClass] = parseFloat(dataList[dataList.length - 1])
-		// this is the first number - can set to zero, but want to set to lowest
-		// to use for legend:
-		kclass[0] = parseFloat(dataList[0])
-		var countNum = nbClass
-		while (countNum >= 2) {
-			var id = parseInt((mat1[k][countNum]) - 2)
-			kclass[countNum - 1] = dataList[id]
-			k = parseInt((mat1[k][countNum] - 1))
-			// spits out the rank and value of the break values:
-			// console.log("id="+id,"rank = " + String(mat1[k][countNum]),"val =
-			// " + String(dataList[id]))
-			// count down:
-			countNum -= 1
-		}
-		// check to see if the 0 and 1 in the array are the same - if so, set 0
-		// to 0:
-		if (kclass[0] == kclass[1]) {
-			kclass[0] = 0
-		}
-
-		this.setBounds(kclass);
-		this.setRanges();
-
-		
-		this.method = _t('Jenks') + ' (' + nbClass + ' ' + _t('classes') + ')';
-		
-		return this.bounds; //array of breaks
-	}
-	
-	
-	/**
-	 * Quantile classification Return an array with bounds : ie array(0, 0.75,
-	 * 1.5, 2.25, 3);
-	 */
-	this.getClassUniqueValues = function() {
-
-		if (this._nodata())
-			return;
-		
-		this.is_uniqueValues = true;
-		
-		var tmp = this.sorted(); // display in alphabetical order
-
-		var a = Array();
-
-		for (i = 0; i < this.pop(); i++) {
-			if(a.indexOf(tmp[i]) === -1)
-				a.push(tmp[i]);
-		}
-		
-		this.bounds = a;
-		
-		// we specify the classification method
-		this.method = _t('unique values');
-		
-		return a;
-
-	};
-	
-	
-	/**
-	 * Return the class of a given value.
-	 * For example value : 6
-	 * and bounds array = (0, 4, 8, 12);
-	 * Return 2
-	 */
-	this.getClass = function(value) {
-
-		for(i = 0; i < this.bounds.length; i++) {
-			
-			
-			if(this.is_uniqueValues == true) {
-				if(value == this.bounds[i])
-					return i;
-			} else {
-				// parseFloat() is necessary
-				if(parseFloat(value) <= this.bounds[i + 1]) {
-					return i;
-				}
-			}
-		}
-		
-		return _t("Unable to get value's class.");
-		
-	};
-
-	/**
-	 * Return the ranges array : array('0-0.75', '0.75-1.5', '1.5-2.25',
-	 * '2.25-3');
-	 */
-	this.getRanges = function() {
-		
-		return this.ranges;
-		
-	};
-
-	/**
-	 * Returns the number/index of this.ranges that value falls into
-	 */
-	this.getRangeNum = function(value) {
-		
-		var bounds, i;
-
-		for (i = 0; i < this.ranges.length; i++) {
-			bounds = this.ranges[i].split(/ - /);
-			if (value <= parseFloat(bounds[1])) {
-				return i;
-			}
-		}
-	}
-	
-	/*
-	 * Compute inner ranges based on serie. 
-	 * Produce discontinous ranges used for legend - return an array similar to : 
-	 * array('0.00-0.74', '0.98-1.52', '1.78-2.25', '2.99-3.14');
-	 * If inner ranges already computed, return array values.
-	 */
-	this.getInnerRanges = function() {
-		
-		// if already computed, we return the result
-		if(this.inner_ranges != null)
-			return this.inner_ranges;
-
-		
-		var a = new Array();
-		var tmp = this.sorted();
-		
-		var cnt = 1; // bounds array counter
-		
-		for (i = 0; i < tmp.length; i++) {
-			
-			if(i == 0) var range_firstvalue = tmp[i]; // we init first range value
-			
-			if(parseFloat(tmp[i]) > parseFloat(this.bounds[cnt])) {
-				
-				a[cnt - 1] = '' + range_firstvalue + this.separator + tmp[i-1];
-				
-				var range_firstvalue =  tmp[i];
-				
-				cnt++;
-
-			}
-			
-			// we reach the last range, we finally complete manually
-			// and return the array
-			if(cnt == (this.bounds.length - 1)) {
-				// we set the last value
-				a[cnt - 1] = '' + range_firstvalue + this.separator + tmp[tmp.length-1];
-				
-				this.inner_ranges = a;
-				return this.inner_ranges;
-			}
-			
-
-		}
-		
-	};
-	
-	this.getSortedlist = function() {
-		
-		return this.sorted().join(', ');
-		
-	};
-	
-	/**
-	 * Return an html legend
-	 * colors : specify an array of color (hexadecimal values)
-	 * legend :  specify a text input for the legend. By default, just displays 'legend'
-	 * counter : if not null, display counter value
-	 * callback : if not null, callback function applied on legend boundaries
-	 * mode : 	null, 'default', 'distinct', 'discontinuous' : 
-	 * 			- if mode is null, will display legend as 'default mode'
-	 * 			- 'default' : displays ranges like in ranges array (continuous values), sample :  29.26 - 378.80 / 378.80 - 2762.25 /  2762.25 - 6884.84
-	 * 			- 'distinct' : Add + 1 according to decimal precision to distinguish classes (discrete values), sample :  29.26 - 378.80 / 378.81 - 2762.25 /  2762.26 - 6884.84 
-	 * 			- 'discontinuous' : indicates the range of data actually falling in each class , sample :  29.26 - 225.43 / 852.12 - 2762.20 /  3001.25 - 6884.84 / not implemented yet
-	 */
-	this.getHtmlLegend = function(colors, legend, counter, callback, mode) {
-		
-		var cnt= '';
-		
-		this.doCount(); // we do count, even if not displayed
-		
-		if(colors != null) {
-			ccolors = colors;
-		}
-		else {
-			ccolors = this.colors;
-		}
-		
-		if(legend != null) {
-			lg = legend;
-		}
-		else {
-			lg =  'Legend';
-		}
-		
-		if(counter != null) {
-			getcounter = true;
-		}
-		else {
-			getcounter = false;
-		}
-		
-		if(callback != null) {
-			fn = callback;
-		}
-		else {
-			fn = function(o) {return o;};
-		}
-		if(mode == null) {
-			mode = 'default';
-		}
-		if(mode == 'discontinuous') {
-			this.getInnerRanges();
-			// check if some classes are not populated / equivalent of in_array function
-			if(this.counter.indexOf(0) !== -1) {
-				alert(_t("Geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!"));
-				return;
-			}
-
-		}
-		
-		
-		if(ccolors.length < this.ranges.length) {
-			alert(_t('The number of colors should fit the number of ranges. Exit!'));
-			return;
-		}
-		
-		var content  = '<div class="geostats-legend"><div class="geostats-legend-title">' + _t(lg) + '</div>';
-		
-		if(this.is_uniqueValues == false) {
-			
-			for (i = 0; i < (this.ranges.length); i++) {
-				if(getcounter===true) {
-					cnt = ' <span class="geostats-legend-counter">(' + this.counter[i] + ')</span>';
-				}
-				//console.log("Ranges : " + this.ranges[i]);
-				
-				// default mode 
-				var tmp = this.ranges[i].split(this.separator);
-					
-				var start_value = parseFloat(tmp[0]).toFixed(this.precision);
-				var end_value = parseFloat(tmp[1]).toFixed(this.precision);
-					
-				
-				// if mode == 'distinct' and we are not working on the first value
-				if(mode == 'distinct' && i != 0) {
-
-					if(isInt(start_value)) {
-						start_value = parseInt(start_value) + 1;
-					} else {
-
-						start_value = parseFloat(start_value) + (1 / Math.pow(10,this.precision));
-						// strangely the formula above return sometimes long decimal values, 
-						// the following instruction fix it
-						start_value = parseFloat(start_value).toFixed(this.precision);
-					}
-				}
-				
-				// if mode == 'discontinuous'
-				if(mode == 'discontinuous') {
-										
-					var tmp = this.inner_ranges[i].split(this.separator);
-					// console.log("Ranges : " + this.inner_ranges[i]);
-					
-					var start_value = parseFloat(tmp[0]).toFixed(this.precision);
-					var end_value = parseFloat(tmp[1]).toFixed(this.precision);
-					
-				}
-				
-				// we apply callback function
-				var el = fn(start_value) + this.legendSeparator + fn(end_value);
-					
-
-				content += '<div><div class="geostats-legend-block" style="background-color:' + ccolors[i] + '"></div> ' + el + cnt + '</div>';
-			}
-			
-		} else {
-			
-			// only if classification is done on unique values
-			for (i = 0; i < (this.bounds.length); i++) {
-				if(getcounter===true) {
-					cnt = ' <span class="geostats-legend-counter">(' + this.counter[i] + ')</span>';
-				}
-				var el = fn(this.bounds[i]);
-				content += '<div><div class="geostats-legend-block" style="background-color:' + ccolors[i] + '"></div> ' + el + cnt + '</div>';
-			}
-			
-		}
-		
-		content += '</div>';
-    
-		return content;
-	};
-
-	
-	
-	// object constructor
-	// At the end of script. If not setPrecision() method is not known
-	
-	// we create an object identifier for debugging
-	this.objectID = new Date().getUTCMilliseconds();
-	this.log('Creating new geostats object');
-	
-	if(typeof a !== 'undefined' && a.length > 0) {
-		this.serie = a;
-		this.setPrecision();
-		this.log('Setting serie (' + a.length + ') : ' + a.join());
-	} else {
-		this.serie = Array();
-
-	};
-	
-	// creating aliases on classification function for backward compatibility
-	this.getJenks = this.getClassJenks;
-	this.getGeometricProgression = this.getClassGeometricProgression;
-	this.getEqInterval = this.getClassEqInterval;
-	this.getQuantile = this.getClassQuantile;
-	this.getStdDeviation = this.getClassStdDeviation;
-	this.getUniqueValues = this.getClassUniqueValues;
-	this.getArithmeticProgression = this.getClassArithmeticProgression;
-
-};
-
-
-return geostats;
-});
-
-},{}],8:[function(require,module,exports){
-/** echo  * @license echo  * while read i do echo  *  done echo
-*/
-!function(){var Color,K,PITHIRD,TWOPI,X,Y,Z,bezier,brewer,chroma,clip_rgb,colors,cos,css2rgb,hex2rgb,hsi2rgb,hsl2rgb,hsv2rgb,lab2lch,lab2rgb,lab_xyz,lch2lab,lch2rgb,limit,luminance,luminance_x,rgb2hex,rgb2hsi,rgb2hsl,rgb2hsv,rgb2lab,rgb2lch,rgb_xyz,root,type,unpack,xyz_lab,xyz_rgb,_ref;chroma=function(x,y,z,m){return new Color(x,y,z,m)};if(typeof module!=="undefined"&&module!==null&&module.exports!=null){module.exports=chroma}if(typeof define==="function"&&define.amd){define([],function(){return chroma})}else{root=typeof exports!=="undefined"&&exports!==null?exports:this;root.chroma=chroma}chroma.color=function(x,y,z,m){return new Color(x,y,z,m)};chroma.hsl=function(h,s,l,a){return new Color(h,s,l,a,"hsl")};chroma.hsv=function(h,s,v,a){return new Color(h,s,v,a,"hsv")};chroma.rgb=function(r,g,b,a){return new Color(r,g,b,a,"rgb")};chroma.hex=function(x){return new Color(x)};chroma.css=function(x){return new Color(x)};chroma.lab=function(l,a,b){return new Color(l,a,b,"lab")};chroma.lch=function(l,c,h){return new Color(l,c,h,"lch")};chroma.hsi=function(h,s,i){return new Color(h,s,i,"hsi")};chroma.gl=function(r,g,b,a){return new Color(r*255,g*255,b*255,a,"gl")};chroma.interpolate=function(a,b,f,m){if(a==null||b==null){return"#000"}if(type(a)==="string"){a=new Color(a)}if(type(b)==="string"){b=new Color(b)}return a.interpolate(f,b,m)};chroma.mix=chroma.interpolate;chroma.contrast=function(a,b){var l1,l2;if(type(a)==="string"){a=new Color(a)}if(type(b)==="string"){b=new Color(b)}l1=a.luminance();l2=b.luminance();if(l1>l2){return(l1+.05)/(l2+.05)}else{return(l2+.05)/(l1+.05)}};chroma.luminance=function(color){return chroma(color).luminance()};chroma._Color=Color;Color=function(){function Color(){var a,arg,args,m,me,me_rgb,x,y,z,_i,_len,_ref,_ref1,_ref2,_ref3,_ref4;me=this;args=[];for(_i=0,_len=arguments.length;_i<_len;_i++){arg=arguments[_i];if(arg!=null){args.push(arg)}}if(args.length===0){_ref=[255,0,255,1,"rgb"],x=_ref[0],y=_ref[1],z=_ref[2],a=_ref[3],m=_ref[4]}else if(type(args[0])==="array"){if(args[0].length===3){_ref1=args[0],x=_ref1[0],y=_ref1[1],z=_ref1[2];a=1}else if(args[0].length===4){_ref2=args[0],x=_ref2[0],y=_ref2[1],z=_ref2[2],a=_ref2[3]}else{throw"unknown input argument"}m=(_ref3=args[1])!=null?_ref3:"rgb"}else if(type(args[0])==="string"){x=args[0];m="hex"}else if(type(args[0])==="object"){_ref4=args[0]._rgb,x=_ref4[0],y=_ref4[1],z=_ref4[2],a=_ref4[3];m="rgb"}else if(args.length>=3){x=args[0];y=args[1];z=args[2]}if(args.length===3){m="rgb";a=1}else if(args.length===4){if(type(args[3])==="string"){m=args[3];a=1}else if(type(args[3])==="number"){m="rgb";a=args[3]}}else if(args.length===5){a=args[3];m=args[4]}if(a==null){a=1}if(m==="rgb"){me._rgb=[x,y,z,a]}else if(m==="gl"){me._rgb=[x*255,y*255,z*255,a]}else if(m==="hsl"){me._rgb=hsl2rgb(x,y,z);me._rgb[3]=a}else if(m==="hsv"){me._rgb=hsv2rgb(x,y,z);me._rgb[3]=a}else if(m==="hex"){me._rgb=hex2rgb(x)}else if(m==="lab"){me._rgb=lab2rgb(x,y,z);me._rgb[3]=a}else if(m==="lch"){me._rgb=lch2rgb(x,y,z);me._rgb[3]=a}else if(m==="hsi"){me._rgb=hsi2rgb(x,y,z);me._rgb[3]=a}me_rgb=clip_rgb(me._rgb)}Color.prototype.rgb=function(){return this._rgb.slice(0,3)};Color.prototype.rgba=function(){return this._rgb};Color.prototype.hex=function(){return rgb2hex(this._rgb)};Color.prototype.toString=function(){return this.name()};Color.prototype.hsl=function(){return rgb2hsl(this._rgb)};Color.prototype.hsv=function(){return rgb2hsv(this._rgb)};Color.prototype.lab=function(){return rgb2lab(this._rgb)};Color.prototype.lch=function(){return rgb2lch(this._rgb)};Color.prototype.hsi=function(){return rgb2hsi(this._rgb)};Color.prototype.gl=function(){return[this._rgb[0]/255,this._rgb[1]/255,this._rgb[2]/255,this._rgb[3]]};Color.prototype.luminance=function(lum,mode){var cur_lum,eps,max_iter,test;if(mode==null){mode="rgb"}if(!arguments.length){return luminance(this._rgb)}if(lum===0){this._rgb=[0,0,0,this._rgb[3]]}if(lum===1){this._rgb=[255,255,255,this._rgb[3]]}cur_lum=luminance(this._rgb);eps=1e-7;max_iter=20;test=function(l,h){var lm,m;m=l.interpolate(.5,h,mode);lm=m.luminance();if(Math.abs(lum-lm)<eps||!max_iter--){return m}if(lm>lum){return test(l,m)}return test(m,h)};this._rgb=(cur_lum>lum?test(new Color("black"),this):test(this,new Color("white"))).rgba();return this};Color.prototype.name=function(){var h,k;h=this.hex();for(k in chroma.colors){if(h===chroma.colors[k]){return k}}return h};Color.prototype.alpha=function(alpha){if(arguments.length){this._rgb[3]=alpha;return this}return this._rgb[3]};Color.prototype.css=function(mode){var hsl,me,rgb,rnd;if(mode==null){mode="rgb"}me=this;rgb=me._rgb;if(mode.length===3&&rgb[3]<1){mode+="a"}if(mode==="rgb"){return mode+"("+rgb.slice(0,3).map(Math.round).join(",")+")"}else if(mode==="rgba"){return mode+"("+rgb.slice(0,3).map(Math.round).join(",")+","+rgb[3]+")"}else if(mode==="hsl"||mode==="hsla"){hsl=me.hsl();rnd=function(a){return Math.round(a*100)/100};hsl[0]=rnd(hsl[0]);hsl[1]=rnd(hsl[1]*100)+"%";hsl[2]=rnd(hsl[2]*100)+"%";if(mode.length===4){hsl[3]=rgb[3]}return mode+"("+hsl.join(",")+")"}};Color.prototype.interpolate=function(f,col,m){var dh,hue,hue0,hue1,lbv,lbv0,lbv1,me,res,sat,sat0,sat1,xyz0,xyz1;me=this;if(m==null){m="rgb"}if(type(col)==="string"){col=new Color(col)}if(m==="hsl"||m==="hsv"||m==="lch"||m==="hsi"){if(m==="hsl"){xyz0=me.hsl();xyz1=col.hsl()}else if(m==="hsv"){xyz0=me.hsv();xyz1=col.hsv()}else if(m==="hsi"){xyz0=me.hsi();xyz1=col.hsi()}else if(m==="lch"){xyz0=me.lch();xyz1=col.lch()}if(m.substr(0,1)==="h"){hue0=xyz0[0],sat0=xyz0[1],lbv0=xyz0[2];hue1=xyz1[0],sat1=xyz1[1],lbv1=xyz1[2]}else{lbv0=xyz0[0],sat0=xyz0[1],hue0=xyz0[2];lbv1=xyz1[0],sat1=xyz1[1],hue1=xyz1[2]}if(!isNaN(hue0)&&!isNaN(hue1)){if(hue1>hue0&&hue1-hue0>180){dh=hue1-(hue0+360)}else if(hue1<hue0&&hue0-hue1>180){dh=hue1+360-hue0}else{dh=hue1-hue0}hue=hue0+f*dh}else if(!isNaN(hue0)){hue=hue0;if((lbv1===1||lbv1===0)&&m!=="hsv"){sat=sat0}}else if(!isNaN(hue1)){hue=hue1;if((lbv0===1||lbv0===0)&&m!=="hsv"){sat=sat1}}else{hue=Number.NaN}if(sat==null){sat=sat0+f*(sat1-sat0)}lbv=lbv0+f*(lbv1-lbv0);if(m.substr(0,1)==="h"){res=new Color(hue,sat,lbv,m)}else{res=new Color(lbv,sat,hue,m)}}else if(m==="rgb"){xyz0=me._rgb;xyz1=col._rgb;res=new Color(xyz0[0]+f*(xyz1[0]-xyz0[0]),xyz0[1]+f*(xyz1[1]-xyz0[1]),xyz0[2]+f*(xyz1[2]-xyz0[2]),m)}else if(m==="lab"){xyz0=me.lab();xyz1=col.lab();res=new Color(xyz0[0]+f*(xyz1[0]-xyz0[0]),xyz0[1]+f*(xyz1[1]-xyz0[1]),xyz0[2]+f*(xyz1[2]-xyz0[2]),m)}else{throw"color mode "+m+" is not supported"}res.alpha(me.alpha()+f*(col.alpha()-me.alpha()));return res};Color.prototype.premultiply=function(){var a,rgb;rgb=this.rgb();a=this.alpha();return chroma(rgb[0]*a,rgb[1]*a,rgb[2]*a,a)};Color.prototype.darken=function(amount){var lch,me;if(amount==null){amount=20}me=this;lch=me.lch();lch[0]-=amount;return chroma.lch(lch).alpha(me.alpha())};Color.prototype.darker=function(amount){return this.darken(amount)};Color.prototype.brighten=function(amount){if(amount==null){amount=20}return this.darken(-amount)};Color.prototype.brighter=function(amount){return this.brighten(amount)};Color.prototype.saturate=function(amount){var lch,me;if(amount==null){amount=20}me=this;lch=me.lch();lch[1]+=amount;return chroma.lch(lch).alpha(me.alpha())};Color.prototype.desaturate=function(amount){if(amount==null){amount=20}return this.saturate(-amount)};return Color}();clip_rgb=function(rgb){var i;for(i in rgb){if(i<3){if(rgb[i]<0){rgb[i]=0}if(rgb[i]>255){rgb[i]=255}}else if(i===3){if(rgb[i]<0){rgb[i]=0}if(rgb[i]>1){rgb[i]=1}}}return rgb};css2rgb=function(css){var hsl,i,m,rgb,_i,_j,_k,_l;css=css.toLowerCase();if(chroma.colors!=null&&chroma.colors[css]){return hex2rgb(chroma.colors[css])}if(m=css.match(/rgb\(\s*(\-?\d+),\s*(\-?\d+)\s*,\s*(\-?\d+)\s*\)/)){rgb=m.slice(1,4);for(i=_i=0;_i<=2;i=++_i){rgb[i]=+rgb[i]}rgb[3]=1}else if(m=css.match(/rgba\(\s*(\-?\d+),\s*(\-?\d+)\s*,\s*(\-?\d+)\s*,\s*([01]|[01]?\.\d+)\)/)){rgb=m.slice(1,5);for(i=_j=0;_j<=3;i=++_j){rgb[i]=+rgb[i]}}else if(m=css.match(/rgb\(\s*(\-?\d+(?:\.\d+)?)%,\s*(\-?\d+(?:\.\d+)?)%\s*,\s*(\-?\d+(?:\.\d+)?)%\s*\)/)){rgb=m.slice(1,4);for(i=_k=0;_k<=2;i=++_k){rgb[i]=Math.round(rgb[i]*2.55)}rgb[3]=1}else if(m=css.match(/rgba\(\s*(\-?\d+(?:\.\d+)?)%,\s*(\-?\d+(?:\.\d+)?)%\s*,\s*(\-?\d+(?:\.\d+)?)%\s*,\s*([01]|[01]?\.\d+)\)/)){rgb=m.slice(1,5);for(i=_l=0;_l<=2;i=++_l){rgb[i]=Math.round(rgb[i]*2.55)}rgb[3]=+rgb[3]}else if(m=css.match(/hsl\(\s*(\-?\d+(?:\.\d+)?),\s*(\-?\d+(?:\.\d+)?)%\s*,\s*(\-?\d+(?:\.\d+)?)%\s*\)/)){hsl=m.slice(1,4);hsl[1]*=.01;hsl[2]*=.01;rgb=hsl2rgb(hsl);rgb[3]=1}else if(m=css.match(/hsla\(\s*(\-?\d+(?:\.\d+)?),\s*(\-?\d+(?:\.\d+)?)%\s*,\s*(\-?\d+(?:\.\d+)?)%\s*,\s*([01]|[01]?\.\d+)\)/)){hsl=m.slice(1,4);hsl[1]*=.01;hsl[2]*=.01;rgb=hsl2rgb(hsl);rgb[3]=+m[4]}return rgb};hex2rgb=function(hex){var a,b,g,r,rgb,u;if(hex.match(/^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)){if(hex.length===4||hex.length===7){hex=hex.substr(1)}if(hex.length===3){hex=hex.split("");hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2]}u=parseInt(hex,16);r=u>>16;g=u>>8&255;b=u&255;return[r,g,b,1]}if(hex.match(/^#?([A-Fa-f0-9]{8})$/)){if(hex.length===9){hex=hex.substr(1)}u=parseInt(hex,16);r=u>>24&255;g=u>>16&255;b=u>>8&255;a=u&255;return[r,g,b,a]}if(rgb=css2rgb(hex)){return rgb}throw"unknown color: "+hex};hsi2rgb=function(h,s,i){var b,g,r,_ref;_ref=unpack(arguments),h=_ref[0],s=_ref[1],i=_ref[2];h/=360;if(h<1/3){b=(1-s)/3;r=(1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3;g=1-(b+r)}else if(h<2/3){h-=1/3;r=(1-s)/3;g=(1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3;b=1-(r+g)}else{h-=2/3;g=(1-s)/3;b=(1+s*cos(TWOPI*h)/cos(PITHIRD-TWOPI*h))/3;r=1-(g+b)}r=limit(i*r*3);g=limit(i*g*3);b=limit(i*b*3);return[r*255,g*255,b*255]};hsl2rgb=function(){var b,c,g,h,i,l,r,s,t1,t2,t3,_i,_ref,_ref1;_ref=unpack(arguments),h=_ref[0],s=_ref[1],l=_ref[2];if(s===0){r=g=b=l*255}else{t3=[0,0,0];c=[0,0,0];t2=l<.5?l*(1+s):l+s-l*s;t1=2*l-t2;h/=360;t3[0]=h+1/3;t3[1]=h;t3[2]=h-1/3;for(i=_i=0;_i<=2;i=++_i){if(t3[i]<0){t3[i]+=1}if(t3[i]>1){t3[i]-=1}if(6*t3[i]<1){c[i]=t1+(t2-t1)*6*t3[i]}else if(2*t3[i]<1){c[i]=t2}else if(3*t3[i]<2){c[i]=t1+(t2-t1)*(2/3-t3[i])*6}else{c[i]=t1}}_ref1=[Math.round(c[0]*255),Math.round(c[1]*255),Math.round(c[2]*255)],r=_ref1[0],g=_ref1[1],b=_ref1[2]}return[r,g,b]};hsv2rgb=function(){var b,f,g,h,i,p,q,r,s,t,v,_ref,_ref1,_ref2,_ref3,_ref4,_ref5,_ref6;_ref=unpack(arguments),h=_ref[0],s=_ref[1],v=_ref[2];v*=255;if(s===0){r=g=b=v}else{if(h===360){h=0}if(h>360){h-=360}if(h<0){h+=360}h/=60;i=Math.floor(h);f=h-i;p=v*(1-s);q=v*(1-s*f);t=v*(1-s*(1-f));switch(i){case 0:_ref1=[v,t,p],r=_ref1[0],g=_ref1[1],b=_ref1[2];break;case 1:_ref2=[q,v,p],r=_ref2[0],g=_ref2[1],b=_ref2[2];break;case 2:_ref3=[p,v,t],r=_ref3[0],g=_ref3[1],b=_ref3[2];break;case 3:_ref4=[p,q,v],r=_ref4[0],g=_ref4[1],b=_ref4[2];break;case 4:_ref5=[t,p,v],r=_ref5[0],g=_ref5[1],b=_ref5[2];break;case 5:_ref6=[v,p,q],r=_ref6[0],g=_ref6[1],b=_ref6[2]}}r=Math.round(r);g=Math.round(g);b=Math.round(b);return[r,g,b]};K=18;X=.95047;Y=1;Z=1.08883;lab2lch=function(){var a,b,c,h,l,_ref;_ref=unpack(arguments),l=_ref[0],a=_ref[1],b=_ref[2];c=Math.sqrt(a*a+b*b);h=Math.atan2(b,a)/Math.PI*180;return[l,c,h]};lab2rgb=function(l,a,b){var g,r,x,y,z,_ref,_ref1;if(l!==void 0&&l.length===3){_ref=l,l=_ref[0],a=_ref[1],b=_ref[2]}if(l!==void 0&&l.length===3){_ref1=l,l=_ref1[0],a=_ref1[1],b=_ref1[2]}y=(l+16)/116;x=y+a/500;z=y-b/200;x=lab_xyz(x)*X;y=lab_xyz(y)*Y;z=lab_xyz(z)*Z;r=xyz_rgb(3.2404542*x-1.5371385*y-.4985314*z);g=xyz_rgb(-.969266*x+1.8760108*y+.041556*z);b=xyz_rgb(.0556434*x-.2040259*y+1.0572252*z);return[limit(r,0,255),limit(g,0,255),limit(b,0,255),1]};lab_xyz=function(x){if(x>.206893034){return x*x*x}else{return(x-4/29)/7.787037}};xyz_rgb=function(r){return Math.round(255*(r<=.00304?12.92*r:1.055*Math.pow(r,1/2.4)-.055))};lch2lab=function(){var c,h,l,_ref;_ref=unpack(arguments),l=_ref[0],c=_ref[1],h=_ref[2];h=h*Math.PI/180;return[l,Math.cos(h)*c,Math.sin(h)*c]};lch2rgb=function(l,c,h){var L,a,b,g,r,_ref,_ref1;_ref=lch2lab(l,c,h),L=_ref[0],a=_ref[1],b=_ref[2];_ref1=lab2rgb(L,a,b),r=_ref1[0],g=_ref1[1],b=_ref1[2];return[limit(r,0,255),limit(g,0,255),limit(b,0,255)]};luminance=function(r,g,b){var _ref;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];r=luminance_x(r);g=luminance_x(g);b=luminance_x(b);return.2126*r+.7152*g+.0722*b};luminance_x=function(x){x/=255;if(x<=.03928){return x/12.92}else{return Math.pow((x+.055)/1.055,2.4)}};rgb2hex=function(){var b,g,r,str,u,_ref;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];u=r<<16|g<<8|b;str="000000"+u.toString(16);return"#"+str.substr(str.length-6)};rgb2hsi=function(){var TWOPI,b,g,h,i,min,r,s,_ref;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];TWOPI=Math.PI*2;r/=255;g/=255;b/=255;min=Math.min(r,g,b);i=(r+g+b)/3;s=1-min/i;if(s===0){h=0}else{h=(r-g+(r-b))/2;h/=Math.sqrt((r-g)*(r-g)+(r-b)*(g-b));h=Math.acos(h);if(b>g){h=TWOPI-h}h/=TWOPI}return[h*360,s,i]};rgb2hsl=function(r,g,b){var h,l,max,min,s,_ref;if(r!==void 0&&r.length>=3){_ref=r,r=_ref[0],g=_ref[1],b=_ref[2]}r/=255;g/=255;b/=255;min=Math.min(r,g,b);max=Math.max(r,g,b);l=(max+min)/2;if(max===min){s=0;h=Number.NaN}else{s=l<.5?(max-min)/(max+min):(max-min)/(2-max-min)}if(r===max){h=(g-b)/(max-min)}else if(g===max){h=2+(b-r)/(max-min)}else if(b===max){h=4+(r-g)/(max-min)}h*=60;if(h<0){h+=360}return[h,s,l]};rgb2hsv=function(){var b,delta,g,h,max,min,r,s,v,_ref;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];min=Math.min(r,g,b);max=Math.max(r,g,b);delta=max-min;v=max/255;if(max===0){h=Number.NaN;s=0}else{s=delta/max;if(r===max){h=(g-b)/delta}if(g===max){h=2+(b-r)/delta}if(b===max){h=4+(r-g)/delta}h*=60;if(h<0){h+=360}}return[h,s,v]};rgb2lab=function(){var b,g,r,x,y,z,_ref;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];r=rgb_xyz(r);g=rgb_xyz(g);b=rgb_xyz(b);x=xyz_lab((.4124564*r+.3575761*g+.1804375*b)/X);y=xyz_lab((.2126729*r+.7151522*g+.072175*b)/Y);z=xyz_lab((.0193339*r+.119192*g+.9503041*b)/Z);return[116*y-16,500*(x-y),200*(y-z)]};rgb_xyz=function(r){if((r/=255)<=.04045){return r/12.92}else{return Math.pow((r+.055)/1.055,2.4)}};xyz_lab=function(x){if(x>.008856){return Math.pow(x,1/3)}else{return 7.787037*x+4/29}};rgb2lch=function(){var a,b,g,l,r,_ref,_ref1;_ref=unpack(arguments),r=_ref[0],g=_ref[1],b=_ref[2];_ref1=rgb2lab(r,g,b),l=_ref1[0],a=_ref1[1],b=_ref1[2];return lab2lch(l,a,b)};chroma.scale=function(colors,positions){var classifyValue,f,getClass,getColor,resetCache,setColors,setDomain,tmap,_colorCache,_colors,_correctLightness,_domain,_fixed,_max,_min,_mode,_nacol,_numClasses,_out,_pos,_spread;_mode="rgb";_nacol=chroma("#ccc");_spread=0;_fixed=false;_domain=[0,1];_colors=[];_out=false;_pos=[];_min=0;_max=1;_correctLightness=false;_numClasses=0;_colorCache={};setColors=function(colors,positions){var c,col,_i,_j,_ref,_ref1,_ref2;if(colors==null){colors=["#ddd","#222"]}if(colors!=null&&type(colors)==="string"&&((_ref=chroma.brewer)!=null?_ref[colors]:void 0)!=null){colors=chroma.brewer[colors]}if(type(colors)==="array"){colors=colors.slice(0);for(c=_i=0,_ref1=colors.length-1;0<=_ref1?_i<=_ref1:_i>=_ref1;c=0<=_ref1?++_i:--_i){col=colors[c];if(type(col)==="string"){colors[c]=chroma(col)}}if(positions!=null){_pos=positions}else{_pos=[];for(c=_j=0,_ref2=colors.length-1;0<=_ref2?_j<=_ref2:_j>=_ref2;c=0<=_ref2?++_j:--_j){_pos.push(c/(colors.length-1))}}}resetCache();return _colors=colors};setDomain=function(domain){if(domain==null){domain=[]}_domain=domain;_min=domain[0];_max=domain[domain.length-1];resetCache();if(domain.length===2){return _numClasses=0}else{return _numClasses=domain.length-1}};getClass=function(value){var i,n;if(_domain!=null){n=_domain.length-1;i=0;while(i<n&&value>=_domain[i]){i++}return i-1}return 0};tmap=function(t){return t};classifyValue=function(value){var i,maxc,minc,n,val;val=value;if(_domain.length>2){n=_domain.length-1;i=getClass(value);minc=_domain[0]+(_domain[1]-_domain[0])*(0+_spread*.5);maxc=_domain[n-1]+(_domain[n]-_domain[n-1])*(1-_spread*.5);val=_min+(_domain[i]+(_domain[i+1]-_domain[i])*.5-minc)/(maxc-minc)*(_max-_min)}return val};getColor=function(val,bypassMap){var c,col,f0,i,k,p,t,_i,_ref;if(bypassMap==null){bypassMap=false}if(isNaN(val)){return _nacol}if(!bypassMap){if(_domain.length>2){c=getClass(val);t=c/(_numClasses-1)}else{t=f0=_min!==_max?(val-_min)/(_max-_min):0;t=f0=(val-_min)/(_max-_min);t=Math.min(1,Math.max(0,t))}}else{t=val}if(!bypassMap){t=tmap(t)}k=Math.floor(t*1e4);if(_colorCache[k]){col=_colorCache[k]}else{if(type(_colors)==="array"){for(i=_i=0,_ref=_pos.length-1;0<=_ref?_i<=_ref:_i>=_ref;i=0<=_ref?++_i:--_i){p=_pos[i];if(t<=p){col=_colors[i];break}if(t>=p&&i===_pos.length-1){col=_colors[i];break}if(t>p&&t<_pos[i+1]){t=(t-p)/(_pos[i+1]-p);col=chroma.interpolate(_colors[i],_colors[i+1],t,_mode);break}}}else if(type(_colors)==="function"){col=_colors(t)}_colorCache[k]=col}return col};resetCache=function(){return _colorCache={}};setColors(colors,positions);f=function(v){var c;c=getColor(v);if(_out&&c[_out]){return c[_out]()}else{return c}};f.domain=function(domain,classes,mode,key){var d;if(mode==null){mode="e"}if(!arguments.length){return _domain}if(classes!=null){d=chroma.analyze(domain,key);if(classes===0){domain=[d.min,d.max]}else{domain=chroma.limits(d,mode,classes)}}setDomain(domain);return f};f.mode=function(_m){if(!arguments.length){return _mode}_mode=_m;resetCache();return f};f.range=function(colors,_pos){setColors(colors,_pos);return f};f.out=function(_o){_out=_o;return f};f.spread=function(val){if(!arguments.length){return _spread}_spread=val;return f};f.correctLightness=function(v){if(!arguments.length){return _correctLightness}_correctLightness=v;resetCache();if(_correctLightness){tmap=function(t){var L0,L1,L_actual,L_diff,L_ideal,max_iter,pol,t0,t1;L0=getColor(0,true).lab()[0];L1=getColor(1,true).lab()[0];pol=L0>L1;L_actual=getColor(t,true).lab()[0];L_ideal=L0+(L1-L0)*t;L_diff=L_actual-L_ideal;t0=0;t1=1;max_iter=20;while(Math.abs(L_diff)>.01&&max_iter-->0){!function(){if(pol){L_diff*=-1}if(L_diff<0){t0=t;t+=(t1-t)*.5}else{t1=t;t+=(t0-t)*.5}L_actual=getColor(t,true).lab()[0];return L_diff=L_actual-L_ideal}()}return t}}else{tmap=function(t){return t}}return f};f.colors=function(out){var i,samples,_i,_j,_len,_ref;if(out==null){out="hex"}colors=[];samples=[];if(_domain.length>2){for(i=_i=1,_ref=_domain.length;1<=_ref?_i<_ref:_i>_ref;i=1<=_ref?++_i:--_i){samples.push((_domain[i-1]+_domain[i])*.5)}}else{samples=_domain}for(_j=0,_len=samples.length;_j<_len;_j++){i=samples[_j];colors.push(f(i)[out]())}return colors};return f};if((_ref=chroma.scales)==null){chroma.scales={}}chroma.scales.cool=function(){return chroma.scale([chroma.hsl(180,1,.9),chroma.hsl(250,.7,.4)])};chroma.scales.hot=function(){return chroma.scale(["#000","#f00","#ff0","#fff"],[0,.25,.75,1]).mode("rgb")};chroma.analyze=function(data,key,filter){var add,k,r,val,visit,_i,_len;r={min:Number.MAX_VALUE,max:Number.MAX_VALUE*-1,sum:0,values:[],count:0};if(filter==null){filter=function(){return true}}add=function(val){if(val!=null&&!isNaN(val)){r.values.push(val);r.sum+=val;if(val<r.min){r.min=val}if(val>r.max){r.max=val}r.count+=1}};visit=function(val,k){if(filter(val,k)){if(key!=null&&type(key)==="function"){return add(key(val))}else if(key!=null&&type(key)==="string"||type(key)==="number"){return add(val[key])}else{return add(val)}}};if(type(data)==="array"){for(_i=0,_len=data.length;_i<_len;_i++){val=data[_i];visit(val)}}else{for(k in data){val=data[k];visit(val,k)}}r.domain=[r.min,r.max];r.limits=function(mode,num){return chroma.limits(r,mode,num)};return r};chroma.limits=function(data,mode,num){var assignments,best,centroids,cluster,clusterSizes,dist,i,j,kClusters,limits,max,max_log,min,min_log,mindist,n,nb_iters,newCentroids,p,pb,pr,repeat,sum,tmpKMeansBreaks,value,values,_i,_j,_k,_l,_m,_n,_o,_p,_q,_r,_ref1,_ref10,_ref11,_ref12,_ref13,_ref14,_ref15,_ref2,_ref3,_ref4,_ref5,_ref6,_ref7,_ref8,_ref9,_s,_t,_u,_v,_w;if(mode==null){mode="equal"}if(num==null){num=7}if(type(data)==="array"){data=chroma.analyze(data)}min=data.min;max=data.max;sum=data.sum;values=data.values.sort(function(a,b){return a-b});limits=[];if(mode.substr(0,1)==="c"){limits.push(min);limits.push(max)}if(mode.substr(0,1)==="e"){limits.push(min);for(i=_i=1,_ref1=num-1;1<=_ref1?_i<=_ref1:_i>=_ref1;i=1<=_ref1?++_i:--_i){limits.push(min+i/num*(max-min))}limits.push(max)}else if(mode.substr(0,1)==="l"){if(min<=0){throw"Logarithmic scales are only possible for values > 0"}min_log=Math.LOG10E*Math.log(min);max_log=Math.LOG10E*Math.log(max);limits.push(min);for(i=_j=1,_ref2=num-1;1<=_ref2?_j<=_ref2:_j>=_ref2;i=1<=_ref2?++_j:--_j){limits.push(Math.pow(10,min_log+i/num*(max_log-min_log)))}limits.push(max)}else if(mode.substr(0,1)==="q"){limits.push(min);for(i=_k=1,_ref3=num-1;1<=_ref3?_k<=_ref3:_k>=_ref3;i=1<=_ref3?++_k:--_k){p=values.length*i/num;pb=Math.floor(p);if(pb===p){limits.push(values[pb])}else{pr=p-pb;limits.push(values[pb]*pr+values[pb+1]*(1-pr))}}limits.push(max)}else if(mode.substr(0,1)==="k"){n=values.length;assignments=new Array(n);clusterSizes=new Array(num);repeat=true;nb_iters=0;centroids=null;centroids=[];centroids.push(min);for(i=_l=1,_ref4=num-1;1<=_ref4?_l<=_ref4:_l>=_ref4;i=1<=_ref4?++_l:--_l){centroids.push(min+i/num*(max-min))}centroids.push(max);while(repeat){for(j=_m=0,_ref5=num-1;0<=_ref5?_m<=_ref5:_m>=_ref5;j=0<=_ref5?++_m:--_m){clusterSizes[j]=0}for(i=_n=0,_ref6=n-1;0<=_ref6?_n<=_ref6:_n>=_ref6;i=0<=_ref6?++_n:--_n){value=values[i];mindist=Number.MAX_VALUE;for(j=_o=0,_ref7=num-1;0<=_ref7?_o<=_ref7:_o>=_ref7;j=0<=_ref7?++_o:--_o){dist=Math.abs(centroids[j]-value);if(dist<mindist){mindist=dist;best=j}}clusterSizes[best]++;assignments[i]=best}newCentroids=new Array(num);for(j=_p=0,_ref8=num-1;0<=_ref8?_p<=_ref8:_p>=_ref8;j=0<=_ref8?++_p:--_p){newCentroids[j]=null}for(i=_q=0,_ref9=n-1;0<=_ref9?_q<=_ref9:_q>=_ref9;i=0<=_ref9?++_q:--_q){cluster=assignments[i];if(newCentroids[cluster]===null){newCentroids[cluster]=values[i]}else{newCentroids[cluster]+=values[i]}}for(j=_r=0,_ref10=num-1;0<=_ref10?_r<=_ref10:_r>=_ref10;j=0<=_ref10?++_r:--_r){newCentroids[j]*=1/clusterSizes[j]}repeat=false;for(j=_s=0,_ref11=num-1;0<=_ref11?_s<=_ref11:_s>=_ref11;j=0<=_ref11?++_s:--_s){if(newCentroids[j]!==centroids[i]){repeat=true;break}}centroids=newCentroids;nb_iters++;if(nb_iters>200){repeat=false}}kClusters={};for(j=_t=0,_ref12=num-1;0<=_ref12?_t<=_ref12:_t>=_ref12;j=0<=_ref12?++_t:--_t){kClusters[j]=[]}for(i=_u=0,_ref13=n-1;0<=_ref13?_u<=_ref13:_u>=_ref13;i=0<=_ref13?++_u:--_u){cluster=assignments[i];kClusters[cluster].push(values[i])}tmpKMeansBreaks=[];for(j=_v=0,_ref14=num-1;0<=_ref14?_v<=_ref14:_v>=_ref14;j=0<=_ref14?++_v:--_v){tmpKMeansBreaks.push(kClusters[j][0]);tmpKMeansBreaks.push(kClusters[j][kClusters[j].length-1])}tmpKMeansBreaks=tmpKMeansBreaks.sort(function(a,b){return a-b});limits.push(tmpKMeansBreaks[0]);for(i=_w=1,_ref15=tmpKMeansBreaks.length-1;_w<=_ref15;i=_w+=2){if(!isNaN(tmpKMeansBreaks[i])){limits.push(tmpKMeansBreaks[i])}}}return limits};/**
-  	ColorBrewer colors for chroma.js
-  
-  	Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The 
-  	Pennsylvania State University.
-  
-  	Licensed under the Apache License, Version 2.0 (the "License"); 
-  	you may not use this file except in compliance with the License.
-  	You may obtain a copy of the License at	
-  	http://www.apache.org/licenses/LICENSE-2.0
-  
-  	Unless required by applicable law or agreed to in writing, software distributed
-  	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-  	CONDITIONS OF ANY KIND, either express or implied. See the License for the
-  	specific language governing permissions and limitations under the License.
-  
-      @preserve
-  */
-chroma.brewer=brewer={OrRd:["#fff7ec","#fee8c8","#fdd49e","#fdbb84","#fc8d59","#ef6548","#d7301f","#b30000","#7f0000"],PuBu:["#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0","#045a8d","#023858"],BuPu:["#f7fcfd","#e0ecf4","#bfd3e6","#9ebcda","#8c96c6","#8c6bb1","#88419d","#810f7c","#4d004b"],Oranges:["#fff5eb","#fee6ce","#fdd0a2","#fdae6b","#fd8d3c","#f16913","#d94801","#a63603","#7f2704"],BuGn:["#f7fcfd","#e5f5f9","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45","#006d2c","#00441b"],YlOrBr:["#ffffe5","#fff7bc","#fee391","#fec44f","#fe9929","#ec7014","#cc4c02","#993404","#662506"],YlGn:["#ffffe5","#f7fcb9","#d9f0a3","#addd8e","#78c679","#41ab5d","#238443","#006837","#004529"],Reds:["#fff5f0","#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#a50f15","#67000d"],RdPu:["#fff7f3","#fde0dd","#fcc5c0","#fa9fb5","#f768a1","#dd3497","#ae017e","#7a0177","#49006a"],Greens:["#f7fcf5","#e5f5e0","#c7e9c0","#a1d99b","#74c476","#41ab5d","#238b45","#006d2c","#00441b"],YlGnBu:["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"],Purples:["#fcfbfd","#efedf5","#dadaeb","#bcbddc","#9e9ac8","#807dba","#6a51a3","#54278f","#3f007d"],GnBu:["#f7fcf0","#e0f3db","#ccebc5","#a8ddb5","#7bccc4","#4eb3d3","#2b8cbe","#0868ac","#084081"],Greys:["#ffffff","#f0f0f0","#d9d9d9","#bdbdbd","#969696","#737373","#525252","#252525","#000000"],YlOrRd:["#ffffcc","#ffeda0","#fed976","#feb24c","#fd8d3c","#fc4e2a","#e31a1c","#bd0026","#800026"],PuRd:["#f7f4f9","#e7e1ef","#d4b9da","#c994c7","#df65b0","#e7298a","#ce1256","#980043","#67001f"],Blues:["#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"],PuBuGn:["#fff7fb","#ece2f0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a","#016c59","#014636"],Spectral:["#9e0142","#d53e4f","#f46d43","#fdae61","#fee08b","#ffffbf","#e6f598","#abdda4","#66c2a5","#3288bd","#5e4fa2"],RdYlGn:["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"],RdBu:["#67001f","#b2182b","#d6604d","#f4a582","#fddbc7","#f7f7f7","#d1e5f0","#92c5de","#4393c3","#2166ac","#053061"],PiYG:["#8e0152","#c51b7d","#de77ae","#f1b6da","#fde0ef","#f7f7f7","#e6f5d0","#b8e186","#7fbc41","#4d9221","#276419"],PRGn:["#40004b","#762a83","#9970ab","#c2a5cf","#e7d4e8","#f7f7f7","#d9f0d3","#a6dba0","#5aae61","#1b7837","#00441b"],RdYlBu:["#a50026","#d73027","#f46d43","#fdae61","#fee090","#ffffbf","#e0f3f8","#abd9e9","#74add1","#4575b4","#313695"],BrBG:["#543005","#8c510a","#bf812d","#dfc27d","#f6e8c3","#f5f5f5","#c7eae5","#80cdc1","#35978f","#01665e","#003c30"],RdGy:["#67001f","#b2182b","#d6604d","#f4a582","#fddbc7","#ffffff","#e0e0e0","#bababa","#878787","#4d4d4d","#1a1a1a"],PuOr:["#7f3b08","#b35806","#e08214","#fdb863","#fee0b6","#f7f7f7","#d8daeb","#b2abd2","#8073ac","#542788","#2d004b"],Set2:["#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3"],Accent:["#7fc97f","#beaed4","#fdc086","#ffff99","#386cb0","#f0027f","#bf5b17","#666666"],Set1:["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999"],Set3:["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"],Dark2:["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02","#a6761d","#666666"],Paired:["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928"],Pastel2:["#b3e2cd","#fdcdac","#cbd5e8","#f4cae4","#e6f5c9","#fff2ae","#f1e2cc","#cccccc"],Pastel1:["#fbb4ae","#b3cde3","#ccebc5","#decbe4","#fed9a6","#ffffcc","#e5d8bd","#fddaec","#f2f2f2"]};chroma.colors=colors={indigo:"#4b0082",gold:"#ffd700",hotpink:"#ff69b4",firebrick:"#b22222",indianred:"#cd5c5c",yellow:"#ffff00",mistyrose:"#ffe4e1",darkolivegreen:"#556b2f",olive:"#808000",darkseagreen:"#8fbc8f",pink:"#ffc0cb",tomato:"#ff6347",lightcoral:"#f08080",orangered:"#ff4500",navajowhite:"#ffdead",lime:"#00ff00",palegreen:"#98fb98",darkslategrey:"#2f4f4f",greenyellow:"#adff2f",burlywood:"#deb887",seashell:"#fff5ee",mediumspringgreen:"#00fa9a",fuchsia:"#ff00ff",papayawhip:"#ffefd5",blanchedalmond:"#ffebcd",chartreuse:"#7fff00",dimgray:"#696969",black:"#000000",peachpuff:"#ffdab9",springgreen:"#00ff7f",aquamarine:"#7fffd4",white:"#ffffff",orange:"#ffa500",lightsalmon:"#ffa07a",darkslategray:"#2f4f4f",brown:"#a52a2a",ivory:"#fffff0",dodgerblue:"#1e90ff",peru:"#cd853f",lawngreen:"#7cfc00",chocolate:"#d2691e",crimson:"#dc143c",forestgreen:"#228b22",darkgrey:"#a9a9a9",lightseagreen:"#20b2aa",cyan:"#00ffff",mintcream:"#f5fffa",silver:"#c0c0c0",antiquewhite:"#faebd7",mediumorchid:"#ba55d3",skyblue:"#87ceeb",gray:"#808080",darkturquoise:"#00ced1",goldenrod:"#daa520",darkgreen:"#006400",floralwhite:"#fffaf0",darkviolet:"#9400d3",darkgray:"#a9a9a9",moccasin:"#ffe4b5",saddlebrown:"#8b4513",grey:"#808080",darkslateblue:"#483d8b",lightskyblue:"#87cefa",lightpink:"#ffb6c1",mediumvioletred:"#c71585",slategrey:"#708090",red:"#ff0000",deeppink:"#ff1493",limegreen:"#32cd32",darkmagenta:"#8b008b",palegoldenrod:"#eee8aa",plum:"#dda0dd",turquoise:"#40e0d0",lightgrey:"#d3d3d3",lightgoldenrodyellow:"#fafad2",darkgoldenrod:"#b8860b",lavender:"#e6e6fa",maroon:"#800000",yellowgreen:"#9acd32",sandybrown:"#f4a460",thistle:"#d8bfd8",violet:"#ee82ee",navy:"#000080",magenta:"#ff00ff",dimgrey:"#696969",tan:"#d2b48c",rosybrown:"#bc8f8f",olivedrab:"#6b8e23",blue:"#0000ff",lightblue:"#add8e6",ghostwhite:"#f8f8ff",honeydew:"#f0fff0",cornflowerblue:"#6495ed",slateblue:"#6a5acd",linen:"#faf0e6",darkblue:"#00008b",powderblue:"#b0e0e6",seagreen:"#2e8b57",darkkhaki:"#bdb76b",snow:"#fffafa",sienna:"#a0522d",mediumblue:"#0000cd",royalblue:"#4169e1",lightcyan:"#e0ffff",green:"#008000",mediumpurple:"#9370db",midnightblue:"#191970",cornsilk:"#fff8dc",paleturquoise:"#afeeee",bisque:"#ffe4c4",slategray:"#708090",darkcyan:"#008b8b",khaki:"#f0e68c",wheat:"#f5deb3",teal:"#008080",darkorchid:"#9932cc",deepskyblue:"#00bfff",salmon:"#fa8072",darkred:"#8b0000",steelblue:"#4682b4",palevioletred:"#db7093",lightslategray:"#778899",aliceblue:"#f0f8ff",lightslategrey:"#778899",lightgreen:"#90ee90",orchid:"#da70d6",gainsboro:"#dcdcdc",mediumseagreen:"#3cb371",lightgray:"#d3d3d3",mediumturquoise:"#48d1cc",lemonchiffon:"#fffacd",cadetblue:"#5f9ea0",lightyellow:"#ffffe0",lavenderblush:"#fff0f5",coral:"#ff7f50",purple:"#800080",aqua:"#00ffff",whitesmoke:"#f5f5f5",mediumslateblue:"#7b68ee",darkorange:"#ff8c00",mediumaquamarine:"#66cdaa",darksalmon:"#e9967a",beige:"#f5f5dc",blueviolet:"#8a2be2",azure:"#f0ffff",lightsteelblue:"#b0c4de",oldlace:"#fdf5e6"};type=function(){var classToType,name,_i,_len,_ref1;classToType={};_ref1="Boolean Number String Function Array Date RegExp Undefined Null".split(" ");for(_i=0,_len=_ref1.length;_i<_len;_i++){name=_ref1[_i];classToType["[object "+name+"]"]=name.toLowerCase()}return function(obj){var strType;strType=Object.prototype.toString.call(obj);return classToType[strType]||"object"}}();limit=function(x,min,max){if(min==null){min=0}if(max==null){max=1}if(x<min){x=min}if(x>max){x=max}return x};unpack=function(args){if(args.length>=3){return args}else{return args[0]}};TWOPI=Math.PI*2;PITHIRD=Math.PI/3;cos=Math.cos;bezier=function(colors){var I,I0,I1,c,lab0,lab1,lab2,lab3,_ref1,_ref2,_ref3;colors=function(){var _i,_len,_results;_results=[];for(_i=0,_len=colors.length;_i<_len;_i++){c=colors[_i];_results.push(chroma(c))}return _results}();if(colors.length===2){_ref1=function(){var _i,_len,_results;_results=[];for(_i=0,_len=colors.length;_i<_len;_i++){c=colors[_i];_results.push(c.lab())}return _results}(),lab0=_ref1[0],lab1=_ref1[1];I=function(t){var i,lab;lab=function(){var _i,_results;_results=[];for(i=_i=0;_i<=2;i=++_i){_results.push(lab0[i]+t*(lab1[i]-lab0[i]))}return _results}();return chroma.lab.apply(chroma,lab)}}else if(colors.length===3){_ref2=function(){var _i,_len,_results;_results=[];for(_i=0,_len=colors.length;_i<_len;_i++){c=colors[_i];_results.push(c.lab())}return _results}(),lab0=_ref2[0],lab1=_ref2[1],lab2=_ref2[2];I=function(t){var i,lab;lab=function(){var _i,_results;_results=[];for(i=_i=0;_i<=2;i=++_i){_results.push((1-t)*(1-t)*lab0[i]+2*(1-t)*t*lab1[i]+t*t*lab2[i])}return _results}();return chroma.lab.apply(chroma,lab)}}else if(colors.length===4){_ref3=function(){var _i,_len,_results;_results=[];for(_i=0,_len=colors.length;_i<_len;_i++){c=colors[_i];_results.push(c.lab())}return _results}(),lab0=_ref3[0],lab1=_ref3[1],lab2=_ref3[2],lab3=_ref3[3];I=function(t){var i,lab;lab=function(){var _i,_results;_results=[];for(i=_i=0;_i<=2;i=++_i){_results.push((1-t)*(1-t)*(1-t)*lab0[i]+3*(1-t)*(1-t)*t*lab1[i]+3*(1-t)*t*t*lab2[i]+t*t*t*lab3[i])}return _results}();return chroma.lab.apply(chroma,lab)}}else if(colors.length===5){I0=bezier(colors.slice(0,3));I1=bezier(colors.slice(2,5));I=function(t){if(t<.5){return I0(t*2)}else{return I1((t-.5)*2)}}}return I};chroma.interpolate.bezier=bezier}.call(this);
-},{}],9:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  *
  * Polyfills for compatibility
@@ -1819,7 +1475,79 @@ module.exports = function () {
         };
     }
 };
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+/*jslint node: true */
+/*global module, google, require, define, define.amd*/
+'use strict';
+/**
+ * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
+ * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
+ * extendable sandbox.
+ *
+ *    Source code...................... http://github.com/moismailzai/socioscapes
+ *    Reference implementation......... http://app.socioscapes.com
+ *    License.......................... MIT license (free as in beer & speech)
+ *    Copyright........................
+ *
+ * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
+ * University of Toronto.
+ */
+var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
+    fetchGoogleGeocode = require('./fetchers/fetchGoogleGeocode.js'),
+    fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
+    fetchWfs = require('./fetchers/fetchWfs.js'),
+    newLayer = require('./core/newLayer.js'),
+    newViewGmap = require('./views/newViewGmap.js');
+/**
+ * This is the root socioscapes namespace and object.
+ *
+ * Requires the modules {@link socioscapes.fetchGoogleAuth}, {@link socioscapes.fetchGoogleGeocode},
+ * {@link socioscapes.fetchGoogleBq}, {@link socioscapes.fetchWfs}, {@link socioscapes.newLayer}, and
+ * {@link socioscapes.newViewGmap}.
+ *
+ * @namespace socioscapes
+ * @requires module:fetchGoogleAuth
+ * @requires module:fetchGoogleGeocode
+ * @requires module:fetchGoogleBq
+ * @requires module:fetchWfs
+ * @requires module:newLayer
+ * @requires module:newViewGmap
+ */
+var socioscapes = {};
+Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
+    value: fetchGoogleAuth
+});
+Object.defineProperty(socioscapes, 'fetchGoogleGeocode', {
+    value: fetchGoogleGeocode
+});
+Object.defineProperty(socioscapes, 'fetchGoogleBq', {
+    value: fetchGoogleBq
+});
+Object.defineProperty(socioscapes, 'fetchWfs', {
+    value: fetchWfs
+});
+Object.defineProperty(socioscapes, 'newLayer', {
+    value: newLayer
+});
+Object.defineProperty(socioscapes, 'newViewGmap', {
+    value: newViewGmap
+});
+// Some magic borrowed from Simon Georget (https://github.com/simogeo/geostats), this is a self-executing function
+// that's run with the socioscapes object as a parameter. First it checks to see if the 'exports' object exists, and if
+// it does, it exports socioscapes through module.exports. If not, it checks to see if the 'define' function exists, and
+// if it does, defines socioscapes. If neither of the first two are true, it exposes socioscapes to the browser.
+(function (definition) {
+    if (typeof exports === "object") {
+        module.exports = definition();
+    } else if (typeof define === "function" && define.amd) {
+        define(definition);
+    } else {
+        socioscapes = definition();
+    }
+})(function () {
+    return socioscapes;
+});
+},{"./core/newLayer.js":7,"./fetchers/fetchGoogleAuth.js":8,"./fetchers/fetchGoogleBq.js":9,"./fetchers/fetchGoogleGeocode.js":11,"./fetchers/fetchWfs.js":12,"./views/newViewGmap.js":15}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, feature, event, require*/
 'use strict';
@@ -2110,7 +1838,7 @@ module.exports = function newViewGmap(config) {
     };
     return new MyGmapView;
 };
-},{"../fetchers/fetchGoogleGeocode.js":5,"./newViewGmap_Labels.js":11,"./newViewGmap_Map.js":12}],11:[function(require,module,exports){
+},{"../fetchers/fetchGoogleGeocode.js":11,"./newViewGmap_Labels.js":16,"./newViewGmap_Map.js":17}],16:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -2168,7 +1896,7 @@ module.exports = function viewGmap_Labels(myMap, styles) {
     myMap.overlayMapTypes.insertAt(0, myMap.labels);
     return myMap;
 };
-},{}],12:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -2311,64 +2039,6 @@ module.exports = function (geocode, div, styles, options) {
     myMap.setTilt(45);
     return myMap;
 };
-},{}],13:[function(require,module,exports){
-/*jslint node: true */
-/*global module, google, require*/
-'use strict';
-/**
- * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
- * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
- * extendable sandbox.
- *
- *    Source code...................... http://github.com/moismailzai/socioscapes
- *    Reference implementation......... http://app.socioscapes.com
- *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................
- *
- * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
- * University of Toronto.
- */
-var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
-    fetchGoogleGeocode = require('./fetchers/fetchGoogleGeocode.js'),
-    fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
-    fetchWfs = require('./fetchers/fetchWfs.js'),
-    newLayer = require('./core/newLayer.js'),
-    newViewGmap = require('./views/newViewGmap.js');
+},{}]},{},[14]);
 
-/**
- * This is the root socioscapes namespace and object.
- *
- * Requires the modules {@link socioscapes.fetchGoogleAuth}, {@link socioscapes.fetchGoogleGeocode},
- * {@link socioscapes.fetchGoogleBq}, {@link socioscapes.fetchWfs}, {@link socioscapes.newLayer}, and
- * {@link socioscapes.newViewGmap}.
- *
- * @namespace socioscapes
- * @requires module:fetchGoogleAuth
- * @requires module:fetchGoogleGeocode
- * @requires module:fetchGoogleBq
- * @requires module:fetchWfs
- * @requires module:newLayer
- * @requires module:newViewGmap
- */
-var socioscapes = {};
-Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
-    value: fetchGoogleAuth
-});
-Object.defineProperty(socioscapes, 'fetchGoogleGeocode', {
-    value: fetchGoogleGeocode
-});
-Object.defineProperty(socioscapes, 'fetchGoogleBq', {
-    value: fetchGoogleBq
-});
-Object.defineProperty(socioscapes, 'fetchWfs', {
-    value: fetchWfs
-});
-Object.defineProperty(socioscapes, 'newLayer', {
-    value: newLayer
-});
-Object.defineProperty(socioscapes, 'newViewGmap', {
-    value: newViewGmap
-});
-module.exports = socioscapes;
-},{"./core/newLayer.js":1,"./fetchers/fetchGoogleAuth.js":2,"./fetchers/fetchGoogleBq.js":3,"./fetchers/fetchGoogleGeocode.js":5,"./fetchers/fetchWfs.js":6,"./views/newViewGmap.js":10}]},{},[13])(13)
-});
+//# sourceMappingURL=socioscapes.js.map
