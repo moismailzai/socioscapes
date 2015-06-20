@@ -27,13 +27,13 @@
 
 **wfsgeom.url = 'http://www.example.com&cql_filter=example;** 
 
-**wfsgeom.id = 'dauid';** 
+**wfsgeom.id = 'example';** 
 
-**bqdata.id = 'dauid';**
+**bqdata.id = 'example';**
 
-**bqdata.clientId = 'example.apps.googleusercontent.com';**
+**bqdata.clientId = '123456789.apps.googleusercontent.com';**
 
-**bqdata.projectId = 'example';** 
+**bqdata.projectId = '123456789';** 
 
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
 ***
