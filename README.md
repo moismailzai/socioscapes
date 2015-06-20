@@ -6,7 +6,7 @@
 
 >**Reference implementation**:  [http://app.socioscapes.com](http://app.socioscapes.com "app.socioscapes.com")
   
->**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") *(free as in beer & speech)*
+>**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
    
 >**Copyright**:       &copy; 2015 Mo Ismailzai
 
@@ -21,9 +21,9 @@
  
 // *create some config objects*
 
-**var geom = {};** 
+**var wfsgeom = {};** 
 
-**var data = {};**
+**var bqdata = {};**
 
 **wfsgeom.url = 'http://www.example.com&cql_filter=example;** 
 
