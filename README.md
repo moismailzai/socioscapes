@@ -8,7 +8,7 @@
   
 >**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
    
->**Copyright**:       &copy; 2015 Mo Ismailzai
+>**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 
 ### Examples
