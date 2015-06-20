@@ -1,0 +1,35 @@
+{
+  "name": "socioscapes",
+  "version": "0.1.4",
+  "homepage": "https://github.com/moismailzai/socioscapes",
+  "authors": [
+    "Mo Ismailzai <moismailzai@gmail.com> (http://www.moismailzai.com)"
+  ],
+  "description": "Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.",
+  "main": "src/main.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "gis",
+    "sociology",
+    "maps",
+    "mapping",
+    "symbology",
+    "google-maps",
+    "geostats",
+    "chroma"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "geostats": "~1.4.0",
+    "chroma-js": "~0.8.0"
+  }
+}
