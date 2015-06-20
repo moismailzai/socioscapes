@@ -2005,7 +2005,7 @@ var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
  * @requires module:newLayer
  * @requires module:newViewGmap
  */
-window.socioscapes = {};
+var socioscapes = {};
 Object.defineProperty(socioscapes, 'fetchGoogleAuth', {
     value: fetchGoogleAuth
 });
@@ -2024,19 +2024,5 @@ Object.defineProperty(socioscapes, 'newLayer', {
 Object.defineProperty(socioscapes, 'newViewGmap', {
     value: newViewGmap
 });
-// Some magic borrowed from Simon Georget (https://github.com/simogeo/geostats), this is a self-executing function
-// that's run with the socioscapes object as a parameter. First it checks to see if the 'exports' object exists, and if
-// it does, it exports socioscapes through module.exports. If not, it checks to see if the 'define' function exists, and
-// if it does, defines socioscapes. If neither of the first two are true, it exposes socioscapes to the browser.
-(function (definition) {
-    if (typeof exports === "object") {
-        module.exports = definition();
-    } else if (typeof define === "function" && define.amd) {
-        define(definition);
-    } else {
-        socioscapes = definition();
-    }
-})(function () {
-    return socioscapes;
-});
+module.exports = socioscapes;
 },{"./core/newLayer.js":3,"./fetchers/fetchGoogleAuth.js":4,"./fetchers/fetchGoogleBq.js":5,"./fetchers/fetchGoogleGeocode.js":7,"./fetchers/fetchWfs.js":8,"./views/newViewGmap.js":10}]},{},[17]);
