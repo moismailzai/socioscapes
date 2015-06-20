@@ -23,6 +23,7 @@
 ### Examples
 
 #### Config:
+***
 // *for easier reference & less typing*
 
 **var s = socioscapes;**
@@ -44,9 +45,9 @@
 **bqdata.projectId = '123456789';** 
 
 **bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
-***
 
-#### Usage:  
+#### Usage:
+***
 // *create a new socioscapes layer object called 'vancity'*
 
 **vancity = s.newLayer();**
