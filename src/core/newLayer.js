@@ -111,11 +111,11 @@ module.exports = function newLayer() {
                             _myStatusList = _myStatusList.concat(_myLayerProperty + ' = ' + _myStatus + ', ');
                         }
                     } //TODO fix the trailing comma issue once I get the logic here working properly.
-                    newEvent('statusEvent', 'statusReturn: The statuses of all properties in ' + this.attributes["name"].value + ' are: ' + _myStatusList + '.');
+                    newEvent('statusEvent', 'statusReturn: The statuses of all properties in ' + that.constructor.name + ' are: ' + _myStatusList + '.');
                     return _myLayerStatus
                 }
                 if (typeof _myLayerStatus[name] === 'boolean' && !state) {
-                    newEvent('statusEvent', 'statusReturn: The statuses of property ' + name + ' in layer ' + this.attributes["name"].value + ' is: ' + _myLayerStatus[name] + '.');
+                    newEvent('statusEvent', 'statusReturn: The statuses of property ' + name + ' in layer ' + that.constructor.name + ' is: ' + _myLayerStatus[name] + '.');
                     return _myLayerStatus[name]
                 }
                 if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
@@ -124,7 +124,7 @@ module.exports = function newLayer() {
                         value: state,
                         configurable: true
                     });
-                    newEvent('statusEvent', 'statusSet: Set the state of property ' + name + ' in layer ' + this.attributes["name"].value + ' to: ' + state + '.');
+                    newEvent('statusEvent', 'statusSet: Set the state of property ' + name + ' in layer ' + that.constructor.name + ' to: ' + state + '.');
                     if (_myLayerStatus.breaks &&
                         _myLayerStatus.classification &&
                         _myLayerStatus.colourscale &&
@@ -135,7 +135,7 @@ module.exports = function newLayer() {
                             value: true,
                             configurable: true
                         });
-                        newEvent('statusEvent', 'statusGis: The layer ' + this.attributes["name"].value + ' is ready to be mapped.');
+                        newEvent('statusEvent', 'statusGis: The layer ' + that.attributes["name"].value + ' is ready to be mapped.');
                     }
                 }
             }
