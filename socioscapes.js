@@ -162,7 +162,8 @@ module.exports = function newLayer() {
      * @namespace MyLayer
      */
     var MyLayer = function() {
-        var _myBreaks = 5,
+        var newEvent,
+            _myBreaks = 5,
             _myClasses,
             _myClassification = 'getJenks',
             _myColourscaleName = "YlOrRd",
@@ -171,8 +172,10 @@ module.exports = function newLayer() {
             _myDomain,
             _myGeom,
             _myGeostats,
-            _myViews = {},
             _myLayerStatus = {},
+            _myViews = {},
+            _myStatus,
+            _myStatusList,
             that = this;
         Object.defineProperty(_myLayerStatus, 'breaks', {
             value: false,
@@ -206,31 +209,50 @@ module.exports = function newLayer() {
             value: false,
             configurable: true
         });
-
+        /**
+         * This function fires an arbitrary event. Socioscapes objects use it to help trigger view renders.
+         *
+         * @function newEvent
+         * @memberof! socioscapes
+         * @param {String} name - The name of the new event (this is what your event handler will listen for).
+         * @param {String} message - The content of the event.
+         * @return this {Object}
+         */
+        newEvent = function(name, message) {
+            new CustomEvent(
+                name,
+                {
+                    detail: {
+                        message: message,
+                        time: new Date()
+                    },
+                    bubbles: true,
+                    cancelable: true
+                }
+            );
+        };
         /**
          * This method returns a boolean status for each configurable member of {@linkcode MyLayer}.
-         *
-         * @example
-         * // returns the status of the 'data' member of MyLayer.
-         * MyLayer.status('data')
-         *
-         * @example
-         * // returns the status of all members of MyLayer.
-         * MyLayer.status()
-         *
-         * @example
-         * // sets the status of 'data' to true.
-         * MyLayer.status('data', true)
          *
          * @method status
          * @memberof! MyLayer
          */
+        //TODO add better documentation for the event triggering system.
         Object.defineProperty(this, 'status', {
             value: function(name, state) {
                 if (!name) {
+                    _myStatusList = '';
+                    for (var _myLayerProperty in _myLayerStatus) {
+                        if (_myLayerStatus.hasOwnProperty(_myLayerProperty)) {
+                            _myStatus = _myLayerStatus[_myLayerProperty];
+                            _myStatusList = _myStatusList.concat(_myLayerProperty + ' = ' + _myStatus + ', ');
+                        }
+                    } //TODO fix the trailing comma issue once I get the logic here working properly.
+                    newEvent('statusEvent', 'statusReturn: The statuses of all properties in ' + this.attributes["name"].value + ' are: ' + _myStatusList + '.');
                     return _myLayerStatus
                 }
                 if (typeof _myLayerStatus[name] === 'boolean' && !state) {
+                    newEvent('statusEvent', 'statusReturn: The statuses of property ' + name + ' in layer ' + this.attributes["name"].value + ' is: ' + _myLayerStatus[name] + '.');
                     return _myLayerStatus[name]
                 }
                 if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
@@ -239,18 +261,18 @@ module.exports = function newLayer() {
                         value: state,
                         configurable: true
                     });
-
+                    newEvent('statusEvent', 'statusSet: Set the state of property ' + name + ' in layer ' + this.attributes["name"].value + ' to: ' + state + '.');
                     if (_myLayerStatus.breaks &&
                         _myLayerStatus.classification &&
                         _myLayerStatus.colourscale &&
                         _myLayerStatus.data &&
                         _myLayerStatus.geom) {
                         delete _myLayerStatus.readyGis;
-                        Object.defineProperty(_myLayerStatus, 'readyGis', {
+                        Object.defineProperty(_myLayerStatus, 'statusGis', {
                             value: true,
                             configurable: true
                         });
-                        //TODO an api-wide event firing strategy so status events like this can trigger renders in the dom
+                        newEvent('statusEvent', 'statusGis: The layer ' + this.attributes["name"].value + ' is ready to be mapped.');
                     }
                 }
             }
