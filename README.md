@@ -37,7 +37,7 @@ charts, graphs, and other visualizations. For instance, suppose a user wishes to
 neighbourhood and to display the way in which income is distributed across their city. Besides a map, they may also wish 
 to include other materials, such as charts, graphs, and tables. Socioscapes distinguishes between 'layers', which are 
 conceptualized as static groupings of raw numerical and geometric data, and 'views' which are conceptualized as 
-unique visualization instances of such layers. Views are always directly incorporated into the DOM, layers never are. 
+unique DOM-rendered instances of such layers. Views are always directly incorporated into the DOM, layers never are. 
 For example a chart contained within a DOM \<div\> element constitutes a socioscapes view, and the data in a layer can be 
 used to produce multiple such views in the form of maps, charts, graphs, and tables. Since this is a common GIS 
 scenario, both the socioscapes API and .scape files have been organized to facilitate this workflow. The .layer member 
