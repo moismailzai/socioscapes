@@ -28,7 +28,7 @@ extendable set of current and future open-source tools. For the end user, socios
 and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary way. 
 Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you 
 choose to work with. A .scape file is just a JSON object with the following structure:**
-####[.scape] --> [.states] --> [.state1], [.state2], etc --> [.layers] --> [.layer1], [.layer2], etc --> [.views] --> [.view1], [.view2], etc #### 
+####[.scape] --> [.states] --> [.state1], [.state2], etc --> [.layers] --> [.layer1], [.layer2], etc --> [.views] --> [.view1], [.view2], etc
 **Each level also includes a .meta member. For instance, the root of a .scape file has two members, .meta, which stores 
 metadata about the file itself, and .states, which stores an arbitrary number of screen states. A screen state is 
 conceptualized as the complete contents of the DOM at a specific moment. A given .state member includes all of the data 
