@@ -20,65 +20,107 @@
  
 > **Bower**: [bower install socioscapes](http://bower.io/search/?q=socioscapes)
 
-### Examples
+### What Does It Do?
+***
+
+**For developers, socioscapes provides a semantic API that is designed to standardize how you interact with an 
+extendable set of current and future open-source tools. For the end user, socioscapes has been designed to allow simple 
+and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary way. 
+Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you 
+choose to work with. A .scape file is just a JSON object with the following structure:**
+####[.scape] --> [.states] --> [.state1], [.state2], etc --> [.layers] --> [.layer1], [.layer2], etc --> [.views] --> [.view1], [.view2], etc #### 
+**Each level also includes a .meta member. For instance, the root of a .scape file has two members, .meta, which stores 
+metadata about the file itself, and .states, which stores an arbitrary number of screen states. A screen state is 
+conceptualized as the complete contents of the DOM at a specific moment. A given .state member includes all of the data 
+and configuration necessary to reproduce a corresponding screen state. A single screen state can include multiple maps, 
+charts, graphs, and other visualizations. For instance, suppose a user wishes to create a thematic map of their 
+neighbourhood and to display the way in which income is distributed across their city. Besides a map, they may also wish 
+to include other materials, such as charts, graphs, and tables. Socioscapes distinguishes between 'layers', which are 
+conceptualized as static groupings of raw numerical and geometric data, and 'views' which are conceptualized as 
+unique visualization instances of such layers. Views are always directly incorporated into the DOM, layers never are. 
+For example a chart contained within a DOM \<div\> element constitutes a socioscapes view, and the data in a layer can be 
+used to produce multiple such views in the form of maps, charts, graphs, and tables. Since this is a common GIS 
+scenario, both the socioscapes API and .scape files have been organized to facilitate this workflow. The .layer member 
+of a .scape object can store an arbitrary number of unique views, and since views may themselves be broken up into sub 
+levels (for instance a mapping API may allow you to stack multiple layers on a map that will ultimately reside in a 
+single DIV), a .view member may itself recurse several levels. To really get a sense of all this, consider the following 
+examples:**
 
 #### Config:
 ***
-// *for easier reference & less typing*
 
-**var s = socioscapes;**
- 
-// *create some config objects*
+>// *create some config objects*
 
-**var wfsgeom = {};** 
+>**var wfsGeom = {};** 
 
-**var bqdata = {};**
+>**wfsGeom.url = 'http://www.example.com&cql_filter=myFilter;** 
 
-**wfsgeom.url = 'http://www.example.com&cql_filter=example;** 
+>**wfsGeom.id = 'exampleGeomId';** 
 
-**wfsgeom.id = 'example';** 
+>**var bqData = {};**
 
-**bqdata.id = 'example';**
+>**bqData.id = 'exampleDataId';**
 
-**bqdata.clientId = '123456789.apps.googleusercontent.com';**
+>**bqData.clientId = '123456789.apps.googleusercontent.com';**
 
-**bqdata.projectId = '123456789';** 
+>**bqData.projectId = '123456789';** 
 
-**bqdata.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
+>**bqData.queryString = 'SELECT Topic, Characteristic FROM [table] GROUP BY Topic, Characteristic;';**
 
 #### Usage:
-***
-// *create a new socioscapes layer object called 'vancity'*
+*** 
 
-**vancity = s.newLayer();**
+>// *create a new scape for this session. let's call it 'vancity'*
 
-// *fetch some wfs geom for vancity*
+>**socioscapes('vancity').newScape()** 
 
-**vancity.geom('fetchWfs', wfsgeom);**
+>// *socioscapes is smart, the following commands all create a new scape called 'vancity'*
 
-// *fetch some bq data for vancity*
+>**socioscapes().newScape('vancity')** 
+ 
+>**socioscapes('vancity').newScape('vancity')**
 
-**vancity.data('fetchGoogleBq', bqdata);**
+>**socioscapes('anotherScape').newScape('vancity')**
 
-// *return vancity's data values*
+>// *now let's download some geometry and put it in a new layer, we'll fetch it from a wfs server. since all scapes are*
 
-**vancity.data();**
+>// *created with a default state ('state1'), and all states are created with a default layer ('layer1'), we can just* 
 
-// *configure vancity to use 5 groups in any subsequent visualizations*
+>// *reference these immediately after we create a new scape.*
 
-**vancity.breaks(5);**
+>**socioscapes('vancity').states('state1').layers('layer1').geom('fetchWfs', wfsGeom)**
 
-// *configure vancity to use jenks classifications for any subsequent visualizations*
+>// *hmm that's pretty verbose, but don't worry, socioscapes is smart... if you don't explicitly reference something, it*
 
-**vancity.classification('getJenks');**
+>// *will assume the default value. the following commands all fetch the same geometry and store it in the default layer*
 
-// *configure vancity to use the Yellow-Orange-Red colorbrew colour scale for any subsequent visualizations*
+>**socioscapes('vancity').states('state1').geom('fetchWfs', wfsGeom)**
 
-**vancity.colourscale('YlOrRd');**
+>**socioscapes('vancity').layers('layer1').geom('fetchWfs', wfsGeom)**
 
-// *check the status of the vancity layer's various members*
+>**socioscapes('vancity').geom('fetchWfs', wfsGeom)**
 
-**vancity.status();**
+>// *still too verbose? let's shorten it even more and fetch some data from a Google Big Query table*
+
+>**v1 = socioscapes('vancity').states('state1').layers('layer1')**
+
+>**v1.data('fetchGoogleBq', bqData);**
+
+>// *now let's configure our layer to use 5 groups in any subsequent visualizations*
+
+>**v1.breaks(5);**
+
+>// *now let's configure vancity to use jenks classifications for any subsequent visualizations*
+
+>**v1.classification('getJenks');**
+
+>// *now let's configure vancity to use the Yellow-Orange-Red colorbrew colour scale for any subsequent visualizations*
+
+>**v1.colourscale('YlOrRd');**
+
+>// *let's check the status of the vancity layer's various members*
+
+>**v1.status();**
 
 ***
 
