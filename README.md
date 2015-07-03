@@ -82,17 +82,11 @@ examples:**
 
 >**socioscapes('anotherScape').newScape('vancity')**
 
->// *now let's download some geometry and put it in a new layer, we'll fetch it from a wfs server. since all scapes are*
-
->// *created with a default state ('state1'), and all states are created with a default layer ('layer1'), we can just* 
-
->// *reference these immediately after we create a new scape.*
+>// *now let's download some geometry and put it in a new layer, we'll fetch it from a wfs server. since all scapes are created with a default state ('state1'), and all states are created with a default layer ('layer1'), we can just reference these immediately after we create a new scape.*
 
 >**socioscapes('vancity').states('state1').layers('layer1').geom('fetchWfs', wfsGeom)**
 
->// *hmm that's pretty verbose, but don't worry, socioscapes is smart... if you don't explicitly reference something, it*
-
->// *will assume the default value. the following commands all fetch the same geometry and store it in the default layer*
+>// *hmm that's pretty verbose, but don't worry, socioscapes is smart... if you don't explicitly reference something, it will assume the default value. the following commands all fetch the same geometry and store it in the default layer*
 
 >**socioscapes('vancity').states('state1').geom('fetchWfs', wfsGeom)**
 
