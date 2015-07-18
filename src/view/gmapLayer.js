@@ -1,9 +1,9 @@
 /*jslint node: true */
 /*global socioscapes, module, google, feature, event, require*/
 'use strict';
-var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
-    viewGmap_Labels = require('./newViewGmap_Labels.js'),
-    viewGmap_Map = require('./newViewGmap_Map.js');
+var fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
+    viewGmap_Labels = require('./gmapLabels.js'),
+    viewGmap_Map = require('./gmapMap.js');
 /**
  * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *

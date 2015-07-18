@@ -1,14 +1,10 @@
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
-var chroma = require('chroma'),
-    Geostats = require('geostats'),
-    myPolyfills = require('../libs/myPolyfills.js');
-myPolyfills();
 /**
  * This constructor method returns a new object of class {@linkcode MyLayer}.
  *
- * Requires the modules {@link https://github.com/gka/chroma.js}, {@link https://github.com/simogeo/geostats}, and
+ * Requires the modules {@link https://github.com/gka/lChroma.js}, {@link https://github.com/simogeo/geostats}, and
  * {@linkcode module:myPolyfills}.
  *
  * @method newLayer

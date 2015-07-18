@@ -168,12 +168,12 @@ getcounter&amp;&amp;(f=' &lt;span class="geostats-legend-counter">('+this.counte
 'use strict';
 var chroma = require('chroma'),
     Geostats = require('geostats'),
-    myPolyfills = require('../libs/myPolyfills.js');
+    myPolyfills = require('../lib/myPolyfills.js');
 myPolyfills();
 /**
  * This constructor method returns a new object of class {@linkcode MyLayer}.
  *
- * Requires the modules {@link https://github.com/gka/chroma.js}, {@link https://github.com/simogeo/geostats}, and
+ * Requires the modules {@link https://github.com/gka/lChroma.js}, {@link https://github.com/simogeo/geostats}, and
  * {@linkcode module:myPolyfills}.
  *
  * @method newLayer
@@ -284,7 +284,7 @@ module.exports = function newLayer() {
                     return _myLayerStatus[name]
                 }
                 if (typeof _myLayerStatus[name] === 'boolean' &amp;&amp; typeof state === 'boolean') {
-                    delete _myLayerStatus[name];
+                    remove _myLayerStatus[name];
                     Object.defineProperty(_myLayerStatus, name, {
                         value: state,
                         configurable: true
@@ -295,7 +295,7 @@ module.exports = function newLayer() {
                         _myLayerStatus.colourscale &amp;&amp;
                         _myLayerStatus.data &amp;&amp;
                         _myLayerStatus.geom) {
-                        delete _myLayerStatus.readyGis;
+                        remove _myLayerStatus.readyGis;
                         Object.defineProperty(_myLayerStatus, 'statusGis', {
                             value: true,
                             configurable: true
@@ -590,10 +590,10 @@ module.exports = function newLayer() {
          * {@linkcode MyLayer.data} and {@linkcode MyLayer.geom} but can each visualize the values in those stores in
          * unique and complimentary ways.
          *
-         * @member views
+         * @member view
          * @memberof! MyLayer
          */
-        Object.defineProperty(this, 'views', {
+        Object.defineProperty(this, 'view', {
             value: function (viewName, viewFunction, viewConfig) {
                 if (!viewName) {
                     return _myViews;
@@ -606,7 +606,7 @@ module.exports = function newLayer() {
                     }
                 }
                 if (_myViews[viewName] &amp;&amp; viewFunction === "DELETE") {
-                    delete(_myViews[viewName]);
+                    remove(_myViews[viewName]);
                     return _myViews;
                 }
                 Object.defineProperty(_myViews, viewName, {
@@ -622,7 +622,7 @@ module.exports = function newLayer() {
     }
     return new MyLayer;
 };
-},{"../libs/myPolyfills.js":9,"chroma":1,"geostats":2}],4:[function(require,module,exports){
+},{"../lib/myPolyfills.js":9,"chroma":1,"geostats":2}],4:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -814,9 +814,9 @@ module.exports = function () {
 /*jslint node: true */
 /*global socioscapes, module, google, feature, event, require*/
 'use strict';
-var fetchGoogleGeocode = require('../fetchers/fetchGoogleGeocode.js'),
-    viewGmap_Labels = require('./newViewGmap_Labels.js'),
-    viewGmap_Map = require('./newViewGmap_Map.js');
+var fetchGoogleGeocode = require('../fetch/fetchGoogleGeocode.js'),
+    viewGmap_Labels = require('./newViewGmap_labels.js'),
+    viewGmap_Map = require('./newViewGmap_map.js');
 /**
  * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *
@@ -917,8 +917,8 @@ module.exports = function newViewGmap(config) {
                     return _myGmapDataLayers;
                 }
                 if (that[name] &amp;&amp; id === "DELETE") {
-                    delete(_myGmapDataLayers[name]);
-                    delete(that[name]);
+                    remove(_myGmapDataLayers[name]);
+                    remove(that[name]);
                 } else if (!that[name] &amp;&amp; id !== "DELETE") {
                     /**
                      * Each MyGmapDataLayer is made up of a Google Maps Data Layer object as well as the
@@ -1047,7 +1047,7 @@ module.exports = function newViewGmap(config) {
                                 for (var _selectedFeature in _mySelectedFeatures) {
                                     if (_mySelectedFeatures.hasOwnProperty(_selectedFeature)) {
                                         _mySelectedFeatures[_selectedFeature].setProperty('selected', false);
-                                        delete _mySelectedFeatures[_selectedFeature];
+                                        remove _mySelectedFeatures[_selectedFeature];
                                     }
                                 }
                             }
@@ -1062,7 +1062,7 @@ module.exports = function newViewGmap(config) {
                                 _myFeatureId = event.feature.getProperty(id);
                                 if (event.feature.getProperty('selected') === true) {
                                     event.feature.setProperty('selected', false);
-                                    delete _mySelectedFeatures[_myFeatureId];
+                                    remove _mySelectedFeatures[_myFeatureId];
                                     if (_mySelectionLimit !== undefined &amp;&amp; _mySelectionLimit > 0) {
                                         _mySelectionCount  = _mySelectionCount  - 1;
                                     }
@@ -1101,7 +1101,7 @@ module.exports = function newViewGmap(config) {
     };
     return new MyGmapView;
 };
-},{"../fetchers/fetchGoogleGeocode.js":7,"./newViewGmap_Labels.js":11,"./newViewGmap_Map.js":12}],11:[function(require,module,exports){
+},{"../fetch/fetchGoogleGeocode.js":7,"./newViewGmap_labels.js":11,"./newViewGmap_map.js":12}],11:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -2033,12 +2033,12 @@ function hasOwnProperty(obj, prop) {
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
  * University of Toronto.
  */
-var fetchGoogleAuth = require('./fetchers/fetchGoogleAuth.js'),
-    fetchGoogleGeocode = require('./fetchers/fetchGoogleGeocode.js'),
-    fetchGoogleBq = require('./fetchers/fetchGoogleBq.js'),
-    fetchWfs = require('./fetchers/fetchWfs.js'),
+var fetchGoogleAuth = require('./fetch/fetchGoogleAuth.js'),
+    fetchGoogleGeocode = require('./fetch/fetchGoogleGeocode.js'),
+    fetchGoogleBq = require('./fetch/fetchGoogleBq.js'),
+    fetchWfs = require('./fetch/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
-    newViewGmap = require('./views/newViewGmap.js');
+    newViewGmap = require('./view/gmapLayer.js');
 /**
  * This is the root socioscapes namespace and object.
  *
@@ -2074,7 +2074,7 @@ Object.defineProperty(socioscapes, 'newViewGmap', {
     value: newViewGmap
 });
 module.exports = socioscapes;
-},{"./core/newLayer.js":3,"./fetchers/fetchGoogleAuth.js":4,"./fetchers/fetchGoogleBq.js":5,"./fetchers/fetchGoogleGeocode.js":7,"./fetchers/fetchWfs.js":8,"./views/newViewGmap.js":10}]},{},[17])(17)
+},{"./core/newLayer.js":3,"./fetch/fetchGoogleAuth.js":4,"./fetch/fetchGoogleBq.js":5,"./fetch/fetchGoogleGeocode.js":7,"./fetch/fetchWfs.js":8,"./view/gmapLayer.js":10}]},{},[17])(17)
 });</code></pre>
         </article>
     </section>

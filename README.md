@@ -48,17 +48,17 @@ choose to work with. A .scape file is just a JSON object with the following stru
 >**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|**  
 >**&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;--&nbsp;&nbsp;[ .v i e w 1 ]&nbsp;&nbsp;--&nbsp;&nbsp;[ .v i e w 2 ]&nbsp;&nbsp;--&nbsp;&nbsp;[ ... ]**  
 
-**Each level also includes a .meta member. For instance, the root of a .scape file has two members, .meta, which stores 
-metadata about the file itself, and .states, which stores an arbitrary number of screen states. A screen state is 
-conceptualized as the complete contents of the DOM at a specific moment. A given .state member includes all of the data 
-and configuration necessary to reproduce a corresponding screen state. A single screen state can include multiple maps, 
-charts, graphs, and other visualizations. For instance, suppose a user wishes to create a thematic map of their 
-neighbourhood and to display the way in which income is distributed across their city. Besides a map, they may also wish 
-to include other materials, such as charts, graphs, and tables. Socioscapes distinguishes between 'layers', which are 
-conceptualized as static groupings of raw numerical and geometric data, and 'views' which are conceptualized as 
-unique DOM-rendered instances of such layers. Views are always directly incorporated into the DOM, layers never are. 
-For example a chart contained within a DOM \<div\> element constitutes a socioscapes view, and the data in a layer can be 
-used to produce multiple such views in the form of maps, charts, graphs, and tables. Since this is a common GIS 
+**Each level includes a meta member that provides metadata. For instance, the root of a .scape file has two members, 
+.meta, which stores metadata about the file itself, and .states, which stores an arbitrary number of screen states. A 
+screen state is conceptualized as the complete contents of the DOM at a specific moment. A given .state member includes 
+all of the data and configuration necessary to reproduce a corresponding screen state. A single screen state can include 
+multiple maps, charts, graphs, and other visualizations. For instance, suppose a user wishes to create a thematic map of 
+their neighbourhood and to display the way in which income is distributed across their city. Besides a map, they may 
+also wish to include other materials, such as charts, graphs, and tables. Socioscapes distinguishes between 'layers', 
+which are conceptualized as static groupings of raw numerical and geometric data, and 'views' which are conceptualized 
+as unique DOM-rendered instances of such layers. Views are always directly incorporated into the DOM, layers never are. 
+For example a chart contained within a DOM \<div\> element constitutes a socioscapes view, and the data in a layer can 
+be used to produce multiple such views in the form of maps, charts, graphs, and tables. Since this is a common GIS 
 scenario, both the socioscapes API and .scape files have been organized to facilitate this workflow. The .layer member 
 of a .scape object can store an arbitrary number of unique views, and since views may themselves be broken up into sub 
 levels (for instance a mapping API may allow you to stack multiple layers on a map that will ultimately reside in a 
