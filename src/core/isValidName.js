@@ -8,7 +8,9 @@
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
  */
-module.exports = function isValidName(name, callback) {
+module.exports = function isValidName(name) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     var isValid,
         isReserved = [
             'help',

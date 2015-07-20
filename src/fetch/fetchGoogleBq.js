@@ -15,7 +15,9 @@ var fetchGoogleAuth = require('./fetchGoogleAuth.js'),
  * @param {String} config.id - The id column (the values in this column are used to match the geom id property).
  * @return {Array} data - An object with .values, .url, and .id members. This can be used to populate myLayer.data.
  */
-module.exports = function fetchGoogleBq(config, callback) {
+module.exports = function fetchGoogleBq(config) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     var data = {},
         _clientId = config.clientId,
         _dataId = config.id,

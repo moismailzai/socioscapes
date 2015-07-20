@@ -10,8 +10,10 @@ var newLayer = require ('./../construct/newLayer.js'),
  * @memberof! socioscapes
  * @return
  */
-module.exports = function states(myState) {
-    var that = this;
+module.exports = function states(myScape, myState) {
+    var callback = arguments[arguments.length - 1],
+        that = this;;
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     Object.defineProperty(this, 'newLayer', {
         value: function(myLayerName) {
             if (!myState.layers[myLayerName]) {

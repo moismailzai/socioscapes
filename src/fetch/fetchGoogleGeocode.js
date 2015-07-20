@@ -12,13 +12,15 @@
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
 module.exports = function fetchGoogleGeocode(address) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     var geocoder = new google.maps.Geocoder(),
         geocode = {};
     geocoder.geocode({'address': address}, function (results, status) {
         if (status === google.maps.GeocoderStatus.OK) {
             geocode.lat = results[0].geometry.location.lat();
             geocode.long = results[0].geometry.location.lng();
-            return geocode;
+            callback(geocode);
         }
         alert('Error: Google Geocoder was unable to locate ' + address);
     });

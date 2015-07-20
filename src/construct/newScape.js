@@ -1,4 +1,5 @@
-/**
- * Created by mo on 7/9/15.
- */
-// TODO newScape creates the data structure for socioscape scape objects
+module.exports = function newScape(myScape) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
+    callback();
+};

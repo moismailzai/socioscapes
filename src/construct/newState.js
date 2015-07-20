@@ -8,13 +8,16 @@
  * @memberof! MyState
  * @return {Object} MySession
  */
-module.exports = function newState() {
+module.exports = function newState(myScape) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     /**
      * Each MySession object consists of a {@linkcode MySession.states} array and a {@linkcode MySession.meta} object.
      *
      * @namespace MyState
      */
     var MySession = {};
+
     /**
      * This member ...
      *
@@ -49,4 +52,5 @@ module.exports = function newState() {
         value: false,
         configurable: true
     });
+    callback();
 }

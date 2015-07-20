@@ -11,6 +11,8 @@ var getState = require ('./../fetch/fetchState.js');
  */
 // TODO fetchLayer(argument1, argument2, argument3) error checks isValidName(argument1) and isValidUrl(argument2)
 module.exports = function getLayer(scape, state, layer) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     var i,
         myLayer,
         myState;
@@ -32,6 +34,5 @@ module.exports = function getLayer(scape, state, layer) {
         myLayer = false;
         console.log('Sorry, the layer "' + layer + '" does not exist in the state "' + state + '".');
     }
-
-    return myLayer;
+    callback(myLayer);
 };

@@ -13,10 +13,11 @@
  * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetch.
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
-module.exports = function fetchWfs(config, callback) {
-    var _xobj = new XMLHttpRequest(),
+module.exports = function fetchWfs(config) {
+    var callback = arguments[arguments.length - 1],
+        _xobj = new XMLHttpRequest(),
         geom;
-    callback = (typeof callback === 'function') ? callback : function () { };
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
     _xobj.open('GET', config.url, true);
     _xobj.onreadystatechange = function () {

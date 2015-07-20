@@ -1,3 +1,5 @@
-/**
- * Created by mo on 6/29/15.
- */
+module.exports = function storeScape(myScape, myState) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
+    callback();
+};

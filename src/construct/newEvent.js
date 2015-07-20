@@ -12,6 +12,8 @@
  */
 // TODO proper documentation of events
 module.exports = function newEvent(name, message) {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     new CustomEvent(
         name,
         {
@@ -23,4 +25,5 @@ module.exports = function newEvent(name, message) {
             cancelable: true
         }
     );
+    callback(true);
 };

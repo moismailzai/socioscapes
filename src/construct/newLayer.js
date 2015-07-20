@@ -12,6 +12,8 @@
  * @return {Object} MyLayer
  */
 module.exports = function newLayer() {
+    var callback = arguments[arguments.length - 1];
+    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     /**
      * Each MyLayer consists of the two store members {@linkcode MyLayer.data} and {@linkcode MyLayer.geom}, and the
      * configuration members {@linkcode MyLayer.breaks}, {@linkcode MyLayer.classes}, {@linkcode MyLayer.classification},
@@ -448,8 +450,5 @@ module.exports = function newLayer() {
             }
         });
     };
-    if (name) {
-      this[name] = new MyLayer;
-    }
-    return new MyLayer;
+    callback(new MyLayer);
 };
