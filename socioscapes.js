@@ -55,7 +55,7 @@ var isValidName = require('./../core/isValidName.js'),
  */
 module.exports = function newLayer(name, layers) {
     var MyLayer,
-        callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+        callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
         _name = (config && config.name) ? config.name:name,
         _source = (config && config.source) ? config.source:'',
@@ -508,7 +508,7 @@ module.exports = function newLayer(name, layers) {
 },{"./../core/isKey.js":5,"./../core/isValidName.js":6}],3:[function(require,module,exports){
 var isValidName = require('./../core/isValidName.js');
 module.exports = function newScape(name, config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
         _name = (config && config.name) ? config.name:name,
         _source = (config && config.source) ? config.source:'',
@@ -566,7 +566,7 @@ var isValidName = require('./../core/isValidName.js'),
  */
 module.exports = function newState(name, states) {
     var myState = {},
-        callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+        callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
         _name = (config && config.name) ? config.name:name,
         _source = (config && config.source) ? config.source:'',
@@ -610,7 +610,7 @@ module.exports = function newState(name, states) {
 };
 },{"./../core/isKey.js":5,"./../core/isValidName.js":6}],5:[function(require,module,exports){
 module.exports = function isKey(key, member, array) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     for (var i = 0; i < array.length; i++) {
         if (key === array[i][member]) {
             callback(true);
@@ -630,7 +630,7 @@ module.exports = function isKey(key, member, array) {
  * @returns {Boolean}
  */
 module.exports = function isValidName(name) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         isValid,
         isReserved = [
             'help',
@@ -753,7 +753,7 @@ module.exports = function isValidName(name) {
  * @returns {Boolean}
  */
 module.exports = function isValidUrl(url) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     // Regex taken almost verbatim from TLindig @ http://stackoverflow.com/a/18593669/4612922
     var isValid;
     if (typeof url === 'string' && /^(http|HTTP|https|HTTPS|ftp|FTP|ftps|FTPS):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?(\#([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?)?$/.test(url)) {
@@ -786,7 +786,7 @@ var layers;
  * @return
  */
 module.exports = function layers(myLayer) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
         value: function(myViewName) {
@@ -1006,7 +1006,7 @@ var newLayer = require ('./../construct/newLayer.js'),
  * @return
  */
 module.exports = function states(myScape, myState) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newLayer', {
         value: function(myLayerName) {
@@ -1052,7 +1052,7 @@ var layers;
  * @return
  */
 module.exports = function views(myScape, myView) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
         value: function(myViewName) {
@@ -1109,7 +1109,7 @@ var getState = require ('./../fetch/fetchState.js');
  */
 // TODO fetchLayer(argument1, argument2, argument3) error checks isValidName(argument1) and isValidUrl(argument2)
 module.exports = function getLayer(scape, state, layer) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myLayer,
         myState;
@@ -1138,7 +1138,7 @@ module.exports = function getLayer(scape, state, layer) {
 var isValidName = require('../core/isValidName.js'),
     isValidUrl = require('../core/isValidUrl.js');
 module.exports = function fetchScape(name, url) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     name = isValidName(name) ? name:false;
     if (name) {
         isValidUrl(url, function (result) {
@@ -1174,11 +1174,11 @@ var isScape = require('./fetchScape.js'); //TODO figure out a new dir for this k
  */
 // TODO fetchState(argument1, argument2)
 module.exports = function getState(myScape, scape, state) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myState;
     if (!scape || !isScape(scape)){ //TODO make isScape return false if supplied arg isn't scape
-        return;
+        callback(false);
     }
     state = state || 0;
     if (Number.isInteger(state) && window[scape[state]]) { // if the state provided is an integer
@@ -1193,7 +1193,7 @@ module.exports = function getState(myScape, scape, state) {
         myState = false;
         console.log('Sorry, the state "' + state + '" does not exist in that scape.');
     }
-    return myState;
+    callback(myState);
 };
 },{"./fetchScape.js":13}],15:[function(require,module,exports){
 /*jslint node: true */
@@ -1209,7 +1209,7 @@ var getLayer = require ('./fetchLayer.js');
  */
 // TODO fetchView(argument1, argument2, argument3, argument4)
 module.exports = function getView(scape, state, layer, view) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myLayer,
         myView;
@@ -1218,7 +1218,7 @@ module.exports = function getView(scape, state, layer, view) {
     view = view || 0;
     myLayer = getLayer(scape, state, layer);
     if (!myLayer){ // if myLayer returns false then either scape, state, or layer are invalid or do not exist
-        return;
+        callback(false);
     }
     if (Number.isInteger(view) && myLayer.views[view]) {
         myView = myLayer.views[view];
@@ -1232,23 +1232,23 @@ module.exports = function getView(scape, state, layer, view) {
         myView = false;
         console.log('Sorry, the view "' + view + '" does not exist in the layer "' + layer + '" (or that layer does not exist in the state "' + state + '").')
     }
-    return myView;
+    callback(myView);
 };
 },{"./fetchLayer.js":12}],16:[function(require,module,exports){
 module.exports = function removeState(myScape, myState) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
 };
 
 },{}],17:[function(require,module,exports){
 module.exports = function storeScape(myScape, myState) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
 };
 
 },{}],18:[function(require,module,exports){
 module.exports = function storeState(myScape, myState) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
 };
 
