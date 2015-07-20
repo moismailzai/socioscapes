@@ -14,7 +14,7 @@
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
 module.exports = function fetchWfs(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _xobj = new XMLHttpRequest(),
         geom;
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript

@@ -15,7 +15,7 @@
  * @return this {Object}
  */
 module.exports = function fetchGoogleAuth(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
             gapi.client.load(config.client.name, config.client.version, function (result) {

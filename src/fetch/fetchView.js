@@ -11,7 +11,7 @@ var getLayer = require ('./fetchLayer.js');
  */
 // TODO fetchView(argument1, argument2, argument3, argument4)
 module.exports = function getView(scape, state, layer, view) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myLayer,
         myView;
@@ -20,7 +20,7 @@ module.exports = function getView(scape, state, layer, view) {
     view = view || 0;
     myLayer = getLayer(scape, state, layer);
     if (!myLayer){ // if myLayer returns false then either scape, state, or layer are invalid or do not exist
-        return;
+        callback(false);
     }
     if (Number.isInteger(view) && myLayer.views[view]) {
         myView = myLayer.views[view];
@@ -34,5 +34,5 @@ module.exports = function getView(scape, state, layer, view) {
         myView = false;
         console.log('Sorry, the view "' + view + '" does not exist in the layer "' + layer + '" (or that layer does not exist in the state "' + state + '").')
     }
-    return myView;
+    callback(myView);
 };

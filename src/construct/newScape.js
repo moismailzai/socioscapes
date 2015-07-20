@@ -1,6 +1,6 @@
 var isValidName = require('./../core/isValidName.js');
 module.exports = function newScape(name, config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
         _name = (config && config.name) ? config.name:name,
         _source = (config && config.source) ? config.source:'',

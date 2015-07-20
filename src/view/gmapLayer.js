@@ -18,7 +18,7 @@ var fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
  * @return {Object} MyGmapView - The rendered and configured view object.
  */
 module.exports = function newViewGmap(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
      * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map

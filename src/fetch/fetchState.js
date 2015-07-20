@@ -11,11 +11,11 @@ var isScape = require('./fetchScape.js'); //TODO figure out a new dir for this k
  */
 // TODO fetchState(argument1, argument2)
 module.exports = function getState(myScape, scape, state) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myState;
     if (!scape || !isScape(scape)){ //TODO make isScape return false if supplied arg isn't scape
-        return;
+        callback(false);
     }
     state = state || 0;
     if (Number.isInteger(state) && window[scape[state]]) { // if the state provided is an integer
@@ -30,5 +30,5 @@ module.exports = function getState(myScape, scape, state) {
         myState = false;
         console.log('Sorry, the state "' + state + '" does not exist in that scape.');
     }
-    return myState;
+    callback(myState);
 };

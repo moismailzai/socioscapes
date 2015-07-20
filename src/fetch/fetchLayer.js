@@ -11,7 +11,7 @@ var getState = require ('./../fetch/fetchState.js');
  */
 // TODO fetchLayer(argument1, argument2, argument3) error checks isValidName(argument1) and isValidUrl(argument2)
 module.exports = function getLayer(scape, state, layer) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         i,
         myLayer,
         myState;
