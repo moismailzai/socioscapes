@@ -894,7 +894,7 @@ var newDispatcher = require ('./../construct/newDispatcher.js'),
      * @requires removeState
      */
 
-module.exports = function(name) {
+module.exports = function s(name) {
     fetchScape(name, function(myScape) {
         if (myScape && !myScape._q) {
             newDispatcher(myScape);
