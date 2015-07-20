@@ -11,11 +11,10 @@ var getLayer = require ('./fetchLayer.js');
  */
 // TODO fetchView(argument1, argument2, argument3, argument4)
 module.exports = function getView(scape, state, layer, view) {
-    var callback = arguments[arguments.length - 1],
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
         i,
         myLayer,
         myView;
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     layer = layer || 0;
     state = state || 0;
     view = view || 0;

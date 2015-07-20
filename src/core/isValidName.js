@@ -9,9 +9,8 @@
  * @returns {Boolean}
  */
 module.exports = function isValidName(name) {
-    var callback = arguments[arguments.length - 1];
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
-    var isValid,
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+        isValid,
         isReserved = [
             'help',
             // below are reserved JS words and properties

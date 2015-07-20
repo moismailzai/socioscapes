@@ -3,6 +3,7 @@ module.exports = function(myContainer) {
         var dispatcher = {
             currentItem: {},
             isReady: true,
+            target: myContainer,
             queue: []
         };
         Object.defineProperty(dispatcher, 'dispatch', {

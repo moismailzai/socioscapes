@@ -11,10 +11,9 @@ var isScape = require('./fetchScape.js'); //TODO figure out a new dir for this k
  */
 // TODO fetchState(argument1, argument2)
 module.exports = function getState(myScape, scape, state) {
-    var callback = arguments[arguments.length - 1],
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
         i,
         myState;
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     if (!scape || !isScape(scape)){ //TODO make isScape return false if supplied arg isn't scape
         return;
     }

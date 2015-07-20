@@ -12,10 +12,9 @@
  * @return {Object} myMap - The rendered Google Maps object.
  */
 module.exports = function viewGmap_Labels(myMap, styles) {
-    var callback = arguments[arguments.length - 1],
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
         dom,
         LayerHack;
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     styles = styles || [
         {
             "elementType": "all",

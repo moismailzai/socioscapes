@@ -71,7 +71,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: fetchScape,
                     myArguments: arguments
                 };
@@ -81,7 +80,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: newScape,
                     myArguments: arguments
                 };
@@ -91,7 +89,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: storeScape,
                     myArguments: arguments
                 };
@@ -101,7 +98,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: fetchState,
                     myArguments: arguments
                 };
@@ -111,7 +107,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: newState,
                     myArguments: arguments
                 };
@@ -121,7 +116,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: removeState,
                     myArguments: arguments
                 };
@@ -131,7 +125,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: storeState,
                     myArguments: arguments
                 };
@@ -141,7 +134,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: state,
                     myArguments: arguments
                 };
@@ -151,7 +143,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: layer,
                     myArguments: arguments
                 };
@@ -161,7 +152,6 @@ module.exports = function(name) {
             value: function() {
                 myScape._q = {
                     myThis: s,
-                    myObject: myScape,
                     myFunction: view,
                     myArguments: arguments
                 };

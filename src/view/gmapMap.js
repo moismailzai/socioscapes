@@ -15,9 +15,8 @@
  * @return {Object} myMap - The rendered Google Maps object.
  */
 module.exports = function (geocode, div, styles, options) {
-    var callback = arguments[arguments.length - 1],
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
         myMap;
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
     styles = styles || [
         {
             "featureType": "administrative",

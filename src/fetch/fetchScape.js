@@ -2,8 +2,7 @@
 var isValidName = require('../core/isValidName.js'),
     isValidUrl = require('../core/isValidUrl.js');
 module.exports = function fetchScape(name, url) {
-    var callback = arguments[arguments.length - 1];
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result; };
     name = isValidName(name) ? name:false;
     if (name) {
         isValidUrl(url, function (result) {

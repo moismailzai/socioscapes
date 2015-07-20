@@ -11,9 +11,8 @@ var newLayer = require ('./../construct/newLayer.js'),
  * @return
  */
 module.exports = function states(myScape, myState) {
-    var callback = arguments[arguments.length - 1],
-        that = this;;
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+        that = this;
     Object.defineProperty(this, 'newLayer', {
         value: function(myLayerName) {
             if (!myState.layers[myLayerName]) {

@@ -10,9 +10,8 @@ var layers;
  * @return
  */
 module.exports = function layers(myLayer) {
-    var callback = arguments[arguments.length - 1];
-    callback = (typeof callback === 'function') ? callback:function(result) { return result; };
-    var that = this;
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? callback:function(result) { return result;},
+        that = this;
     Object.defineProperty(this, 'newViewGmap', {
         value: function(myViewName) {
             if (!myLayer.views[myViewName]) {
