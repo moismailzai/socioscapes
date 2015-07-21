@@ -1,20 +1,18 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = function(myContainer) {
-    var myDispatcher = function() {
-        var dispatcher = {
-            currentItem: {},
-            isReady: true,
-            target: myContainer,
-            queue: []
-        };
-        Object.defineProperty(dispatcher, 'dispatch', {
+module.exports = function newDispatcher(myObject) {
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
+        myDispatcher;
+    myDispatcher = function(myObject) {
+        var _currentItem = {},
+            _isReady = true,
+            _queue = [];
+        Object.defineProperty(myObject, 'dispatch', {
             get:function() {
-                for (;dispatcher.queue.length > 0 && dispatcher.isReady === true;) {
-                    dispatcher.isReady = false;
-                    dispatcher.currentItem = dispatcher.queue.shift();
-                    dispatcher.currentItem(function() {
-                        dispatcher.isReady = true;
-                        //dispatcher.dispatch;
+                for (;_queue.length > 0 && _isReady === true;) {
+                    _isReady = false;
+                    _currentItem = _queue.shift();
+                    _currentItem(function() {
+                        _isReady = true;
                     });
                 }
             },
@@ -27,17 +25,39 @@ module.exports = function(myContainer) {
                         }
                         myArguments.push(callback);
                         config.myFunction.apply(config.myThis, myArguments);
+                        callback();
                     };
-                    dispatcher.queue.push(myQueueItem);
-                    dispatcher.dispatch;
+                    _queue.push(myQueueItem);
+                    myObject.dispatch;
                 }
             }
         });
-        return dispatcher;
     };
-    myContainer._q = myDispatcher();
+    if (!myObject) {
+        console.log('Sorry, you did not provide an object to attach the dispatcher to.');
+    } else if (myObject && myObject.dispatcher) {
+        console.log('Sorry, a dispatcher already exists for this object.');
+    } else {
+        myDispatcher(myObject);
+        callback(myObject);
+        return(myObject);
+    }
 };
 },{}],2:[function(require,module,exports){
+isGlobal = require('./../core/isGlobal.js');
+module.exports = function newGlobal(name, object) {
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
+        myGlobal = false;
+    if (isGlobal(name)) {
+        console.log('Sorry, a global object by that name already exists.');
+    } else {
+        window[name] = object;
+        myGlobal = window[name];
+    }
+    callback(myGlobal);
+    return myGlobal;
+};
+},{"./../core/isGlobal.js":7}],3:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -53,7 +73,7 @@ var isValidName = require('./../core/isValidName.js'),
  * @memberof! socioscapes
  * @return {Object} MyLayer        MyLayer = function () {
  */
-module.exports = function newLayer(name, layers) {
+module.exports = function newLayer(name, layers, config) {
     var MyLayer,
         callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
@@ -499,64 +519,213 @@ module.exports = function newLayer(name, layers) {
             });
         };
         layers.push(new MyLayer);
-        callback(layers);
     } else {
         console.log('Sorry, unable to create a new layer called "' + name + '" (does a scape by that name already exist?).');
-        callback(false)
     }
+    callback(layers);
+    return layers;
 };
-},{"./../core/isKey.js":5,"./../core/isValidName.js":6}],3:[function(require,module,exports){
-var isValidName = require('./../core/isValidName.js');
+},{"./../core/isKey.js":8,"./../core/isValidName.js":9}],4:[function(require,module,exports){
+/*jslint node: true */
+/*global module, google, require, define, define.amd*/
+'use strict';
+var newDispatcher = require ('./../construct/newDispatcher.js'),
+    state = require ('./../core/state.js'),
+    layer = require ('./../core/layer.js'), // shortcut to socioscapes('myScape').state(0).layer
+    view = require ('./../core/view.js'), // shortcut to socioscapes('myScape').state(0).layer(0).view
+    isValidName = require('./../core/isValidName.js'),
+    isValidUrl = require('./../core/isValidUrl.js'),
+    fetchLayer = require('./../fetch/fetchLayer.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
+    fetchState = require('./../fetch/fetchState.js'),
+    fetchView = require('./../fetch/fetchView.js'),
+    newScape = require('./../construct/newScape.js'),
+    newState = require('./../construct/newState.js'),
+    storeScape = require('./../store/storeScape.js'),
+    storeState = require('./../store/storeState.js'),
+    removeState = require('./../remove/removeState.js');
+
+/**
+ *  This is the root socioscapes namespace and object. socioscapes is stateless and does not store any session
+ *  variables within its members (each call to socioscapes generates the same generic object).
+ *
+ * Requires the modules {@link newDispatcher}, {@link state}, {@link layer}, {@link view}, {@link isValidName},
+ * {@link isValidUrl}, {@link fetchLayer}, {@link fetchScape}, {@link fetchState}, {@link fetchView},
+ * {@link newScape}, {@link newState}, s{@link storeScape}, {@link storeState}, and {@link removeState}.
+ *
+ * @namespace socioscapes
+ * @requires newDispatcher
+ * @requires state
+ * @requires layer
+ * @requires view
+ * @requires isValidName
+ * @requires isValidUrl
+ * @requires fetchLayer
+ * @requires fetchScape
+ * @requires fetchState
+ * @requires fetchView
+ * @requires newScape
+ * @requires newState
+ * @requires storeScape
+ * @requires storeState
+ * @requires removeState
+ */
+module.exports = function newS(myScape) {
+    var myS = {};
+    Object.defineProperty(myS, '_myScape', {
+        value: myScape
+    });
+    Object.defineProperty(myS, 'fetchScape', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: fetchScape,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'newScape', {
+        value: function() {
+            console.log(myScape);
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: newScape,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'storeScape', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: storeScape,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'fetchState', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: fetchState,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'newState', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: newState,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'removeState', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: removeState,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'storeState', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: storeState,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'state', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: state,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'layer', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: layer,
+                myArguments: arguments
+            };
+        }
+    });
+    Object.defineProperty(myS, 'view', {
+        value: function() {
+            myScape.dispatch = {
+                myThis: myS,
+                myFunction: view,
+                myArguments: arguments
+            };
+        }
+    });
+    return myS;
+};
+},{"./../construct/newDispatcher.js":1,"./../construct/newScape.js":5,"./../construct/newState.js":6,"./../core/isValidName.js":9,"./../core/isValidUrl.js":10,"./../core/layer.js":11,"./../core/state.js":13,"./../core/view.js":14,"./../fetch/fetchLayer.js":15,"./../fetch/fetchScape.js":16,"./../fetch/fetchState.js":17,"./../fetch/fetchView.js":18,"./../remove/removeState.js":19,"./../store/storeScape.js":20,"./../store/storeState.js":21}],5:[function(require,module,exports){
+var isValidName = require('./../core/isValidName.js'),
+    isGlobal = require('./../core/isGlobal.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    newState = require('./../construct/newState.js');
 module.exports = function newScape(name, config) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
         _name = (config && config.name) ? config.name:name,
         _source = (config && config.source) ? config.source:'',
         _summary = (config && config.summary) ? config.summary:'',
-        _type = (config && config.author) ? config.summary:'scapeJson';
-    if (isValidName(name) && !window[name]) {
-        window[name] = {};
-        Object.defineProperty(window[name], 'meta', {
+        _type = (config && config.author) ? config.summary:'scapeJson',
+        myScape = (isGlobal(name)) ? true:false;
+    if (isValidName(name) && !myScape) {
+        myScape = {};
+        Object.defineProperty(myScape, 'meta', {
             value: {}
         });
-        Object.defineProperty(window[name].meta, 'author', {
-            get: _author,
+        Object.defineProperty(myScape.meta, 'author', {
+            get: function(){ return _author},
             set: function(author) {_author = author}
         });
-        Object.defineProperty(window[name].meta, 'name', {
-            get: _name,
+        Object.defineProperty(myScape.meta, 'name', {
+            get: function(){ return _name},
             set: function(name) {_name = name }
         });
-        Object.defineProperty(window[name].meta, 'summary', {
-            get: _summary,
+        Object.defineProperty(myScape.meta, 'summary', {
+            get: function(){ return _summary},
             set: function(summary) {_summary = summary}
         });
-        Object.defineProperty(window[name].meta, 'type', {
-            get: _type,
+        Object.defineProperty(myScape.meta, 'type', {
+            get: function(){ return _type},
             set: function(type) {_type = type}
         });
-        Object.defineProperty(window[name].meta, 'source', {
-            get: _source,
+        Object.defineProperty(myScape.meta, 'source', {
+            get: function(){ return _source},
             set: function(source) {_source = source}
         });
-        Object.defineProperty(window[name], 'states', {
+        Object.defineProperty(myScape, 'states', {
             value: []
         });
-        newState('state0', window[name].states, function(myState){
-            window[name].states.push(myState);
-            callback(window[name]);
+        newState('state0', myScape.states, function(myState){
+            myScape.states.push(myState);
+            newGlobal(name, myScape);
         });
     } else {
         console.log('Sorry, unable to create a new scape called "' + name + '" (does a scape by that name already exist?).')
-        callback(false)
     }
+    callback(myScape);
+    return myScape;
 };
-},{"./../core/isValidName.js":6}],4:[function(require,module,exports){
+},{"./../construct/newGlobal.js":2,"./../construct/newState.js":6,"./../core/isGlobal.js":7,"./../core/isValidName.js":9}],6:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
 var isValidName = require('./../core/isValidName.js'),
-    isKey = require('./../core/isKey.js');
+    isKey = require('./../core/isKey.js'),
+    newLayer = require('./../construct/newLayer.js');
 /**
  * This constructor method returns an object of class {@linkcode MyState}.
  *
@@ -564,7 +733,7 @@ var isValidName = require('./../core/isValidName.js'),
  * @memberof! MyState
  * @return {Object} MySession
  */
-module.exports = function newState(name, states) {
+module.exports = function newState(name, states, config) {
     var myState = {},
         callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
@@ -577,38 +746,48 @@ module.exports = function newState(name, states) {
             value: {}
         });
         Object.defineProperty(myState.meta, 'author', {
-            get: _author,
+            get: function() { return _author },
             set: function(author) {_author = author}
         });
         Object.defineProperty(myState.meta, 'name', {
-            get: _name,
+            get: function() { return _name },
             set: function(name) {_name = name }
         });
         Object.defineProperty(myState.meta, 'summary', {
-            get: _summary,
+            get: function() { return _summary },
             set: function(summary) {_summary = summary}
         });
         Object.defineProperty(myState.meta, 'type', {
-            get: _type,
+            get: function() { return _type },
             set: function(type) {_type = type}
         });
         Object.defineProperty(myState, 'source', {
-            get: _source,
+            get: function() { return _source },
             set: function(source) {_source = source}
         });
         Object.defineProperty(myState, 'layers', {
             value: []
         });
-        newLayer('layer0', layers, function(myLayer){
+        newLayer('layer0', myState.layers, function(myLayer){
             myState.layers.push(myLayer);
-            callback(myState);
         });
     } else {
         console.log('Sorry, unable to create a new state called "' + name + '" (does a state by that name already exist?).');
-        callback(false);
     }
+    callback(myState);
+    return myState;
 };
-},{"./../core/isKey.js":5,"./../core/isValidName.js":6}],5:[function(require,module,exports){
+},{"./../construct/newLayer.js":3,"./../core/isKey.js":8,"./../core/isValidName.js":9}],7:[function(require,module,exports){
+module.exports = function isGlobal(name) {
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
+        global = false;
+    if (window[name]) {
+        global = true;
+    }
+    callback(global);
+    return global;
+};
+},{}],8:[function(require,module,exports){
 module.exports = function isKey(key, member, array) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     for (var i = 0; i < array.length; i++) {
@@ -618,7 +797,7 @@ module.exports = function isKey(key, member, array) {
     }
     callback(false);
 };
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /**
  * This internal method tests if a name used for a socioscapes scape, state, layer, or view adheres to naming
  * restrictions.
@@ -631,7 +810,7 @@ module.exports = function isKey(key, member, array) {
  */
 module.exports = function isValidName(name) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
-        isValid,
+        isValid = false,
         isReserved = [
             'help',
             // below are reserved JS words and properties
@@ -718,23 +897,18 @@ module.exports = function isValidName(name) {
             'yield'
         ];
     if (typeof name === 'string' && /^[-A-Z0-9]+$/i.test(name)) { // if 'name' is a string and matches the regex pattern
-        if (!isReserved.indexOf(name) === -1) {
-            isValid = false;
-            console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+        if (isReserved.indexOf(name) === -1) {
+            isValid = true;
         } else { // and doesn't match a reserved word, then it is valid
-            isValid = true
+            console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
         }
     } else {
-        isValid = false;
         console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
     }
-    if (callback) {
-        callback(isValid)
-    } else {
-        return isValid;
-    }
+    callback(isValid);
+    return isValid;
 };
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * This method tests the "URLiness" of a given string. It expects a string that fits the pattern
  * "protocol://my.valid.url/my.file" and supports the http, https, ftp, and ftps protocols. CORS prevents javascript
@@ -772,20 +946,20 @@ module.exports = function isValidUrl(url) {
         console.log('Sorry, that is not a valid url. Currently, socioscapes supports the HTTP(S) and FTP(S) protocols. Valid URLS must begin with the protocol name followed by an address (eg. "ftp://socioscapes.com/myScape.json", "https://socioscapes.com/myScape.json").');
     }
     callback(isValid);
+    return isValid;
 };
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*jslint node: true */
 /*global myLayer, module, google, require, define, define.amd*/
 'use strict';
-var layers;
 /**
  * This
  *
- * @method layers
+ * @method layer
  * @memberof! socioscapes
  * @return
  */
-module.exports = function layers(myLayer) {
+module.exports = function layer(myLayer) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
@@ -821,15 +995,16 @@ module.exports = function layers(myLayer) {
     Object.defineProperty(this, 'views', {
         value: function(myViewName) {
             if (myLayer.views[myViewName]) {
-                layers.call(that.views(myViewName), myLayer.views[myViewName]);
+                layer.call(that.views(myViewName), myLayer.views[myViewName]);
             } else {
                 console.log('Sorry, a view by the name of "' + myViewName + '" does not exist in this layer.');
             }
         }
     });
     callback();
+    return;
 };
-},{}],9:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*jslint node: true */
 /*global module, google, require, define, define.amd*/
 'use strict';
@@ -853,146 +1028,15 @@ if (!Number.isInteger) {
  * the University of Toronto.
  */
 var newDispatcher = require ('./../construct/newDispatcher.js'),
-    state = require ('./state.js'),
-    layer = require ('./layer.js'), // shortcut to socioscapes('myScape').state(0).layer
-    view = require ('./view.js'), // shortcut to socioscapes('myScape').state(0).layer(0).view
-    isValidName = require('./isValidName.js'),
-    isValidUrl = require('./isValidUrl.js'),
-    fetchLayer = require('./../fetch/fetchLayer.js'),
-    fetchScape = require('./../fetch/fetchScape.js'),
-    fetchState = require('./../fetch/fetchState.js'),
-    fetchView = require('./../fetch/fetchView.js'),
-    newScape = require('./../construct/newScape.js'),
-    newState = require('./../construct/newState.js'),
-    storeScape = require('./../store/storeScape.js'),
-    storeState = require('./../store/storeState.js'),
-    removeState = require('./../remove/removeState.js');
+    newS = require ('./../construct/newS'),
+    fetchScape = require('./../fetch/fetchScape.js');
 
-    /**
-     *  This is the root socioscapes namespace and object. socioscapes is stateless and does not store any session
-     *  variables within its members (each call to socioscapes generates the same generic object).
-     *
-     * Requires the modules {@link newDispatcher}, {@link state}, {@link layer}, {@link view}, {@link isValidName},
-     * {@link isValidUrl}, {@link fetchLayer}, {@link fetchScape}, {@link fetchState}, {@link fetchView},
-     * {@link newScape}, {@link newState}, s{@link storeScape}, {@link storeState}, and {@link removeState}.
-     *
-     * @namespace socioscapes
-     * @requires newDispatcher
-     * @requires state
-     * @requires layer
-     * @requires view
-     * @requires isValidName
-     * @requires isValidUrl
-     * @requires fetchLayer
-     * @requires fetchScape
-     * @requires fetchState
-     * @requires fetchView
-     * @requires newScape
-     * @requires newState
-     * @requires storeScape
-     * @requires storeState
-     * @requires removeState
-     */
-
-module.exports = function s(name) {
-    fetchScape(name, function(myScape) {
-        if (myScape && !myScape._q) {
-            newDispatcher(myScape);
-        }
-        Object.defineProperty(s, 'fetchScape', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: fetchScape,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'newScape', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: newScape,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'storeScape', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: storeScape,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'fetchState', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: fetchState,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'newState', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: newState,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'removeState', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: removeState,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'storeState', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: storeState,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'state', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: state,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'layer', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: layer,
-                    myArguments: arguments
-                };
-            }
-        });
-        Object.defineProperty(s, 'view', {
-            value: function() {
-                myScape._q = {
-                    myThis: s,
-                    myFunction: view,
-                    myArguments: arguments
-                };
-            }
-        });
-        return s;
-    });
+module.exports = function socioscapes(name) {
+    var myScape = fetchScape(name) || {};
+    newDispatcher(myScape);
+    return newS(myScape);
 };
-},{"./../construct/newDispatcher.js":1,"./../construct/newScape.js":3,"./../construct/newState.js":4,"./../fetch/fetchLayer.js":12,"./../fetch/fetchScape.js":13,"./../fetch/fetchState.js":14,"./../fetch/fetchView.js":15,"./../remove/removeState.js":16,"./../store/storeScape.js":17,"./../store/storeState.js":18,"./isValidName.js":6,"./isValidUrl.js":7,"./layer.js":8,"./state.js":10,"./view.js":11}],10:[function(require,module,exports){
+},{"./../construct/newDispatcher.js":1,"./../construct/newS":4,"./../fetch/fetchScape.js":16}],13:[function(require,module,exports){
 /*jslint node: true */
 /*global myState, module, google, require, define, define.amd*/
 'use strict';
@@ -1001,11 +1045,11 @@ var newLayer = require ('./../construct/newLayer.js'),
 /**
  * This
  *
- * @method states
+ * @method state
  * @memberof! socioscapes
  * @return
  */
-module.exports = function states(myScape, myState) {
+module.exports = function state(myScape, myState) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newLayer', {
@@ -1039,7 +1083,7 @@ module.exports = function states(myScape, myState) {
         }
     });
 };
-},{"./../construct/newLayer.js":2,"./layer.js":8}],11:[function(require,module,exports){
+},{"./../construct/newLayer.js":3,"./layer.js":11}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global myLayer, module, google, require, define, define.amd*/
 'use strict';
@@ -1051,7 +1095,7 @@ var layers;
  * @memberof! socioscapes
  * @return
  */
-module.exports = function views(myScape, myView) {
+module.exports = function view(myScape, myView) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
@@ -1094,8 +1138,9 @@ module.exports = function views(myScape, myView) {
         }
     });
     callback();
+    return;
 };
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global myState, module, google, require, define, define.amd*/
 'use strict';
@@ -1132,8 +1177,9 @@ module.exports = function getLayer(scape, state, layer) {
         console.log('Sorry, the layer "' + layer + '" does not exist in the state "' + state + '".');
     }
     callback(myLayer);
+    return myLayer;
 };
-},{"./../fetch/fetchState.js":14}],13:[function(require,module,exports){
+},{"./../fetch/fetchState.js":17}],16:[function(require,module,exports){
 // TODO fetchScape(argument) calls isValidUrl(argument); if true, retrieves and converts json file at url; else checks isValidName(argument); if true, checks for window[name] and returns it, else returns false
 var isValidName = require('../core/isValidName.js'),
     isValidUrl = require('../core/isValidUrl.js');
@@ -1159,8 +1205,9 @@ module.exports = function fetchScape(name, url) {
     } else {
         callback(false);
     }
+    return;
 };
-},{"../core/isValidName.js":6,"../core/isValidUrl.js":7}],14:[function(require,module,exports){
+},{"../core/isValidName.js":9,"../core/isValidUrl.js":10}],17:[function(require,module,exports){
 /*jslint node: true */
 /*global myState, module, google, require, define, define.amd*/
 'use strict';
@@ -1194,8 +1241,9 @@ module.exports = function getState(myScape, scape, state) {
         console.log('Sorry, the state "' + state + '" does not exist in that scape.');
     }
     callback(myState);
+    return myState;
 };
-},{"./fetchScape.js":13}],15:[function(require,module,exports){
+},{"./fetchScape.js":16}],18:[function(require,module,exports){
 /*jslint node: true */
 /*global myState, module, google, require, define, define.amd*/
 'use strict';
@@ -1233,24 +1281,28 @@ module.exports = function getView(scape, state, layer, view) {
         console.log('Sorry, the view "' + view + '" does not exist in the layer "' + layer + '" (or that layer does not exist in the state "' + state + '").')
     }
     callback(myView);
+    return  myView;
 };
-},{"./fetchLayer.js":12}],16:[function(require,module,exports){
+},{"./fetchLayer.js":15}],19:[function(require,module,exports){
 module.exports = function removeState(myScape, myState) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
+    return;
 };
 
-},{}],17:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function storeScape(myScape, myState) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
+    return;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = function storeState(myScape, myState) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
     callback();
+    return;
 };
 
-},{}]},{},[9])(9)
+},{}]},{},[12])(12)
 });

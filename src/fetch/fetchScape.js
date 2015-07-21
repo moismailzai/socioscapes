@@ -23,4 +23,5 @@ module.exports = function fetchScape(name, url) {
     } else {
         callback(false);
     }
+    return;
 };

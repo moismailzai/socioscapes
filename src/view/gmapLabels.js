@@ -56,4 +56,5 @@ module.exports = function viewGmap_Labels(myMap, styles) {
     myMap.labels = new google.maps.StyledMapType(styles);
     myMap.overlayMapTypes.insertAt(0, myMap.labels);
     callback(myMap);
+    return myMap;
 };

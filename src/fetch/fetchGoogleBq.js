@@ -54,6 +54,7 @@ module.exports = function fetchGoogleBq(config) {
                     data.url = _queryString;
                     data.id = _dataId;
                     callback(data);
+                    return data;
                 }
             });
         });

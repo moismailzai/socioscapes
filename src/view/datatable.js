@@ -24,4 +24,5 @@ module.exports = function (datatable_column_names) {
         });
     }
     callback(this);
+    return this;
 };

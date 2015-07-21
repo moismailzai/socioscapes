@@ -1,19 +1,17 @@
-module.exports = function(myContainer) {
-    var myDispatcher = function() {
-        var dispatcher = {
-            currentItem: {},
-            isReady: true,
-            target: myContainer,
-            queue: []
-        };
-        Object.defineProperty(dispatcher, 'dispatch', {
+module.exports = function newDispatcher(myObject) {
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
+        myDispatcher;
+    myDispatcher = function(myObject) {
+        var _currentItem = {},
+            _isReady = true,
+            _queue = [];
+        Object.defineProperty(myObject, 'dispatch', {
             get:function() {
-                for (;dispatcher.queue.length > 0 && dispatcher.isReady === true;) {
-                    dispatcher.isReady = false;
-                    dispatcher.currentItem = dispatcher.queue.shift();
-                    dispatcher.currentItem(function() {
-                        dispatcher.isReady = true;
-                        //dispatcher.dispatch;
+                for (;_queue.length > 0 && _isReady === true;) {
+                    _isReady = false;
+                    _currentItem = _queue.shift();
+                    _currentItem(function() {
+                        _isReady = true;
                     });
                 }
             },
@@ -26,13 +24,21 @@ module.exports = function(myContainer) {
                         }
                         myArguments.push(callback);
                         config.myFunction.apply(config.myThis, myArguments);
+                        callback();
                     };
-                    dispatcher.queue.push(myQueueItem);
-                    dispatcher.dispatch;
+                    _queue.push(myQueueItem);
+                    myObject.dispatch;
                 }
             }
         });
-        return dispatcher;
     };
-    myContainer._q = myDispatcher();
+    if (!myObject) {
+        console.log('Sorry, you did not provide an object to attach the dispatcher to.');
+    } else if (myObject && myObject.dispatcher) {
+        console.log('Sorry, a dispatcher already exists for this object.');
+    } else {
+        myDispatcher(myObject);
+        callback(myObject);
+        return(myObject);
+    }
 };

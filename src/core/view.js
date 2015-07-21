@@ -9,7 +9,7 @@ var layers;
  * @memberof! socioscapes
  * @return
  */
-module.exports = function views(myScape, myView) {
+module.exports = function view(myScape, myView) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
@@ -52,4 +52,5 @@ module.exports = function views(myScape, myView) {
         }
     });
     callback();
+    return;
 };

@@ -31,4 +31,5 @@ module.exports = function getState(myScape, scape, state) {
         console.log('Sorry, the state "' + state + '" does not exist in that scape.');
     }
     callback(myState);
+    return myState;
 };

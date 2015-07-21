@@ -288,4 +288,5 @@ module.exports = function newViewGmap(config) {
         });
     };
     callback(new MyGmapView);
+    return new newViewGmap;
 };

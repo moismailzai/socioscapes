@@ -15,7 +15,7 @@
  * @return {Object} myMap - The rendered Google Maps object.
  */
 module.exports = function (geocode, div, styles, options) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
+    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         myMap;
     styles = styles || [
         {
@@ -140,4 +140,5 @@ module.exports = function (geocode, div, styles, options) {
     myMap = new google.maps.Map(div, options);
     myMap.setTilt(45);
     callback(myMap);
+    return myMap;
 };

@@ -34,4 +34,5 @@ module.exports = function getLayer(scape, state, layer) {
         console.log('Sorry, the layer "' + layer + '" does not exist in the state "' + state + '".');
     }
     callback(myLayer);
+    return myLayer;
 };

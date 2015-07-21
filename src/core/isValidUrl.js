@@ -35,4 +35,5 @@ module.exports = function isValidUrl(url) {
         console.log('Sorry, that is not a valid url. Currently, socioscapes supports the HTTP(S) and FTP(S) protocols. Valid URLS must begin with the protocol name followed by an address (eg. "ftp://socioscapes.com/myScape.json", "https://socioscapes.com/myScape.json").');
     }
     callback(isValid);
+    return isValid;
 };

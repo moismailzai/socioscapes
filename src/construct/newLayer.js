@@ -13,7 +13,7 @@ var isValidName = require('./../core/isValidName.js'),
  * @memberof! socioscapes
  * @return {Object} MyLayer        MyLayer = function () {
  */
-module.exports = function newLayer(name, layers) {
+module.exports = function newLayer(name, layers, config) {
     var MyLayer,
         callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
@@ -459,9 +459,9 @@ module.exports = function newLayer(name, layers) {
             });
         };
         layers.push(new MyLayer);
-        callback(layers);
     } else {
         console.log('Sorry, unable to create a new layer called "' + name + '" (does a scape by that name already exist?).');
-        callback(false)
     }
+    callback(layers);
+    return layers;
 };

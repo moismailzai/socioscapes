@@ -35,4 +35,5 @@ module.exports = function getView(scape, state, layer, view) {
         console.log('Sorry, the view "' + view + '" does not exist in the layer "' + layer + '" (or that layer does not exist in the state "' + state + '").')
     }
     callback(myView);
+    return  myView;
 };

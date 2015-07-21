@@ -20,6 +20,7 @@ module.exports = function fetchGoogleAuth(config) {
         if (token && token.access_token) {
             gapi.client.load(config.client.name, config.client.version, function (result) {
                 callback(result);
+                return result;
             });
         }
     });

@@ -1,15 +1,14 @@
 /*jslint node: true */
 /*global myLayer, module, google, require, define, define.amd*/
 'use strict';
-var layers;
 /**
  * This
  *
- * @method layers
+ * @method layer
  * @memberof! socioscapes
  * @return
  */
-module.exports = function layers(myLayer) {
+module.exports = function layer(myLayer) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         that = this;
     Object.defineProperty(this, 'newViewGmap', {
@@ -45,11 +44,12 @@ module.exports = function layers(myLayer) {
     Object.defineProperty(this, 'views', {
         value: function(myViewName) {
             if (myLayer.views[myViewName]) {
-                layers.call(that.views(myViewName), myLayer.views[myViewName]);
+                layer.call(that.views(myViewName), myLayer.views[myViewName]);
             } else {
                 console.log('Sorry, a view by the name of "' + myViewName + '" does not exist in this layer.');
             }
         }
     });
     callback();
+    return;
 };

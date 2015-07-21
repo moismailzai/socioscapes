@@ -2,7 +2,8 @@
 /*global socioscapes, module, google, require*/
 'use strict';
 var isValidName = require('./../core/isValidName.js'),
-    isKey = require('./../core/isKey.js');
+    isKey = require('./../core/isKey.js'),
+    newLayer = require('./../construct/newLayer.js');
 /**
  * This constructor method returns an object of class {@linkcode MyState}.
  *
@@ -10,7 +11,7 @@ var isValidName = require('./../core/isValidName.js'),
  * @memberof! MyState
  * @return {Object} MySession
  */
-module.exports = function newState(name, states) {
+module.exports = function newState(name, states, config) {
     var myState = {},
         callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
         _author = (config && config.author) ? config.author:'',
@@ -23,34 +24,34 @@ module.exports = function newState(name, states) {
             value: {}
         });
         Object.defineProperty(myState.meta, 'author', {
-            get: _author,
+            get: function() { return _author },
             set: function(author) {_author = author}
         });
         Object.defineProperty(myState.meta, 'name', {
-            get: _name,
+            get: function() { return _name },
             set: function(name) {_name = name }
         });
         Object.defineProperty(myState.meta, 'summary', {
-            get: _summary,
+            get: function() { return _summary },
             set: function(summary) {_summary = summary}
         });
         Object.defineProperty(myState.meta, 'type', {
-            get: _type,
+            get: function() { return _type },
             set: function(type) {_type = type}
         });
         Object.defineProperty(myState, 'source', {
-            get: _source,
+            get: function() { return _source },
             set: function(source) {_source = source}
         });
         Object.defineProperty(myState, 'layers', {
             value: []
         });
-        newLayer('layer0', layers, function(myLayer){
+        newLayer('layer0', myState.layers, function(myLayer){
             myState.layers.push(myLayer);
-            callback(myState);
         });
     } else {
         console.log('Sorry, unable to create a new state called "' + name + '" (does a state by that name already exist?).');
-        callback(false);
     }
+    callback(myState);
+    return myState;
 };

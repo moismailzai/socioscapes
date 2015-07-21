@@ -26,6 +26,7 @@ module.exports = function fetchWfs(config) {
             geom.url = config.url;
             geom.id = config.id;
             callback(geom);
+            return geom;
         }
     };
     _xobj.send(null);

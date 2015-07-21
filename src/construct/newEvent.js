@@ -25,4 +25,5 @@ module.exports = function newEvent(name, message) {
         }
     );
     callback(true);
+    return true;
 };

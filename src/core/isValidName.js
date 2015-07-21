@@ -10,7 +10,7 @@
  */
 module.exports = function isValidName(name) {
     var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
-        isValid,
+        isValid = false,
         isReserved = [
             'help',
             // below are reserved JS words and properties
@@ -97,19 +97,14 @@ module.exports = function isValidName(name) {
             'yield'
         ];
     if (typeof name === 'string' && /^[-A-Z0-9]+$/i.test(name)) { // if 'name' is a string and matches the regex pattern
-        if (!isReserved.indexOf(name) === -1) {
-            isValid = false;
-            console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+        if (isReserved.indexOf(name) === -1) {
+            isValid = true;
         } else { // and doesn't match a reserved word, then it is valid
-            isValid = true
+            console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
         }
     } else {
-        isValid = false;
         console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
     }
-    if (callback) {
-        callback(isValid)
-    } else {
-        return isValid;
-    }
+    callback(isValid);
+    return isValid;
 };

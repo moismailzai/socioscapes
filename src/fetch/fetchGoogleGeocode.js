@@ -20,6 +20,7 @@ module.exports = function fetchGoogleGeocode(address) {
             geocode.lat = results[0].geometry.location.lat();
             geocode.long = results[0].geometry.location.lng();
             callback(geocode);
+            return geocode;
         }
         alert('Error: Google Geocoder was unable to locate ' + address);
     });
