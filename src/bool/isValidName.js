@@ -1,3 +1,7 @@
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
  * This internal method tests if a name used for a socioscapes scape, state, layer, or view adheres to naming
  * restrictions.
@@ -8,8 +12,8 @@
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
  */
-module.exports = function isValidName(name) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
+function isValidName(name) {
+    var callback = newDispatcherCallback(arguments),
         isValid = false,
         isReserved = [
             'help',
@@ -96,15 +100,18 @@ module.exports = function isValidName(name) {
             'with',
             'yield'
         ];
-    if (typeof name === 'string' && /^[-A-Z0-9]+$/i.test(name)) { // if 'name' is a string and matches the regex pattern
-        if (isReserved.indexOf(name) === -1) {
-            isValid = true;
-        } else { // and doesn't match a reserved word, then it is valid
-            console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+    if (name && typeof name === 'string') {
+        if (/^[-A-Z0-9]+$/i.test(name)) {
+            if (isReserved.indexOf(name) === -1) {
+                isValid = true;
+            } else {
+                console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+            }
+        } else {
+            console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
         }
-    } else {
-        console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
     }
     callback(isValid);
     return isValid;
-};
+}
+module.exports = isValidName;

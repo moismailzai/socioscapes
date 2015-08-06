@@ -1,6 +1,7 @@
 /*jslint node: true */
-/*global socioscapes, module, google, require*/
+/*global module, require, google*/
 'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
  * This function requests authorization to use a Google API, and if received, loads that API client. For more information
  * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
@@ -14,14 +15,15 @@
  * @param {Function} callback - This is an optional callback that returns the result of the client load.
  * @return this {Object}
  */
-module.exports = function fetchGoogleAuth(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
+function fetchGoogleAuth(config) {
+    var callback = newDispatcherCallback(arguments);
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
-            gapi.client.load(config.client.name, config.client.version, function (result) {
+            gapi.client.load(config.client.value, config.client.version, function (result) {
                 callback(result);
                 return result;
             });
         }
     });
-};
+}
+module.exports = fetchGoogleAuth;

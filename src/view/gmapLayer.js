@@ -1,9 +1,206 @@
 /*jslint node: true */
-/*global socioscapes, module, google, feature, event, require*/
+/*global module, require, google*/
 'use strict';
 var fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
-    viewGmap_Labels = require('./gmapLabels.js'),
-    viewGmap_Map = require('./gmapMap.js');
+    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    /**
+     * This method creates a new google.maps.OverlayView and loads it on top of the other layers; all map elements except
+     * labels are hidden.
+     *
+     * @function viewGmap_Labels
+     * @memberof! socioscapes
+     * @param {Object} myMap - The map to append this OverlayView to.
+     * @param {Array} [styles] - An optional array of {"feature": "rule"} declarative styles for map labels.
+     * @return {Object} myMap - The rendered Google Maps object.
+     */
+    viewGmap_Labels = function viewGmap_Labels(myMap, styles) {
+        var callback = newDispatcherCallback(arguments),
+            dom,
+            LayerHack;
+        styles = styles || [
+                {
+                    "elementType": "all",
+                    "stylers": [
+                        { "visibility": "off" }
+                    ]
+                },  {
+                    "featureType": "administrative",
+                    "elementType": "labels.text.stroke",
+                    "stylers": [
+                        { "visibility": "on" },
+                        { "color": "#ffffff" },
+                        { "weight": 5 }
+                    ]
+                },{
+                    "featureType": "administrative",
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                        { "visibility": "on" },
+                        { "color": "#000000" }
+                    ]
+                }
+            ];
+
+        // Create a custom OverlayView class and declare rules that will ensure it appears above all other map content
+        LayerHack = new google.maps.OverlayView();
+        LayerHack.onAdd = function () {
+            dom = this.getPanes();
+            dom.mapPane.style.zIndex = 150;
+        };
+        LayerHack.onRemove = function () {
+            this.div_.parentNode.removeChild(this.div_);
+            this.div_ = null;
+        };
+        LayerHack.draw = function () { };
+        LayerHack.setMap(myMap);
+
+        // Create and set the label layer
+        myMap.labels = new google.maps.StyledMapType(styles);
+        myMap.overlayMapTypes.insertAt(0, myMap.labels);
+        callback(myMap);
+        return myMap;
+    },
+    /**
+     * This method creates a new google.maps object and assigns it to the specified div.
+     *
+     * @function viewGmap_Map
+     * @memberof! socioscapes
+     * @param {Object} geocode - An object with latitude and longitude coordinates.
+     * @param {Object} geocode.lat - The latitude around which the map should be centered.
+     * @param {Object} geocode.long - The longitude around which the map should be centered.
+     * @param {Object} div - The html div element that will store the map ( document.getElementById('divId') ).
+     * @param {Array} styles - An optional array of {"feature": "rule"} declarative styles for map features.
+     * @param {Array} options - An array of valid Google Maps map option.
+     * @return {Object} myMap - The rendered Google Maps object.
+     */
+    viewGmap_Map = function gmapMap(geocode, div, styles, options) {
+        var callback = newDispatcherCallback(arguments),
+            myMap;
+        styles = styles || [
+                {
+                    "featureType": "administrative",
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                        {"color": "#444444"}
+                    ]
+                },
+                {
+                    "featureType": "administrative.locality",
+                    "elementType": "labels.text",
+                    "stylers":
+                        [
+                            {"visibility": "on"}
+                        ]
+                },
+                {
+                    "featureType": "administrative.neighborhood",
+                    "elementType": "labels.text",
+                    "stylers":
+                        [
+                            {"visibility": "off"},
+                            {"hue": "#ff0000"}
+                        ]
+                },
+                {
+                    "featureType": "landscape",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"color": "#f2f2f2"}
+                        ]
+                },
+                {
+                    "featureType": "poi",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"visibility": "off"}
+                        ]
+                },
+                {
+                    "featureType": "road",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"saturation": -100},
+                            {"lightness": 45}
+                        ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"visibility": "simplified"}
+                        ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "labels.text",
+                    "stylers":
+                        [
+                            {"visibility": "on"}
+                        ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "labels.icon",
+                    "stylers":
+                        [
+                            {"visibility": "on"}
+                        ]
+                },
+                {
+                    "featureType": "road.arterial",
+                    "elementType": "labels.icon",
+                    "stylers":
+                        [
+                            {"visibility": "off"}
+                        ]
+                },
+                {
+                    "featureType": "transit",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"visibility": "off"}
+                        ]
+                },
+                {
+                    "featureType": "water",
+                    "elementType": "all",
+                    "stylers":
+                        [
+                            {"color": "#46bcec"},
+                            {"visibility": "on"}
+                        ]
+                },
+                {
+                    "featureType": "all",
+                    "elementType": "labels",
+                    "stylers":
+                        [
+                            {"visibility": "off"}
+                        ]
+                }
+            ];
+        options = options || {
+                zoom: 13,
+                center: new google.maps.LatLng(geocode.lat, geocode.long),
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                mapTypeControl: true,
+                MapTypeControlOptions: {mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE], style: google.maps.MapTypeControlStyle.DROPDOWN_MENU},
+                scaleControl: true,
+                disableDoubleClickZoom: true,
+                streetViewControl: true,
+                overviewMapControl: true,
+                styles: styles
+            };
+        myMap = new google.maps.Map(div, options);
+        myMap.setTilt(45);
+        callback(myMap);
+        return myMap;
+    };
 /**
  * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *
@@ -18,7 +215,7 @@ var fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
  * @return {Object} MyGmapView - The rendered and configured view object.
  */
 module.exports = function newViewGmap(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;};
+    var callback = newDispatcherCallback(arguments);
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
      * corresponding div container, {@linkcode MyLayer.MyGmapView.div}, and an arbitrary number of Google Map

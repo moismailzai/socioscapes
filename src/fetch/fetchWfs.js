@@ -1,21 +1,22 @@
 /*jslint node: true */
-/*global socioscapes, module, google, require*/
+/*global module, require, google*/
 'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
  * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
  * queried url, the id parameter, and the fetched features.
  *
  * @function fetchWfs
  * @memberof! socioscapes
- * @param {Object} config - An object with configuration options for the Web Feature Service fetch.
+ * @param {Object} config - An object with configuration options for the Web Feature Service fetchScapeObject.
  * @param {String} config.url - The Web Feature Service query url.
  * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).
- * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetch.
+ * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetchScapeObject.
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
-module.exports = function fetchWfs(config) {
-    var callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
-        _xobj = new XMLHttpRequest(),
+function fetchWfs(config) {
+    var callback = newDispatcherCallback(arguments),
+        xobj = new XMLHttpRequest(),
         geom;
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
     _xobj.open('GET', config.url, true);
@@ -30,4 +31,5 @@ module.exports = function fetchWfs(config) {
         }
     };
     _xobj.send(null);
-};
+}
+module.exports = fetchWfs;

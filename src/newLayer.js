@@ -1,8 +1,10 @@
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
-var isValidName = require('./../core/isValidName.js'),
-    isKey = require('./../core/isKey.js');
+var isValidName = require('./../bool/isValidName.js'),
+    fetchFromArray = require('./../fetchScapeObject/fetchFromScape.js'),
+    fetch = require('./../core/fetchScapeObject.js'),
+    newCallback = require('./newDispatcherCallback.js');
 /**
  * This constructor method returns a new object of class {@linkcode MyLayer}.
  *
@@ -13,24 +15,18 @@ var isValidName = require('./../core/isValidName.js'),
  * @memberof! socioscapes
  * @return {Object} MyLayer        MyLayer = function () {
  */
-module.exports = function newLayer(name, layers, config) {
-    var MyLayer,
-        callback = (typeof arguments[arguments.length - 1] === 'function') ? arguments[arguments.length - 1]:function(result) { return result;},
-        _author = (config && config.author) ? config.author:'',
-        _name = (config && config.name) ? config.name:name,
-        _source = (config && config.source) ? config.source:'',
-        _summary = (config && config.summary) ? config.summary:'',
-        _type = (config && config.author) ? config.summary:'scapeJson.state';
-    if (isValidName(name) && !isKey(name, 'name', layers)) {
-        /**
-         * Each MyLayer consists of the two store members {@linkcode MyLayer.data} and {@linkcode MyLayer.geom}, and the
-         * configuration members {@linkcode MyLayer.breaks}, {@linkcode MyLayer.classes}, {@linkcode MyLayer.classification},
-         * {@linkcode MyLayer.colourscale}, {@linkcode MyLayer.domain}, {@linkcode MyLayer.geostats}, and
-         * {@linkcode MyLayer.status}.
-         *
-         * @namespace MyLayer
-         */
-        MyLayer = function () {
+function newLayer(name, state, scape, config) {
+    var callback = newCallback(arguments);
+    /**
+     * Each MyLayer consists of the two store members {@linkcode MyLayer.data} and {@linkcode MyLayer.geom}, and the
+     * configuration members {@linkcode MyLayer.breaks}, {@linkcode MyLayer.classes}, {@linkcode MyLayer.classification},
+     * {@linkcode MyLayer.colourscale}, {@linkcode MyLayer.domain}, {@linkcode MyLayer.geostats}, and
+     * {@linkcode MyLayer.status}.
+     *
+     * @namespace MyLayer
+     */
+    var myLayer = {},
+        Layer = function(name, layers, config) {
             var newEvent,
                 _myBreaks = 5,
                 _myClasses,
@@ -117,11 +113,11 @@ module.exports = function newLayer(name, layers, config) {
                                 _myStatusList = _myStatusList.concat(_myLayerProperty + ' = ' + _myStatus + ', ');
                             }
                         } //TODO fix the trailing comma issue once I get the logic here working properly.
-                        newEvent('statusEvent', 'statusReturn: The statuses of all properties in ' + that.constructor.name + ' are: ' + _myStatusList + '.');
+                        newEvent('statusEvent', 'statusReturn: The statuses of all properties in ' + that.constructor.value + ' are: ' + _myStatusList + '.');
                         return _myLayerStatus
                     }
                     if (typeof _myLayerStatus[name] === 'boolean' && !state) {
-                        newEvent('statusEvent', 'statusReturn: The statuses of property ' + name + ' in layer ' + that.constructor.name + ' is: ' + _myLayerStatus[name] + '.');
+                        newEvent('statusEvent', 'statusReturn: The statuses of property ' + name + ' in layer ' + that.constructor.value + ' is: ' + _myLayerStatus[name] + '.');
                         return _myLayerStatus[name]
                     }
                     if (typeof _myLayerStatus[name] === 'boolean' && typeof state === 'boolean') {
@@ -130,7 +126,7 @@ module.exports = function newLayer(name, layers, config) {
                             value: state,
                             configurable: true
                         });
-                        newEvent('statusEvent', 'statusSet: Set the state of property ' + name + ' in layer ' + that.constructor.name + ' to: ' + state + '.');
+                        newEvent('statusEvent', 'statusSet: Set the state of property ' + name + ' in layer ' + that.constructor.value + ' to: ' + state + '.');
                         if (_myLayerStatus.breaks &&
                             _myLayerStatus.classification &&
                             _myLayerStatus.colourscale &&
@@ -147,7 +143,7 @@ module.exports = function newLayer(name, layers, config) {
                 }
             });
             /**
-             * This method sets the data store of the the associated {@linkcode MyLayer}. If the fetch is succesful,
+             * This method sets the data store of the the associated {@linkcode MyLayer}. If the fetchScapeObject is succesful,
              * MyLayer.status('data') and MyLayer.status('geostats') will both return true. If no parameters are provided,
              * the method returns the currently stored data values, if any exist.The method can take two parameters, the
              * first can be a string name for any valid socioscapes data fetcher, a function that returns a valid
@@ -236,7 +232,7 @@ module.exports = function newLayer(name, layers, config) {
                 }
             });
             /**
-             * This method sets the geom store of {@linkcode MyLayer}. If the fetch is successful, MyLayer.status('geom')
+             * This method sets the geom store of {@linkcode MyLayer}. If the fetchScapeObject is successful, MyLayer.status('geom')
              * will return true. If no parameters are provided, the method returns the currently stored geom features, if
              * any exist. The method can take two parameters, the first can be a string name for any valid socioscapes data
              * fetcher, a function that returns a valid {@linkcode socioscapes-geom-object}, or a valid
@@ -391,7 +387,7 @@ module.exports = function newLayer(name, layers, config) {
                         }
                         _myDomain = [];
                         _myClassification = {};
-                        _myClassification.name = classification;
+                        _myClassification.value = classification;
                         _myClassification.classes = _myGeostats[classification](_myBreaks);
                         for (i = 0; i < _myBreaks; i++) {
                             _myDomain.push(parseFloat(_myClasses[i]));
@@ -458,10 +454,14 @@ module.exports = function newLayer(name, layers, config) {
                 }
             });
         };
-        layers.push(new MyLayer);
+    if (!fetchFromArray(name, 'name', state.layers)) {
+        console.log('Creating a new layer called "' + name + '" in the "' + state.meta.value + '" state.');
+        myLayer = new Layer(name, state.layers, config);
+        state.layers.push(myLayer);
     } else {
         console.log('Sorry, unable to create a new layer called "' + name + '" (does a scape by that name already exist?).');
     }
-    callback(layers);
-    return layers;
-};
+    callback(myLayer);
+    return myLayer;
+}
+module.exports = newLayer;

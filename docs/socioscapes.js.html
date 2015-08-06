@@ -306,7 +306,7 @@ module.exports = function newLayer() {
             }
         });
         /**
-         * This method sets the data store of the the associated {@linkcode MyLayer}. If the fetch is succesful,
+         * This method sets the data store of the the associated {@linkcode MyLayer}. If the fetchScapeObject is succesful,
          * MyLayer.status('data') and MyLayer.status('geostats') will both return true. If no parameters are provided,
          * the method returns the currently stored data values, if any exist.The method can take two parameters, the
          * first can be a string name for any valid socioscapes data fetcher, a function that returns a valid
@@ -395,7 +395,7 @@ module.exports = function newLayer() {
             }
         });
         /**
-         * This method sets the geom store of {@linkcode MyLayer}. If the fetch is successful, MyLayer.status('geom')
+         * This method sets the geom store of {@linkcode MyLayer}. If the fetchScapeObject is successful, MyLayer.status('geom')
          * will return true. If no parameters are provided, the method returns the currently stored geom features, if
          * any exist. The method can take two parameters, the first can be a string name for any valid socioscapes data
          * fetcher, a function that returns a valid {@linkcode socioscapes-geom-object}, or a valid
@@ -715,7 +715,7 @@ module.exports = function fetchGoogleBq(config, callback) {
 /*global socioscapes, module, google, require*/
 'use strict';
 /**
- * This method parses and sorts the results of a Google Big Query fetch to fit the format [key: value].
+ * This method parses and sorts the results of a Google Big Query fetchScapeObject to fit the format [key: value].
  *
  * @function fetchGoogleBq_Sort
  * @memberof! socioscapes
@@ -814,7 +814,7 @@ module.exports = function () {
 /*jslint node: true */
 /*global socioscapes, module, google, feature, event, require*/
 'use strict';
-var fetchGoogleGeocode = require('../fetch/fetchGoogleGeocode.js'),
+var fetchGoogleGeocode = require('../fetchScapeObject/fetchGoogleGeocode.js'),
     viewGmap_Labels = require('./newViewGmap_labels.js'),
     viewGmap_Map = require('./newViewGmap_map.js');
 /**
@@ -1101,7 +1101,7 @@ module.exports = function newViewGmap(config) {
     };
     return new MyGmapView;
 };
-},{"../fetch/fetchGoogleGeocode.js":7,"./newViewGmap_labels.js":11,"./newViewGmap_map.js":12}],11:[function(require,module,exports){
+},{"../fetchScapeObject/fetchGoogleGeocode.js":7,"./newViewGmap_labels.js":11,"./newViewGmap_map.js":12}],11:[function(require,module,exports){
 /*jslint node: true */
 /*global socioscapes, module, google, require*/
 'use strict';
@@ -2033,10 +2033,10 @@ function hasOwnProperty(obj, prop) {
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at the
  * University of Toronto.
  */
-var fetchGoogleAuth = require('./fetch/fetchGoogleAuth.js'),
-    fetchGoogleGeocode = require('./fetch/fetchGoogleGeocode.js'),
-    fetchGoogleBq = require('./fetch/fetchGoogleBq.js'),
-    fetchWfs = require('./fetch/fetchWfs.js'),
+var fetchGoogleAuth = require('./fetchScapeObject/fetchGoogleAuth.js'),
+    fetchGoogleGeocode = require('./fetchScapeObject/fetchGoogleGeocode.js'),
+    fetchGoogleBq = require('./fetchScapeObject/fetchGoogleBq.js'),
+    fetchWfs = require('./fetchScapeObject/fetchWfs.js'),
     newLayer = require('./core/newLayer.js'),
     newViewGmap = require('./view/gmapLayer.js');
 /**
@@ -2074,7 +2074,7 @@ Object.defineProperty(socioscapes, 'newViewGmap', {
     value: newViewGmap
 });
 module.exports = socioscapes;
-},{"./core/newLayer.js":3,"./fetch/fetchGoogleAuth.js":4,"./fetch/fetchGoogleBq.js":5,"./fetch/fetchGoogleGeocode.js":7,"./fetch/fetchWfs.js":8,"./view/gmapLayer.js":10}]},{},[17])(17)
+},{"./core/newLayer.js":3,"./fetchScapeObject/fetchGoogleAuth.js":4,"./fetchScapeObject/fetchGoogleBq.js":5,"./fetchScapeObject/fetchGoogleGeocode.js":7,"./fetchScapeObject/fetchWfs.js":8,"./view/gmapLayer.js":10}]},{},[17])(17)
 });</code></pre>
         </article>
     </section>

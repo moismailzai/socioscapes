@@ -3,7 +3,7 @@
 ### Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.
 
 ### Details
->**Current version**:     0.1.4
+>**Current version**:     0.4.0
 
 >**Source code**:     [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
  
@@ -93,15 +93,15 @@ examples:**
 >**socioscapes('vancity').newScape('vancity')**  
 >**socioscapes('anotherScape').newScape('vancity')**  
 
->// *now let's download some geometry and put it in a new layer, we'll fetch it from a wfs server. since all scapes are created with a default state ('state1'), and all states are created with a default layer ('layer1'), we can just reference these immediately after we create a new scape.*
+>// *now let's download some geometry and put it in a new layer, we'll fetchScapeObject it from a wfs server. since all scapes are created with a default state ('state1'), and all states are created with a default layer ('layer1'), we can just reference these immediately after we create a new scape.*
 >**socioscapes('vancity').states('state1').layers('layer1').geom('fetchWfs', wfsGeom)**
 
->// *hmm that's pretty verbose, but don't worry, socioscapes is smart... if you don't explicitly reference something, it will assume the default value. the following commands all fetch the same geometry and store it in the default layer*  
+>// *hmm that's pretty verbose, but don't worry, socioscapes is smart... if you don't explicitly reference something, it will assume the default value. the following commands all fetchScapeObject the same geometry and store it in the default layer*
 >**socioscapes('vancity').states('state1').geom('fetchWfs', wfsGeom)**  
 >**socioscapes('vancity').layers('layer1').geom('fetchWfs', wfsGeom)**  
 >**socioscapes('vancity').geom('fetchWfs', wfsGeom)**  
 
->// *still too verbose? let's shorten it even more and fetch some data from a Google Big Query table*
+>// *still too verbose? let's shorten it even more and fetchScapeObject some data from a Google Big Query table*
 >**v1 = socioscapes('vancity').states('state1').layers('layer1')**  
 >**v1.data('fetchGoogleBq', bqData);**  
 
