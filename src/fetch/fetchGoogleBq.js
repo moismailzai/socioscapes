@@ -32,10 +32,10 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
 function fetchGoogleBq(config) {
     var callback = newDispatcherCallback(arguments),
         data = {},
-        _clientId = config.clientId,
-        _dataId = config.id,
-        _projectId = config.projectId,
-        _queryString = config.queryString,
+        _clientId = config ? config.clientId:_clientId ,
+        _dataId = config ? config.id:_dataId,
+        _projectId = config ? config.projectId:_projectId,
+        _queryString = config ? config.queryString:_queryString,
         _request,
         _totalRows,
         _values = [],
@@ -56,22 +56,28 @@ function fetchGoogleBq(config) {
             }
         };
     callback = (typeof callback === 'function') ? callback : function () { };
-
-    fetchGoogleAuth(_gapiConfig, function () {
-        _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
-        _request.execute(function (bqResult) {
-            _totalRows = parseFloat(bqResult.result.totalRows);
-            bqSort(bqResult, function (sortedResult) {
-                _values.push(sortedResult);
-                if (_values.length === _totalRows) {
-                    data.values = _values;
-                    data.url = _queryString;
-                    data.id = _dataId;
-                    callback(data);
-                    return data;
+    if (config) {
+        fetchGoogleAuth(_gapiConfig, function () {
+            _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
+            _request.execute(function (bqResult) {
+                for (var i = 0; i < bqResult.schema.fields.length; i++){
+                    data['column'+i] = bqResult.schema.fields[i].name
                 }
+                _totalRows = parseFloat(bqResult.result.totalRows);
+                data.columns = bqResult.schema.fields.length;
+                data.rows = _totalRows;
+                bqSort(bqResult, function (sortedResult) {
+                    _values.push(sortedResult);
+                    if (_values.length === _totalRows) {
+                        data.values = _values;
+                        data.query = _queryString;
+                        data.name = _dataId;
+                        callback(data);
+                        return data;
+                    }
+                });
             });
         });
-    });
+    }
 }
 module.exports = fetchGoogleBq;

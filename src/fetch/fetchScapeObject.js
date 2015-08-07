@@ -16,8 +16,8 @@ var fetchGlobal = require('./../fetch/fetchGlobal.js'),
  */
 function fetchScapeObject(object, parent) {
     var callback = newDispatcherCallback(arguments),
-        myParent = (isValidObject(parent)) ? parent:false,
-        myGlobal = (parent) ? false:fetchGlobal(object),
+        myParent = (isValidObject(parent)) ? parent:false, // is a valid parent object provided
+        myGlobal = (parent) ? false:fetchGlobal(object),// if so, our object should be a prop and not a global
         myName = (isValidName(object)) ? object:false,
         myObject = (isValidObject(object)) ? object:false,
         myUrl = (isValidUrl(parent)) ? parent:false;

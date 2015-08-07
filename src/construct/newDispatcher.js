@@ -49,7 +49,7 @@ function newDispatcher() {
                                 _lastResult = result;
                             }
                             _status = true;
-                            return _lastResult;
+                            _that.dispatcher();
                         });
                     }
                 }

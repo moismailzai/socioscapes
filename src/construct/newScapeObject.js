@@ -5,19 +5,17 @@ var isValidName = require('./../bool/isValidName.js'),
     fetchFromScape = require('./../fetch/fetchFromScape.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
-    fetchScapeObjectConfig = require('./../fetch/fetchScapeObjectConfig.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     newDispatcher = require('./../construct/newDispatcher.js'),
-    newGlobal = require('./../construct/newGlobal.js');
+    newGlobal = require('./../construct/newGlobal.js'),
+    newScapeSchema = require('./newScapeSchema.js');
 function newScapeObject(name, parent, type) {
     var callback = newDispatcherCallback(arguments),
-        myConfig = fetchScapeObjectConfig(type),
+        schema = newScapeSchema(type),
         myObject = false,
-        ScapeObject = function(myName, myParent, myConfig) {
+        ScapeObject = function(myName, myParent, mySchema) {
             var that = this,
-                myBreadcrumbs = fetchScapeObjectConfig(myConfig.type.split('.')[0]),
-                myChildren = (myConfig && myConfig.children) ? myConfig.children:isScape.children,
-                myDispatcher = myParent ? myParent.dispatcher:newDispatcher();
+                myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
             Object.defineProperty(this, 'dispatcher', {
                 value: myDispatcher
             });
@@ -30,10 +28,10 @@ function newScapeObject(name, parent, type) {
                 configurable: true,
                 enumerable: true
             });
-            Object.defineProperty(this.meta, 'breadcrumbs', {
-                value: myBreadcrumbs
+            Object.defineProperty(this.meta, 'schema', {
+                value: mySchema
             });
-            Object.defineProperty(this.meta.breadcrumbs, 'parent', {
+            Object.defineProperty(this.meta.schema, 'parent', {
                 value: myParent || false
             });
             Object.defineProperty(this.meta, 'name', {
@@ -47,7 +45,7 @@ function newScapeObject(name, parent, type) {
                 enumerable: true
             });
             Object.defineProperty(this.meta, 'type', {
-                value: myConfig.type,
+                value: mySchema.type,
                 enumerable: true
             });
             Object.defineProperty(this, 'setMeta', {
@@ -62,21 +60,19 @@ function newScapeObject(name, parent, type) {
                     return this;
                 }
             });
-            if (myChildren) {
-                for (var i = 0; i < myChildren.length; i++) {
-                    if (!that[myChildren[i].container]) {
-                        Object.defineProperty(that, myChildren[i].container, {
-                            value: myChildren[i].value,
-                            enumerable: true
-                        });
-                    }
-                    if (myChildren[i].children) {
-                        that[myChildren[i].container].push(new ScapeObject(
-                            myChildren[i].type.split('.')[0] + '0',
-                            that,
-                            fetchScapeObjectConfig(myChildren[i].type)
-                        ))
-                    }
+            for (var i = 0; i < mySchema.children.length; i++) {
+                if (!that[mySchema.children[i].container]) {
+                    Object.defineProperty(that, mySchema.children[i].container, {
+                        value: mySchema[mySchema.children[i].container].value || [],
+                        enumerable: true
+                    });
+                }
+                if  (mySchema.children[i].item) {
+                    that[mySchema.children[i].container].push(new ScapeObject(
+                        mySchema.children[i].item,
+                        that,
+                        newScapeSchema(mySchema.children[i].type)
+                    ))
                 }
             }
         };
@@ -84,14 +80,14 @@ function newScapeObject(name, parent, type) {
     parent = fetchScapeObject(parent);
     if (name) {
         if (parent) {
-            if (myConfig) {
-                if (fetchFromScape(name, 'name', parent[myConfig.container])) {
+            if (schema) {
+                if (fetchFromScape(name, 'name', parent[schema.container])) {
                     console.log('Fetching existing scape object "' + name + '".');
-                    myObject = fetchFromScape(name, 'name', parent[myConfig.container]);
+                    myObject = fetchFromScape(name, 'name', parent[schema.container]);
                 } else {
                     console.log('Adding an object called "' + name + '" to the "' + parent.meta.name + '" container.');
-                    myObject = new ScapeObject(name, parent, myConfig);
-                    parent[myConfig.container].push(myObject);
+                    myObject = new ScapeObject(name, parent, schema);
+                    parent[schema.container].push(myObject);
                 }
             }
         } else {
@@ -101,12 +97,11 @@ function newScapeObject(name, parent, type) {
             } else {
                 if (!fetchGlobal(name)) {
                     console.log('Creating a new scape called "' + name + '".');
-                    myObject = new ScapeObject(name, null, myConfig);
+                    myObject = new ScapeObject(name, null, schema);
                     newGlobal(name, myObject);
                 } else {
-                    console.log('Sorry, a global object by that name already exists.')
+                    console.log('Sorry, a global object external to socioscapes is already associated with that name.')
                 }
-
             }
         }
     }

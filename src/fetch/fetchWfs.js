@@ -14,18 +14,17 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetchScapeObject.
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
-function fetchWfs(config) {
+function fetchWfs(url) {
     var callback = newDispatcherCallback(arguments),
-        xobj = new XMLHttpRequest(),
+        _xobj = new XMLHttpRequest(),
         geom;
     _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-    _xobj.open('GET', config.url, true);
+    _xobj.open('GET', url, true);
     _xobj.onreadystatechange = function () {
         if (_xobj.readyState == 4 && _xobj.status == "200") {
             geom = {};
             geom.features = _xobj.responseText;
-            geom.url = config.url;
-            geom.id = config.id;
+            geom.url = url;
             callback(geom);
             return geom;
         }

@@ -18,20 +18,29 @@ function newScapeMenu(scapeObject) {
         myMenu = false,
         ScapeMenu = function(myObject) {
             var that = this,
-                isScape = (myObject.meta.breadcrumbs.isScape),
-                isState = (myObject.meta.breadcrumbs.isState),
-                isLayer = (myObject.meta.breadcrumbs.isLayer),
-                isView  = (myObject.meta.breadcrumbs.isView),
-                myBreadcrumbs = myObject.meta.breadcrumbs,
-                myChildren = myBreadcrumbs.children,
-                myContainer = myBreadcrumbs.container,
-                myParent = myObject.meta.breadcrumbs.parent,
-                myType = myObject.meta.type.split('.')[0],
+                mySchema = myObject.meta.schema,
+                myContainer = myObject[mySchema.container],
+                myParent = myObject.meta.schema.parent,
+                myType = mySchema.type,
                 newMenu,
                 newObject;
             Object.defineProperty(this, 'drop', {
                 value: function() {
-                    delete window[myObject['meta']['name']];
+                    delete window[myObject];
+                }
+            });
+            Object.defineProperty(this, 'test', {
+                value: function(option, config) {
+                    var myOption = {},
+                        myConfig = config || "50";
+                    myOption.bq = {
+                        id: '2011_census_of_canada',
+                        clientId: '424138972496-nlcip7t83lb1ll7go1hjoc77jgc689iq.apps.googleusercontent.com',
+                        projectId: '424138972496',
+                        queryString: "SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] WHERE (Characteristic CONTAINS 'Population in 2011' AND Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT " + myConfig + ";"
+                    };
+                    myOption.wfs = "http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=cmaname=%27Toronto%27";
+                    return myOption[option];
                 }
             });
             Object.defineProperty(this, 'meta', {
@@ -42,7 +51,7 @@ function newScapeMenu(scapeObject) {
             });
             Object.defineProperty(this, 'new', {
                 value: function (name) {
-                    name = name || (myContainer ? myType + myContainer.length:'scape0');
+                    name = name || mySchema.name + mySchema.parent.length;
                     myObject.dispatcher({
                             myFunction: newScapeObject,
                             myArguments: [name, myParent, myType]
@@ -59,29 +68,48 @@ function newScapeMenu(scapeObject) {
             Object.defineProperty(this, 'store', {
                 value: ''
             });
-            for (var i = 0; i < myChildren.length; i++) {
+            for (var i = 0; i < mySchema.children.length; i++) {
                 (function(myChild) {
-                    var myMember = !(myChild && myChild.type) ? myChild.container:myChild.type.split('.')[0],
-                        myValue = !(myChild && myChild.type) ? function(){ return myObject[myChild.container] }:function(name) {
-                            name = name || myMember + '0';
+                    var initValue,
+                        defaultName = myChild.item || myChild.container;
+                    if (myObject.meta.schema[myChild.container].isMenuItem) { // todo. this should be simplified. right
+                    // now, it uses an internal 'schema' map, defined in newScapeSchema, which tells it wether a given
+                    // object should have a special menu functionality... it certainly works and allows arbitrary changes
+                    // to the resulting menus without editing this file, but it's a bit confusing and can surely be
+                    // simplified.
+                        initValue = function(cmd, cfg) {
+                            myObject.dispatcher({
+                                myFunction: myObject.meta.schema[myChild.container].menu,
+                                myArguments: [cmd, cfg, myObject[myChild.container]],
+                                myThis: myObject
+                            },function(result) {
+                                if (result) {
+                                    return result
+                                }
+                            });
+                            return this
+                        };
+                    } else {
+                        initValue = function(name) {
+                            name = name || defaultName;
                             myObject.dispatcher({
                                 myFunction: fetchScapeObject,
                                 myArguments: [name, myObject]
-                            },
-                            function(result) {
+                            },function(result) {
                                 if (result) {
                                     newObject = result;
                                     newMenu = new ScapeMenu(newObject);
                                 }
                             });
-                        return newMenu;
-                    };
-                    Object.defineProperty(that, myMember, {
-                        value: myValue
+                            return newMenu;
+                        };
+                    }
+                    Object.defineProperty(that, myChild.name, {
+                        value: initValue
                     });
-                })(myChildren[i]);
+                })(mySchema.children[i]);
             }
-            newGlobal('s', this, true);
+            return this;
         };
     if (isValidObject(scapeObject)) {
         myMenu = new ScapeMenu(scapeObject);

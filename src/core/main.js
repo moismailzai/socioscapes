@@ -31,7 +31,6 @@ function socioscapes(name) {
     myScape = (fetchScapeObject(name)) ? fetchScapeObject(name):newScapeObject(name, null, 'scape');
     if (myScape) {
         myMenu = newScapeMenu(myScape);
-        newGlobal('s', myMenu, true);
     }
     return myMenu;
 }

@@ -19,7 +19,7 @@ function fetchGoogleAuth(config) {
     var callback = newDispatcherCallback(arguments);
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
-            gapi.client.load(config.client.value, config.client.version, function (result) {
+            gapi.client.load(config.client.name, config.client.version, function (result) {
                 callback(result);
                 return result;
             });

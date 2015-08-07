@@ -11,8 +11,11 @@ var assign = require('lodash.assign');
 
 // add custom browserify options here
 var customOpts = {
-    entries: ['./src/main.js'],
+    entries: ['./src/core/main.js'],
+    standalone: 'socioscapes',
+    debug: true
 };
+
 var opts = assign({}, watchify.args, customOpts);
 var b = watchify(browserify(opts));
 
@@ -36,6 +39,3 @@ function bundle() {
         .pipe(sourcemaps.write('./')) // writes .map file
         .pipe(gulp.dest('./'));
 }
-gulp.task('default', function() {
-    gulp.start('js', 'update', 'log');
-});
