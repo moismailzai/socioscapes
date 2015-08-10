@@ -1,4 +1,4 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.socioscapes = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -261,6 +261,38 @@ module.exports = newDispatcherCallback;
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+/**
+ * This function is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal updates.
+ * For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
+ *
+ * @function newEvent
+ * @memberof! socioscapes
+ * @param {String} name - The name of the new event (this is what your event handler will listen for).
+ * @param {String} message - The content of the event.
+ */
+// TODO proper documentation of events
+function newEvent(name, message) {
+    var callback = newDispatcherCallback(arguments);
+    new CustomEvent(
+        name,
+        {
+            detail: {
+                message: message,
+                time: new Date()
+            },
+            bubbles: true,
+            cancelable: true
+        }
+    );
+    callback(true);
+    return true;
+}
+module.exports = newEvent;
+},{"./../construct/newDispatcherCallback.js":5}],7:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 function newGlobal(name, object, overwrite) {
@@ -282,15 +314,14 @@ function newGlobal(name, object, overwrite) {
     return myGlobal;
 }
 module.exports = newGlobal;
-},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGlobal.js":12}],7:[function(require,module,exports){
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGlobal.js":16}],8:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
-var fetchScapeObject = require ('./../fetch/fetchScapeObject.js'),
-    isValidObject = require('./../bool/isValidObject.js'),
-    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    newScapeObject = require('./../construct/newScapeObject.js');
+var fetchScapeObject = socioscapes.fn.fetchScapeObject,
+    isValidObject = socioscapes.fn.isValidObject,
+    newDispatcherCallback = socioscapes.fn.newDispatcherCallback,
+    newScapeObject = socioscapes.fn.newScapeObject;
 /**
  * This
  *
@@ -298,463 +329,519 @@ var fetchScapeObject = require ('./../fetch/fetchScapeObject.js'),
  * @memberof! socioscapes
  * @return
  */
-function newScapeMenu(scapeObject) {
-    var callback = newDispatcherCallback(arguments),
-        myMenu = false,
-        ScapeMenu = function(myObject) {
-            var that = this,
-                mySchema = myObject.meta.schema,
-                myContainer = myObject[mySchema.container],
-                myParent = myObject.meta.schema.parent,
-                myType = mySchema.type,
-                newMenu,
-                newObject;
-            Object.defineProperty(this, 'drop', {
-                value: function() {
-                    delete window[myObject];
-                }
-            });
-            Object.defineProperty(this, 'test', {
-                value: function(option, config) {
-                    var myOption = {},
-                        myConfig = config || "50";
-                    myOption.bq = {
-                        id: '2011_census_of_canada',
-                        clientId: '424138972496-nlcip7t83lb1ll7go1hjoc77jgc689iq.apps.googleusercontent.com',
-                        projectId: '424138972496',
-                        queryString: "SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] WHERE (Characteristic CONTAINS 'Population in 2011' AND Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT " + myConfig + ";"
-                    };
-                    myOption.wfs = "http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=cmaname=%27Toronto%27";
-                    return myOption[option];
-                }
-            });
-            Object.defineProperty(this, 'meta', {
-                value: function() {
-                    return  myObject.meta;
-                },
-                configurable: false
-            });
-            Object.defineProperty(this, 'new', {
-                value: function (name) {
-                    name = name || mySchema.name + mySchema.parent.length;
-                    myObject.dispatcher({
-                            myFunction: newScapeObject,
-                            myArguments: [name, myParent, myType]
-                        },
-                        function (result) {
-                            if (result) {
-                                newObject = result;
-                                newMenu = new ScapeMenu(newObject);
-                            }
-                        });
-                    return newMenu;
-                }
-            });
-            Object.defineProperty(this, 'store', {
-                value: ''
-            });
-            for (var i = 0; i < mySchema.children.length; i++) {
-                (function(myChild) {
-                    var initValue,
-                        defaultName = myChild.item || myChild.container;
-                    if (myObject.meta.schema[myChild.container].isMenuItem) { // todo. this should be simplified. right
-                    // now, it uses an internal 'schema' map, defined in newScapeSchema, which tells it wether a given
-                    // object should have a special menu functionality... it certainly works and allows arbitrary changes
-                    // to the resulting menus without editing this file, but it's a bit confusing and can surely be
-                    // simplified.
-                        initValue = function(cmd, cfg) {
-                            myObject.dispatcher({
-                                myFunction: myObject.meta.schema[myChild.container].menu,
-                                myArguments: [cmd, cfg, myObject[myChild.container]],
-                                myThis: myObject
-                            },function(result) {
-                                if (result) {
-                                    return result
-                                }
-                            });
-                            return this
-                        };
-                    } else {
-                        initValue = function(name) {
-                            name = name || defaultName;
-                            myObject.dispatcher({
-                                myFunction: fetchScapeObject,
-                                myArguments: [name, myObject]
-                            },function(result) {
-                                if (result) {
-                                    newObject = result;
-                                    newMenu = new ScapeMenu(newObject);
-                                }
-                            });
-                            return newMenu;
-                        };
+socioscapes.fn.coreExtend(
+    [{ path: 'newScapeMenu', extension:
+        function newScapeMenu(scapeObject) {
+        var callback = newDispatcherCallback(arguments),
+            myMenu = false,
+            ScapeMenu = function(myObject) {
+                var that = this,
+                    myResult,
+                    mySchema = myObject.schema,
+                    myClass = mySchema.class,
+                    myParent = mySchema.parent,
+                    myType = mySchema.type;
+                Object.defineProperty(this, 'drop', {
+                    value: function() {
+                        delete window[myObject];
                     }
-                    Object.defineProperty(that, myChild.name, {
-                        value: initValue
-                    });
-                })(mySchema.children[i]);
-            }
-            return this;
-        };
-    if (isValidObject(scapeObject)) {
-        myMenu = new ScapeMenu(scapeObject);
-    }
-    callback(myMenu);
-    return myMenu;
-}
-module.exports = newScapeMenu;
-},{"./../bool/isValidObject.js":2,"./../construct/newDispatcherCallback.js":5,"./../construct/newGlobal.js":6,"./../construct/newScapeObject.js":8,"./../fetch/fetchScapeObject.js":15}],8:[function(require,module,exports){
+                });
+                Object.defineProperty(this, 'schema', {
+                    value: myObject.schema
+                });
+                Object.defineProperty(this, 'fn', {
+                    value: socioscapes.fn
+                });
+                Object.defineProperty(this, 'this', {
+                    value: myObject
+                });
+                Object.defineProperty(this, 'meta', {
+                    value: myObject.meta
+                });
+                Object.defineProperty(this, 'new', {
+                    value: function (name) {
+                        name = name || mySchema.name + myClass.length;
+                        myObject.dispatcher({
+                                myFunction: newScapeObject,
+                                myArguments: [name, myParent, myType]
+                            },
+                            function (result) {
+                                if (result) {
+                                    myResult = new ScapeMenu(result);
+                                }
+                            });
+                        return myResult;
+                    }
+                });
+                Object.defineProperty(this, 'store', {
+                    value: ''
+                });
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                // scape menus are defined in the 'newScapeSchema' function by adding a '.menu' property to a given entry.//
+                // the following loop creates a new menu entry for each corresponding element in the current schema's     //
+                // '.children' array. the children array is simply a list of names which correspond to members in the     //
+                // schema's data structure. this means that extending socioscapes can simply be a matter of altering the  //
+                // 'newScapeSchema' function and allowing the API to do the rest.                                         //
+                for (var i = 0; i < mySchema.children.length; i++) {
+                    (function(myChild) {
+                        var myChildClass = myChild.class, // child item class
+                            myChildIsArray,
+                            myChildSchema, // child item datastructure schema
+                            myChildContext; // context object to be prepended to all menu item calls
+                        if (myChildClass.match(/\[(.*?)]/g)) {
+                            myChildClass = /\[(.*?)]/g.exec(myChildClass)[1];
+                            myChildIsArray = true;
+                        }
+                        myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass];
+                        myChildContext = {
+                            "myChild": myChild,
+                            "myChildSchema": myChildSchema,
+                            "myScapeObjectValue": myObject[myChildClass],
+                            "ScapeMenu": ScapeMenu,
+                            "that": that
+                        };
+                        if (myChildSchema.menu) {
+                        // if the schema definition includes a .menu member, it is used as an API interface for that
+                        // item. for example, if the 'geom' class had the following '.menu' entry:
+                        //                                               function(foo) { console.log(foo, 'bar!'); };
+                        // then 'socioscapes().state().layer().geom('foo')' would result in a console printout of 'foobar!'
+                        // child items without a .menu member are ignored.
+                            Object.defineProperty(that, myChildClass, {
+                                value: function () {
+                                    var myArgs = [];
+                                    myArgs.push(myChildContext);
+                                    for (var i = 0; i < arguments.length; i++) {
+                                        myArgs.push(arguments[i]);
+                                    }
+                                    myObject.dispatcher({
+                                            myFunction: myChildSchema.menu,
+                                            myArguments: myArgs,
+                                            myThis: myObject
+                                        },
+                                        function (result) {
+                                            if (result) {
+                                                myResult = new ScapeMenu(result);
+                                            }
+                                        });
+                                    return myResult;
+                                }
+                            });
+                        }
+                    })(mySchema.children[i]);
+                }
+            };
+        if (isValidObject(scapeObject)) {
+            myMenu = new ScapeMenu(scapeObject);
+        }
+        callback(myMenu);
+        return myMenu;
+        }
+    }]
+);
+},{}],9:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
-var isValidName = require('./../bool/isValidName.js'),
-    fetchFromScape = require('./../fetch/fetchFromScape.js'),
-    fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
-    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    newDispatcher = require('./../construct/newDispatcher.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    newScapeSchema = require('./newScapeSchema.js');
-function newScapeObject(name, parent, type) {
-    var callback = newDispatcherCallback(arguments),
-        schema = newScapeSchema(type),
-        myObject = false,
-        ScapeObject = function(myName, myParent, mySchema) {
-            var that = this,
-                myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
-            Object.defineProperty(this, 'dispatcher', {
-                value: myDispatcher
-            });
-            Object.defineProperty(this, 'meta', {
-                value: {},
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'author', {
-                value: '',
-                configurable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'schema', {
-                value: mySchema
-            });
-            Object.defineProperty(this.meta.schema, 'parent', {
-                value: myParent || false
-            });
-            Object.defineProperty(this.meta, 'name', {
-                value: myName,
-                configurable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'summary', {
-                value: '',
-                configurable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'type', {
-                value: mySchema.type,
-                enumerable: true
-            });
-            Object.defineProperty(this, 'setMeta', {
-                value: function (property, value) {
-                    if (typeof property === 'string' && typeof value === 'string') {
-                        Object.defineProperty(that.meta, property, {
-                            value: value,
-                            configurable: true,
-                            enumerable: true
+var fetchFromScape = socioscapes.fn.fetchFromScape,
+    fetchGlobal = socioscapes.fn.fetchGlobal,
+    fetchScapeObject = socioscapes.fn.fetchScapeObject,
+    newDispatcherCallback = socioscapes.fn.newDispatcherCallback,
+    newDispatcher = socioscapes.fn.newDispatcher,
+    newGlobal = socioscapes.fn.newGlobal,
+    newScapeSchema = socioscapes.fn.newScapeSchema;
+socioscapes.fn.coreExtend(
+    [{ path: 'newScapeObject', extension:
+        function newScapeObject(name, parent, type) {
+            var callback = newDispatcherCallback(arguments),
+                schema = newScapeSchema(type),
+                myObject = false,
+                ScapeObject = function(myName, myParent, mySchema) {
+                    console.log(arguments);
+                    var that = this,
+                        myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
+                    Object.defineProperty(this, 'dispatcher', {
+                        value: myDispatcher
+                    });
+                    Object.defineProperty(this, 'schema', {
+                        value: mySchema
+                    });
+                    Object.defineProperty(this.schema, 'parent', {
+                        value: myParent || false
+                    });
+                    if (!this.schema.container) {
+                        Object.defineProperty(this.schema, 'container', {
+                            value: myParent ? myParent[mySchema.class]:false
                         });
                     }
-                    return this;
-                }
-            });
-            for (var i = 0; i < mySchema.children.length; i++) {
-                if (!that[mySchema.children[i].container]) {
-                    Object.defineProperty(that, mySchema.children[i].container, {
-                        value: mySchema[mySchema.children[i].container].value || [],
+                    Object.defineProperty(this, 'meta', {
+                        value: {},
                         enumerable: true
                     });
-                }
-                if  (mySchema.children[i].item) {
-                    that[mySchema.children[i].container].push(new ScapeObject(
-                        mySchema.children[i].item,
-                        that,
-                        newScapeSchema(mySchema.children[i].type)
-                    ))
-                }
-            }
-        };
-    name = isValidName(name) ? name:false;
-    parent = fetchScapeObject(parent);
-    if (name) {
-        if (parent) {
-            if (schema) {
-                if (fetchFromScape(name, 'name', parent[schema.container])) {
-                    console.log('Fetching existing scape object "' + name + '".');
-                    myObject = fetchFromScape(name, 'name', parent[schema.container]);
-                } else {
-                    console.log('Adding an object called "' + name + '" to the "' + parent.meta.name + '" container.');
-                    myObject = new ScapeObject(name, parent, schema);
-                    parent[schema.container].push(myObject);
-                }
-            }
-        } else {
-            if (fetchScapeObject(name)) {
-                console.log('Fetching exisisting scape "' + name + '".');
-                myObject = fetchScapeObject(name);
-            } else {
-                if (!fetchGlobal(name)) {
-                    console.log('Creating a new scape called "' + name + '".');
-                    myObject = new ScapeObject(name, null, schema);
-                    newGlobal(name, myObject);
-                } else {
-                    console.log('Sorry, a global object external to socioscapes is already associated with that name.')
-                }
-            }
-        }
-    }
-    callback(myObject);
-    return myObject;
-}
-module.exports = newScapeObject;
-},{"./../bool/isValidName.js":1,"./../construct/newDispatcher.js":4,"./../construct/newDispatcherCallback.js":5,"./../construct/newGlobal.js":6,"./../fetch/fetchFromScape.js":11,"./../fetch/fetchGlobal.js":12,"./../fetch/fetchScapeObject.js":15,"./newScapeSchema.js":9}],9:[function(require,module,exports){
-/*jslint node: true */
-/*global module, require, google*/
-'use strict';
-var newDispatcherCallback = require('./newDispatcherCallback.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
-    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
-    fetchWfs = require('./../fetch/fetchWfs.js');
-/**
- * This internal method tests if a name used for a socioscapes scape, state, layer, or view adheres to naming
- * restrictions.
- *
- * @returns {Boolean}
- */
-function newScapeConfig(type) {
-    var callback = newDispatcherCallback(arguments),
-        myObject = false,
-        myTypes  = [
-            'scape.sociJson',
-            'state.scape.sociJson',
-            'layer.state.scape.sociJson',
-            'view.state.scape.sociJson'
-        ],
-        myNames  = [
-            'scape',
-            'state',
-            'layer',
-            'view'
-        ],
-        mySchema = {
-            "scape": {
-                "children": [
-                    {
-                        "container": "states",
-                        "item": "state0",
-                        "name": "state",
-                        "type": "state.scape.sociJson"
+                    Object.defineProperty(this.meta, 'author', {
+                        value: '',
+                        configurable: true,
+                        enumerable: true
+                    });
+                    Object.defineProperty(this.meta, 'name', {
+                        value: myName,
+                        configurable: true,
+                        enumerable: true
+                    });
+                    Object.defineProperty(this.meta, 'summary', {
+                        value: '',
+                        configurable: true,
+                        enumerable: true
+                    });
+                    Object.defineProperty(this.meta, 'type', {
+                        value: mySchema.type,
+                        enumerable: true
+                    });
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    // scape objects are defined in the 'newScapeSchema' function and follow a json format. each level of a   //
+                    // scape object can have an arbitrary number of child elements and socioscapes will produce the necessary //
+                    // data structure and corresponding menu items. the following loop creates a member for each item in the  //
+                    // current schema's '.children' array. the children array is simply a list of names which correspond to   //
+                    // members in the schema's data structure. this means that extending socioscapes can simply be a matter   //
+                    // of altering the'newScapeSchema' function and allowing the API to do the rest. child entries in         //
+                    // [brackets] denote arrays and are populated by instances of the corresponding class. for example, if    //
+                    // 'mySchema.children[i].class' is '[state]', then 'mySchema.state[0]' will be created  as the            //
+                    // datastructure prototype for all entries in 'this.state'. all such prototypes and schema definitions    //
+                    // are stored in the newScapeSchema function.                                                             //
+                    for (var i = 0; i < mySchema.children.length; i++) {
+                        var myChildClass = mySchema.children[i].class, // child item class
+                            myChildIsArray,
+                            myChildName, // child item name
+                            myChildSchema, // child item definition and datastructure
+                            myChildValue; // child item default value
+                        if (myChildClass.match(/\[(.*?)]/g)) {
+                            myChildClass = /\[(.*?)]/g.exec(myChildClass)[1];
+                            myChildIsArray = true;
+                        }
+                        myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass];
+                        myChildName = myChildSchema.name || myChildSchema.class;
+                        myChildValue = myChildSchema.value || [];
+                        if (!this[myChildClass]) {
+                            Object.defineProperty(this, myChildClass, {
+                                value: myChildValue,
+                                enumerable: true
+                            });
+                        }
+                        if  (myChildIsArray) {
+                            this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema))
+                        }
                     }
-                ],
-                "hasChildren": true,
-                "name": "scape",
-                "type": "scape.sociJson",
-                "states": {
-                    "state0": {
-                        "container": "states",
-                        "children": [
-                            {
-                                "container": "layers",
-                                "item": "layer0",
-                                "name": "layer",
-                                "type": "layer.state.scape.sociJson"
-                            },
-                            {
-                                "container": "views",
-                                "item": "view0",
-                                "name": "view",
-                                "type": "view.state.scape.sociJson"
-                            }
-                        ],
-                        "layers": {
-                            "layer0": {
-                                "container": "layers",
-                                "children": [
-                                    {
-                                        "container": "data",
-                                        "name": "data"
-                                    },
-                                    {
-                                        "container": "geom",
-                                        "name": "geom"
-                                    }
-                                ],
-                                "data": {
-                                    "children": [],
-                                    "isMenuItem": true,
-                                    "menu": function(command, config, myContainer) {
-                                        var callback = newDispatcherCallback(arguments),
-                                            that = this,
-                                            myCommand = {};
-                                        myCommand.bq = fetchGoogleBq;
-                                        if (myCommand[command]) {
-                                            this.dispatcher({
-                                                    myFunction: myCommand[command],
-                                                    myArguments: [config]
-                                                },
-                                                function (result) {
-                                                    if (result) {
-                                                        console.log('Data fetch complete.');
-                                                        for (var prop in result) {
-                                                            if (result.hasOwnProperty(prop)) {
-                                                                myContainer[prop] = result[prop];
-                                                            }
-                                                        }
-                                                    }
-                                                });
-                                        } else {
-                                            console.log('Sorry, "' + command + '" is not a valid fetch function.')
-                                        }
-                                        callback(this);
-                                        return this;
-                                    },
-                                    "name": "data",
-                                    "parent": "layer",
-                                    "type": "data.layer.state.scape.sociJson",
-                                    "value": {}
-                                },
-                                "geom": {
-                                    "children": [],
-                                    "isMenuItem": true,
-                                    "menu": function(command, config, myContainer) {
-                                        var callback = newDispatcherCallback(arguments),
-                                            that = this,
-                                            myCommand = {};
-                                        myCommand.wfs = fetchWfs;
-                                        if (myCommand[command]) {
-                                            this.dispatcher({
-                                                    myFunction: myCommand[command],
-                                                    myArguments: [config]
-                                                },
-                                                function (result) {
-                                                    if (result) {
-                                                        console.log('Geometry fetch complete.');
-                                                        for (var prop in result) {
-                                                            if (result.hasOwnProperty(prop)) {
-                                                                myContainer[prop] = result[prop];
-                                                            }
-                                                        }
-                                                    }
-                                                });
-                                        } else {
-                                            console.log('Sorry, "' + command + '" is not a valid fetch function.')
-                                        }
-                                        callback(this);
-                                        return this;
-                                    },
-                                    "name": "geom",
-                                    "parent": "layer",
-                                    "type": "geom.layer.state.scape.sociJson",
-                                    "value": {}
-                                },
-                                "name": "layer",
-                                "parent": "state",
-                                "type": "layer.state.scape.sociJson"
-                            }
-                        },
-                        "name": "state",
-                        "parent": "scape",
-                        "type": "state.scape.sociJson",
-                        "views": {
-                            "view0": {
-                                "config": {
-                                    "children": [],
-                                    "isMenuItem": true,
-                                    "name": "config",
-                                    "parent": "view",
-                                    "type": "config.view.state.scape.sociJson",
-                                    "value": {}
-                                },
-                                "container": "views",
-                                "children": [
-                                    {
-                                        "container": "config",
-                                        "name": "config"
-                                    },
-                                    {
-                                        "container": "require",
-                                        "name": "require"
-                                    }
-                                ],
-                                "name": "view",
-                                "parent": "state",
-                                "require": {
-                                    "children": [],
-                                    "isMenuItem": true,
-                                    "name": "require",
-                                    "parent": "view",
-                                    "type": "require.view.state.scape.sociJson",
-                                    "value": []
-                                },
-                                "type": "view.state.scape.sociJson"
-                            }
+                };
+            parent = fetchScapeObject(parent);
+            if (name) {
+                if (parent) {
+                    if (schema) {
+                        if (fetchFromScape(name, 'name', parent[schema.class])) {
+                            console.log('Fetching existing scape object "' + name + '" of class "' + schema.class + '".');
+                            myObject = fetchFromScape(name, 'name', parent[schema.class]);
+                        } else {
+                            console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.schema.class + '.');
+                            myObject = new ScapeObject(name, parent, schema);
+                            parent[schema.class].push(myObject);
+                        }
+                    }
+                } else {
+                    if (fetchScapeObject(name)) {
+                        console.log('Fetching exisisting scape "' + name + '".');
+                        myObject = fetchScapeObject(name);
+                    } else {
+                        if (!fetchGlobal(name)) {
+                            console.log('Creating a new scape called "' + name + '".');
+                            myObject = new ScapeObject(name, null, schema);
+                            newGlobal(name, myObject);
+                        } else {
+                            console.log('Sorry, there is already a global object called "' + name + '".');
                         }
                     }
                 }
             }
-        },
-        schemaMap = {
-            scape: mySchema.scape,
-            state: mySchema.scape.states.state0,
-            layer: mySchema.scape.states.state0.layers.layer0,
-            view: mySchema.scape.states.state0.views.view0
-        };
-    type =  ( (myTypes.indexOf(type) > -1) ? type.split('.')[0]:false ) ||
-            ( (myNames.indexOf(type) > -1) ? type:false );
-    if (type) {
-        myObject = schemaMap[type];
+            callback(myObject);
+            return myObject;
+        }
+    }]
+);
+},{}],10:[function(require,module,exports){
+/*jslint node: true */
+/*global module*/
+'use strict';
+function coreExtend(config) {
+    var myExtension, myName, myPath, myTarget, i, ii;
+    for (i = 0; i < config.length; i++) {
+        myTarget = socioscapes.fn;
+        myPath = (typeof config[i].path === 'string') ? config[i].path:false;
+        myExtension = config[i].extension || false;
+        if (myPath && myExtension) {
+            if (myPath.includes('/')){
+                myPath = myPath.split('/');
+                for (ii = 0; myTarget[myPath[ii]] ; ii++) {
+                    myTarget = myTarget[myPath[ii]];
+                }
+                myName = myPath[ii];
+            } else {
+                myName = myPath
+            }
+            if (myTarget) {
+                console.log('Extending socioscapes.fn with "' + myPath + '".');
+                myTarget[myName] = myExtension;
+            } else {
+                console.log('Sorry, unable to add your extension. Please check your .path string.');
+            }
+        }
     }
-    callback(myObject);
-    return myObject;
+    return socioscapes.fn;
 }
-module.exports = newScapeConfig;
-},{"./../fetch/fetchGoogleBq.js":14,"./../fetch/fetchScapeObject.js":15,"./../fetch/fetchWfs.js":16,"./newDispatcherCallback.js":5}],10:[function(require,module,exports){
+module.exports = coreExtend;
+
+},{}],11:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require*/
+'use strict';
+var fetchScapeObject = socioscapes.fn.fetchScapeObject,
+    newScapeObject = socioscapes.fn.newScapeObject,
+    newScapeMenu = socioscapes.fn.newScapeMenu;
+socioscapes.fn.coreExtend([
+    {
+        path: 'coreInit', extension: function coreInit(name) {
+        var myScape;
+        if (name) {
+            myScape = fetchScapeObject(name);
+        } else {
+            myScape = newScapeObject(name || 'scape0', null, 'scape');
+        }
+        this.s = newScapeMenu(myScape);
+        return this.s;
+    }}
+]);
+},{}],12:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require*/
+'use strict';
+var menuClass = socioscapes.fn.menuClass,
+    menuConfig = socioscapes.fn.menuConfig,
+    menuData = socioscapes.fn.menuData,
+    menuGeom = socioscapes.fn.menuGeom,
+    menuRequire = socioscapes.fn.menuRequire,
+    newDispatcherCallback = socioscapes.fn.newDispatcherCallback;
+socioscapes.fn.coreExtend(
+    [
+        { path: 'coreSchema', extension: {}
+        },
+        { path: 'coreSchema/schema', extension: { "scape": {
+            "children": [
+                {
+                    "class": "[state]"
+                }
+            ],
+            "class": "scape",
+            "menu": menuClass,
+            "name": "scape",
+            "state": [
+                {
+                    "class": "state",
+                    "children": [
+                        {
+                            "class": "[layer]"
+                        },
+                        {
+                            "class": "[view]"
+                        }
+                    ],
+                    "layer": [
+                        {
+                            "children": [
+                                {
+                                    "class": "data"
+                                },
+                                {
+                                    "class": "geom"
+                                }
+                            ],
+                            "class": "layer",
+                            "data": {
+                                "menu": menuData,
+                                "value": {}
+                            },
+                            "geom": {
+                                "menu": menuGeom,
+                                "value": {}
+                            },
+                            "menu": menuClass,
+                            "name": "layer0",
+                            "parent": "state",
+                            "type": "layer.state.scape.sociJson"
+                        }
+                    ],
+                    "menu": menuClass,
+                    "name": "state0",
+                    "parent": "scape",
+                    "type": "state.scape.sociJson",
+                    "view": [
+                        {
+                            "config": {
+                                "menu": menuConfig,
+                                "value": {}
+                            },
+                            "children": [
+                                {
+                                    "class": "config"
+                                },
+                                {
+                                    "class": "require"
+                                }
+                            ],
+                            "class": "view",
+                            "menu": menuClass,
+                            "name": "view0",
+                            "parent": "state",
+                            "require": {
+                                "menu": menuRequire,
+                                "value": []
+                            },
+                            "type": "view.state.scape.sociJson"
+                        }
+                    ]
+                }
+            ],
+            "type": "scape.sociJson"
+        }}}
+    ]
+);
+socioscapes.fn.coreExtend(
+    [
+        { path: 'coreSchema/classes', extension:
+            [
+                'scape',
+                'state',
+                'layer',
+                'view'
+            ]},
+        { path: 'coreSchema/types', extension:
+            [
+                'scape.sociJson',
+                'state.scape.sociJson',
+                'layer.state.scape.sociJson',
+                'view.state.scape.sociJson'
+            ]},
+        { path: 'coreSchema/index', extension:
+            {
+                "scape": socioscapes.fn.coreSchema.schema.scape,
+                "state": socioscapes.fn.coreSchema.schema.scape.state[0],
+                "layer": socioscapes.fn.coreSchema.schema.scape.state[0].layer[0],
+                "view": socioscapes.fn.coreSchema.schema.scape.state[0].view[0]
+            }},
+        { path: 'newScapeSchema', extension:
+            function newScapeSchema(type) {
+                var callback = newDispatcherCallback(arguments),
+                    isClass,
+                    isType,
+                    myObject = false,
+                    myTypes  = socioscapes.fn.coreSchema.types,
+                    myClasses  = socioscapes.fn.coreSchema.classes,
+                    index = socioscapes.fn.coreSchema.index;
+                isType = (myTypes.indexOf(type) > -1) ? type.split('.')[0]:false;
+                isClass = (myClasses.indexOf(type) > -1) ? type:false;
+                if (isType || isClass) {
+                    myObject = index[isType || isClass];
+                }
+                callback(myObject);
+                return myObject;
+            }
+        }
+    ]
+);
+},{}],13:[function(require,module,exports){
+/*jslint node: true */
+/*global module*/
+'use strict';
+function coreTest(option, config) {
+    var myOption = {};
+    myOption.bq = {
+        id: '2011_census_of_canada',
+        clientId: config ? config:'424138972496-nlcip7t83lb1ll7go1hjoc77jgc689iq.apps.googleusercontent.com',
+        projectId: config ? config.split('-')[0]:'424138972496',
+        queryString: "SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] WHERE (Characteristic CONTAINS 'Population in 2011' AND Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;"
+    };
+    myOption.wfs = "http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=cmaname=%27Toronto%27";
+    myOption.all = {
+        bq: myOption.bq,
+        wfs: myOption.wfs
+    };
+    return myOption[option];
+}
+module.exports = coreTest;
+},{}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
-var fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
+var socioscapes,
+    version = '0.5.0',
+    coreExtend = require('./../core/coreExtend.js'),
+    coreTest = require('./../core/coreTest.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
+    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
+    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js'),
+    isValidObject = require('./../bool/isValidObject.js'),
     isValidName = require('./../bool/isValidName.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    newScapeObject = require('./../construct/newScapeObject.js'),
-    newScapeMenu = require('./../construct/newScapeMenu.js');
+    isValidUrl = require('./../bool/isValidUrl.js'),
+    menuClass = require('./../menu/menuClass.js'),
+    menuConfig = require('./../menu/menuConfig.js'),
+    menuData = require('./../menu/menuData.js'),
+    menuGeom = require('./../menu/menuGeom.js'),
+    menuRequire = require('./../menu/menuRequire.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newGlobal = require('./../construct/newGlobal.js');
 /**
- * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
- * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
- * extendable environment.
- *
- *    Source code...................... http://github.com/moismailzai/socioscapes
- *    Reference implementation......... http://app.socioscapes.com
- *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................ © 2015 Misaqe Ismailzai
- *
- * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
- * the University of Toronto.
- */
-if (!Number.isInteger) { // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger#Polyfill
-    Number.isInteger = function isInteger (nVal) {
-        return typeof nVal === "number" && isFinite(nVal) && nVal > -9007199254740992 && nVal < 9007199254740992 && Math.floor(nVal) === nVal;
-    };
-}
-function socioscapes(name) {
-    var myScape,
-        myMenu;
-    name = (isValidName(name)) ? name:'scape0';
-    myScape = (fetchScapeObject(name)) ? fetchScapeObject(name):newScapeObject(name, null, 'scape');
-    if (myScape) {
-        myMenu = newScapeMenu(myScape);
-    }
-    return myMenu;
-}
+ * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
+ * simply need to call 'socioscapes.coreExtend' and provide an array of entries that are composed of an object with
+ * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
+ * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
+ * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
+ * MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean
+ * ecosystem, under the hood socioscapes will ensure that your module is integrated with all other modules which accept
+ * data fetchers.
+ * */
+socioscapes = function(name) {
+    return new socioscapes.fn.coreInit(name);
+};
+socioscapes.fn = socioscapes.prototype = {
+    constructor: socioscapes,
+    coreExtend: coreExtend,
+    coreInit: {},
+    coreTest: coreTest,
+    fetchFromScape: fetchFromScape,
+    fetchGlobal: fetchGlobal,
+    fetchGoogleAuth: fetchGoogleAuth,
+    fetchGoogleBq: fetchGoogleBq,
+    fetchGoogleGeocode: fetchGoogleGeocode,
+    fetchScapeObject: fetchScapeObject,
+    fetchWfs: fetchWfs,
+    isValidObject: isValidObject,
+    isValidName: isValidName,
+    isValidUrl: isValidUrl,
+    menuClass: menuClass,
+    menuConfig: menuConfig,
+    menuData: menuData,
+    menuGeom: menuGeom,
+    menuRequire: menuRequire,
+    newDispatcher: newDispatcher,
+    newDispatcherCallback: newDispatcherCallback,
+    newEvent: newEvent,
+    newGlobal: newGlobal,
+    version: version
+};
+window.socioscapes = socioscapes;
 module.exports = socioscapes;
-},{"./../bool/isValidName.js":1,"./../construct/newGlobal.js":6,"./../construct/newScapeMenu.js":7,"./../construct/newScapeObject.js":8,"./../fetch/fetchScapeObject.js":15}],11:[function(require,module,exports){
+},{"./../bool/isValidName.js":1,"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcher.js":4,"./../construct/newDispatcherCallback.js":5,"./../construct/newEvent.js":6,"./../construct/newGlobal.js":7,"./../core/coreExtend.js":10,"./../core/coreTest.js":13,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScapeObject.js":20,"./../fetch/fetchWfs.js":21,"./../menu/menuClass.js":23,"./../menu/menuConfig.js":24,"./../menu/menuData.js":25,"./../menu/menuGeom.js":26,"./../menu/menuRequire.js":27}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -778,7 +865,7 @@ function fetchFromScape(key, metaProperty, array) {
     return myKey;
 }
 module.exports = fetchFromScape;
-},{"./../bool/isValidName.js":1,"./../construct/newDispatcherCallback.js":5}],12:[function(require,module,exports){
+},{"./../bool/isValidName.js":1,"./../construct/newDispatcherCallback.js":5}],16:[function(require,module,exports){
 /*jslint node: true */
 /*global module, google, require, define, define.amd*/
 'use strict';
@@ -795,7 +882,7 @@ function fetchGlobal(name) {
     return myGlobal;
 }
 module.exports = fetchGlobal;
-},{"./../construct/newDispatcherCallback.js":5}],13:[function(require,module,exports){
+},{"./../construct/newDispatcherCallback.js":5}],17:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -825,7 +912,7 @@ function fetchGoogleAuth(config) {
     });
 }
 module.exports = fetchGoogleAuth;
-},{"./../construct/newDispatcherCallback.js":5}],14:[function(require,module,exports){
+},{"./../construct/newDispatcherCallback.js":5}],18:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -909,13 +996,42 @@ function fetchGoogleBq(config) {
     }
 }
 module.exports = fetchGoogleBq;
-},{"./../construct/newDispatcherCallback.js":5,"./fetchGoogleAuth.js":13}],15:[function(require,module,exports){
+},{"./../construct/newDispatcherCallback.js":5,"./fetchGoogleAuth.js":17}],19:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+/**
+ * This method executes a Google Geocoder query for 'address' and returns the results in an object.
+ *
+ * Make sure you obtain Google auth and load the GAPI client first.
+ *
+ * @function fetchGoogleGeocode
+ * @memberof! socioscapes
+ * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
+ * @return {Object} geocode - An object with latitude and longitude coordinates.
+ */
+function fetchGoogleGeocode(address) {
+    var callback = newDispatcherCallback(arguments),
+        geocoder = new google.maps.Geocoder(),
+        geocode = {};
+    geocoder.geocode({'address': address}, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+            geocode.lat = results[0].geometry.location.lat();
+            geocode.long = results[0].geometry.location.lng();
+            callback(geocode);
+            return geocode;
+        }
+        alert('Error: Google Geocoder was unable to locate ' + address);
+    });
+}
+module.exports = fetchGoogleGeocode;
+},{"./../construct/newDispatcherCallback.js":5}],20:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    fetchFromScape = require('./fetchFromScape.js'),
-    isValidName = require('./../bool/isValidName.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
     isValidObject = require('./../bool/isValidObject.js'),
     isValidUrl = require('./../bool/isValidUrl.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
@@ -926,35 +1042,27 @@ var fetchGlobal = require('./../fetch/fetchGlobal.js'),
  * @memberof! socioscapes
  * @return
  */
-function fetchScapeObject(object, parent) {
+function fetchScapeObject(object, source, container) {
     var callback = newDispatcherCallback(arguments),
-        myParent = (isValidObject(parent)) ? parent:false, // is a valid parent object provided
-        myGlobal = (parent) ? false:fetchGlobal(object),// if so, our object should be a prop and not a global
-        myName = (isValidName(object)) ? object:false,
-        myObject = (isValidObject(object)) ? object:false,
-        myUrl = (isValidUrl(parent)) ? parent:false;
-    if (myName) {
-        if (myUrl) {
-            // fetching code here
-        }
+        // was an object sent to be validated? if so let's prioritize sending it back
+        myObject = (typeof object === 'string') ? fetchGlobal(object):(isValidObject(object) ? object:false),
+        // otherwise was a parent object provided?
+        myParent = myObject ? false:isValidObject(source),
+        // if not was a parent url provided?
+        myUrl = myParent ? false:isValidUrl(source);
+    // if we don't have an object and we do have either a name or url, proceed
+    if (!myObject && (myParent || myUrl)) {
         if (myParent) {
-            if (myParent.states) {
-                myObject = fetchFromScape(object, 'name', myParent.states);
-            } else if (myParent.layers) {
-                myObject = fetchFromScape(object, 'name', myParent.layers);
-            } else if (myParent.views) {
-                myObject = fetchFromScape(object, 'name', myParent.views);
-            }
-        }
-        if (myGlobal) {
-            myObject = (isValidObject(myGlobal)) ? myGlobal: false;
+            myObject = fetchFromScape(object, 'name', source[container]);
+        } else {
+            // some myUrl thing
         }
     }
     callback(myObject);
-    return(myObject);
+    return myObject;
 }
 module.exports = fetchScapeObject;
-},{"./../bool/isValidName.js":1,"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGlobal.js":12,"./fetchFromScape.js":11}],16:[function(require,module,exports){
+},{"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16}],21:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -989,8 +1097,157 @@ function fetchWfs(url) {
     _xobj.send(null);
 }
 module.exports = fetchWfs;
-},{"./../construct/newDispatcherCallback.js":5}]},{},[10])(10)
-});
+},{"./../construct/newDispatcherCallback.js":5}],22:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var socioscapes = require('./core/socioscapes.js'), // loaded in exactly this order to avoid circular dependencies
+    coreSchema = require('./core/coreSchema.js'),
+    newScapeObject = require('./construct/newScapeObject.js'),
+    newScapeMenu = require('./construct/newScapeMenu.js'),
+    coreInit = require('./core/coreInit.js');
+/**
+ * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
+ * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
+ * extendable environment.
+ *
+ *    Source code...................... http://github.com/moismailzai/socioscapes
+ *    Reference implementation......... http://app.socioscapes.com
+ *    License.......................... MIT license (free as in beer & speech)
+ *    Copyright........................ © 2015 Misaqe Ismailzai
+ *
+ * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
+ * the University of Toronto.
+ */
+module.exports = socioscapes;
+},{"./construct/newScapeMenu.js":8,"./construct/newScapeObject.js":9,"./core/coreInit.js":11,"./core/coreSchema.js":12,"./core/socioscapes.js":14}],23:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    fetchScapeObject = require ('./../fetch/fetchScapeObject.js');
+function menuClass(context, element) {
+    var callback = newDispatcherCallback(arguments),
+        myResult;
+    fetchScapeObject(element || context.myChildSchema.name, this, context.myChildSchema.class,
+        function(result) {
+            myResult = result;
+        });
+    callback (myResult);
+    return myResult;
+}
+module.exports = menuClass;
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchScapeObject.js":20}],24:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
+function menuConfig(command, layer, config) {
+    var callback = newDispatcherCallback(arguments),
+        myCommand = {};
+    myCommand.gmap = setGmap;
+    myCommand.gmaplayer = setGmapLayer;
+    myCommand.gmaplabel = setGmapLabel;
+    myCommand.datatable = setDatatable;
+    myCommand.breaks = setBreaks;
+    myCommand.class = setClassification;
+    myCommand.colours = setColourscale;
+    myCommand.domain = setDataDomain;
+    if (myCommand[command]) {
+        this.dispatcher({
+                myFunction: myCommand[command],
+                myArguments: [config, layer]
+            },
+            function (result) {
+                if (result) {
+                    console.log('Config element ' + command + ' has been updated.');
+                }
+            });
+    } else {
+        console.log('Sorry, "' + command + '" is not a valid configuration function.')
+    }
+    callback(this);
+    return this;
+}
+module.exports = menuConfig;
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}],25:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
+function menuData(context, command, config) {
+    var callback = newDispatcherCallback(arguments),
+        myCommand = {};
+    myCommand.bq = fetchGoogleBq;
+    if (myCommand[command]) {
+        this.dispatcher({
+                myFunction: myCommand[command],
+                myArguments: [config]
+            },
+            function (result) {
+                if (result) {
+                    console.log('Data fetch has been complete.');
+                    for (var prop in result) {
+                        if (result.hasOwnProperty(prop)) {
+                            context.myScapeObjectValue[prop] = result[prop];
+                        }
+                    }
+                }
+            });
+    } else {
+        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+    }
+    callback(this);
+    return this;
+}
+module.exports = menuData;
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}],26:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js');
+function menuGeom(context, command, config) {
+    var callback = newDispatcherCallback(arguments),
+        myCommand = {};
+    myCommand.wfs = fetchWfs;
+    if (myCommand[command]) {
+        this.dispatcher({
+                myFunction: myCommand[command],
+                myArguments: [config]
+            },
+            function (result) {
+                if (result) {
+                    console.log('Geometry fetch has been complete.');
+                    for (var prop in result) {
+                        if (result.hasOwnProperty(prop)) {
+                            context.myScapeObjectValue[prop] = result[prop];
+                        }
+                    }
+                }
+            });
+    } else {
+        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+    }
+    callback(this);
+    return this;
+}
+module.exports = menuGeom;
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchWfs.js":21}],27:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, google*/
+'use strict';
+var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
+function menuRequires(command, config, myContainer) {
+    var callback = newDispatcherCallback(arguments);
+    callback(this);
+    return this;
+}
+module.exports = menuRequires;
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}]},{},[22])
 
 
 //# sourceMappingURL=socioscapes.js.map

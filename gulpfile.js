@@ -11,8 +11,8 @@ var assign = require('lodash.assign');
 
 // add custom browserify options here
 var customOpts = {
-    entries: ['./src/core/main.js'],
-    standalone: 'socioscapes',
+    entries: ['./src/main.js'],
+    //standalone: 'socioscapes',
     debug: true
 };
 

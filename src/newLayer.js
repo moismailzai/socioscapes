@@ -3,7 +3,7 @@
 'use strict';
 var isValidName = require('./../bool/isValidName.js'),
     fetchFromArray = require('./../fetchScapeObject/fetchFromScape.js'),
-    fetch = require('./../core/fetchScapeObject.js'),
+    fetch = require('./../menu/fetchScapeObject.js'),
     newCallback = require('./newDispatcherCallback.js');
 /**
  * This constructor method returns a new object of class {@linkcode MyLayer}.

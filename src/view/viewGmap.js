@@ -204,17 +204,17 @@ var fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
 /**
  * This constructor method appends a new Google Maps object of class {@linkcode MyGmapView} to {@linkcode myLayer}.
  *
- * @method newViewGmap
+ * @method newGmapView
  * @memberof! socioscapes
- * @param {Object} config - An object with configuration options for the Google Map view.
- * @param {String} config.div - The id of an html div element that will store the map
- * @param {String} config.address - The address around which the map around (eg. 'Toronto, Canada').
- * @param {String} config.styles - An optional array of {"feature": "rule"} declarative styles for map features.
- * @param {String} config.options - An array of valid Google Maps map option.
- * @param {String} config.labelStyles - An optional array of {"feature": "rule"} declarative styles for map labels.
+ * @param {Object} myConfig - An object with configuration options for the Google Map view.
+ * @param {String} myConfig.div - The id of an html div element that will store the map
+ * @param {String} myConfig.address - The address around which the map around (eg. 'Toronto, Canada').
+ * @param {String} myConfig.styles - An optional array of {"feature": "rule"} declarative styles for map features.
+ * @param {String} myConfig.options - An array of valid Google Maps map option.
+ * @param {String} myConfig.labelStyles - An optional array of {"feature": "rule"} declarative styles for map labels.
  * @return {Object} MyGmapView - The rendered and configured view object.
  */
-module.exports = function newViewGmap(config) {
+function newGmapView(config) {
     var callback = newDispatcherCallback(arguments);
     /**
      * Each instance of this class consists of a Google Map object, {@linkcode MyLayer.MyGmapView.map}, a
@@ -223,8 +223,9 @@ module.exports = function newViewGmap(config) {
      *
      * @namespace MyGmapView
      */
-    var MyGmapView = function () {
-        var _myMap,
+    var MyGmapView = function (myAddress, myDiv, myConfig) {
+        var myView = {},
+            _myMap,
             _myGmapDataLayer,
             _myGmapDataLayers,
             _myStyle,
@@ -235,12 +236,12 @@ module.exports = function newViewGmap(config) {
             _mySelectionLimit,
             _mySelectionCount,
             _myFeatureId,
-            _myDiv = document.getElementById(config.div),
+            _myAddress = myAddress || 'Toronto, Canada',
+            _myDiv = document.getElementById(myDiv),
             that = this;
-
-        fetchGoogleGeocode(config.address, function (returnedAddress) {
-            viewGmap_Map(returnedAddress, _myDiv, config.styles, config.options, function (returnedMap) {
-                viewGmap_Labels(returnedMap, config.labelStyles, function (returnedLabeledMap) {
+        fetchGoogleGeocode(_myAddress, function(returnedAddress) {
+            viewGmap_Map(returnedAddress, _myDiv, myConfig.mapStyles, myConfig.mapOptions, function (returnedMap) {
+                viewGmap_Labels(returnedMap, myConfig.labelStyles, function (returnedLabeledMap) {
                     _myMap = returnedLabeledMap;
                     /**
                      * This container stores the Google Map data object and all related methods. To learn more about the
@@ -249,7 +250,7 @@ module.exports = function newViewGmap(config) {
                      * @member map
                      * @memberof! MyGmapView
                      */
-                    Object.defineProperty(that, 'map', {
+                    Object.defineProperty(myView, 'map', {
                         value: _myMap
                     });
                     /**
@@ -262,17 +263,17 @@ module.exports = function newViewGmap(config) {
                      * @method div
                      * @memberof! MyGmapView
                      */
-                    Object.defineProperty(that, 'div', {
+                    Object.defineProperty(myView, 'div', {
                         value: function (div) {
-                            if (!div) {
-                                return _myDiv;
-                            }
-                            if (document.getElementById(div)) {
-                                _myDiv = document.getElementById(div);
-                                if (_myMap) {
-                                //TODO add code that moves GMap to a new div and rerenders all existing layers.
+                            if (div) {
+                                if (document.getElementById(div)) {
+                                    _myDiv = document.getElementById(div);
+                                    if (_myMap) {
+                                        //TODO add code that moves GMap to a new div and rerenders all existing layers.
+                                    }
                                 }
                             }
+                            return _myDiv;
                         }
                     });
                 });
@@ -485,5 +486,5 @@ module.exports = function newViewGmap(config) {
         });
     };
     callback(new MyGmapView);
-    return new newViewGmap;
+    return new newGmapView;
 };
