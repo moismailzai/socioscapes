@@ -660,7 +660,7 @@ socioscapes.fn = socioscapes.prototype = {
     test: test,
     version: version
 };
-window.socioscapes = socioscapes;
+newGlobal('socioscapes', socioscapes, true);
 module.exports = socioscapes;
 },{"./../bool/isValidName.js":1,"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcher.js":4,"./../construct/newDispatcherCallback.js":5,"./../construct/newEvent.js":6,"./../construct/newGlobal.js":7,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScapeObject.js":20,"./../fetch/fetchWfs.js":21,"./../menu/menuClass.js":23,"./../menu/menuConfig.js":24,"./../menu/menuData.js":25,"./../menu/menuGeom.js":26,"./../menu/menuRequire.js":27,"./extend.js":11,"./test.js":14}],11:[function(require,module,exports){
 /*jslint node: true */
@@ -1275,7 +1275,7 @@ function menuRequires(command, config, myContainer) {
     return this;
 }
 module.exports = menuRequires;
-},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}]},{},[22])
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}]},{},[22]);
 
 
 //# sourceMappingURL=socioscapes.js.map

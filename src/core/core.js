@@ -63,5 +63,5 @@ socioscapes.fn = socioscapes.prototype = {
     test: test,
     version: version
 };
-window.socioscapes = socioscapes;
+newGlobal('socioscapes', socioscapes, true);
 module.exports = socioscapes;
