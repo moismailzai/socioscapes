@@ -15,7 +15,6 @@ socioscapes.fn.coreExtend(
                 schema = newScapeSchema(type),
                 myObject = false,
                 ScapeObject = function(myName, myParent, mySchema) {
-                    console.log(arguments);
                     var that = this,
                         myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
                     Object.defineProperty(this, 'dispatcher', {

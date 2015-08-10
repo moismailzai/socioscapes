@@ -40,7 +40,7 @@ socioscapes = function(name) {
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
     coreExtend: coreExtend,
-    coreInit: {},
+    coreInit: function() {  },
     coreTest: coreTest,
     fetchFromScape: fetchFromScape,
     fetchGlobal: fetchGlobal,

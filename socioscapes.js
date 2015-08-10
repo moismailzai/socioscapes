@@ -456,7 +456,6 @@ socioscapes.fn.coreExtend(
                 schema = newScapeSchema(type),
                 myObject = false,
                 ScapeObject = function(myName, myParent, mySchema) {
-                    console.log(arguments);
                     var that = this,
                         myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
                     Object.defineProperty(this, 'dispatcher', {
@@ -762,7 +761,7 @@ function coreTest(option, config) {
     myOption.bq = {
         id: '2011_census_of_canada',
         clientId: config ? config:'424138972496-nlcip7t83lb1ll7go1hjoc77jgc689iq.apps.googleusercontent.com',
-        projectId: config ? config.split('-')[0]:'424138972496',
+        projectId: config ? config.split("-")[0]:'424138972496',
         queryString: "SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] WHERE (Characteristic CONTAINS 'Population in 2011' AND Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;"
     };
     myOption.wfs = "http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=cmaname=%27Toronto%27";
@@ -816,7 +815,7 @@ socioscapes = function(name) {
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
     coreExtend: coreExtend,
-    coreInit: {},
+    coreInit: function() {  },
     coreTest: coreTest,
     fetchFromScape: fetchFromScape,
     fetchGlobal: fetchGlobal,
