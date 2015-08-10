@@ -1,10 +1,9 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var socioscapes,
-    version = '0.5.0',
-    coreExtend = require('./../core/coreExtend.js'),
-    coreTest = require('./../core/coreTest.js'),
+    version = '0.5.2',
+    extend = require('./extend.js'),
     fetchFromScape = require('./../fetch/fetchFromScape.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
@@ -23,10 +22,11 @@ var socioscapes,
     newDispatcher = require('./../construct/newDispatcher.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     newEvent = require('./../construct/newEvent.js'),
-    newGlobal = require('./../construct/newGlobal.js');
+    newGlobal = require('./../construct/newGlobal.js'),
+    test = require('./test.js');
 /**
  * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.coreExtend' and provide an array of entries that are composed of an object with
+ * simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with
  * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
  * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
  * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
@@ -35,13 +35,11 @@ var socioscapes,
  * data fetchers.
  * */
 socioscapes = function(name) {
-    return new socioscapes.fn.coreInit(name);
+    return new socioscapes.fn.init(name);
 };
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
-    coreExtend: coreExtend,
-    coreInit: function() {  },
-    coreTest: coreTest,
+    extend: extend,
     fetchFromScape: fetchFromScape,
     fetchGlobal: fetchGlobal,
     fetchGoogleAuth: fetchGoogleAuth,
@@ -49,6 +47,7 @@ socioscapes.fn = socioscapes.prototype = {
     fetchGoogleGeocode: fetchGoogleGeocode,
     fetchScapeObject: fetchScapeObject,
     fetchWfs: fetchWfs,
+    init: function() {  },
     isValidObject: isValidObject,
     isValidName: isValidName,
     isValidUrl: isValidUrl,
@@ -61,6 +60,7 @@ socioscapes.fn = socioscapes.prototype = {
     newDispatcherCallback: newDispatcherCallback,
     newEvent: newEvent,
     newGlobal: newGlobal,
+    test: test,
     version: version
 };
 window.socioscapes = socioscapes;

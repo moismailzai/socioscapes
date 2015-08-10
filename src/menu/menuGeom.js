@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchWfs = require('./../fetch/fetchWfs.js');
@@ -8,7 +8,7 @@ function menuGeom(context, command, config) {
         myCommand = {};
     myCommand.wfs = fetchWfs;
     if (myCommand[command]) {
-        this.dispatcher({
+        this.dispatcher({ // todo jshint errors regarding 'this', however this method is always called with a context
                 myFunction: myCommand[command],
                 myArguments: [config]
             },
@@ -23,7 +23,7 @@ function menuGeom(context, command, config) {
                 }
             });
     } else {
-        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+        console.log('Sorry, "' + command + '" is not a valid fetch function.');
     }
     callback(this);
     return this;

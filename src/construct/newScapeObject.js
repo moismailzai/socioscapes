@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, socioscapes*/
 'use strict';
 var fetchFromScape = socioscapes.fn.fetchFromScape,
     fetchGlobal = socioscapes.fn.fetchGlobal,
@@ -8,15 +8,14 @@ var fetchFromScape = socioscapes.fn.fetchFromScape,
     newDispatcher = socioscapes.fn.newDispatcher,
     newGlobal = socioscapes.fn.newGlobal,
     newScapeSchema = socioscapes.fn.newScapeSchema;
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [{ path: 'newScapeObject', extension:
         function newScapeObject(name, parent, type) {
             var callback = newDispatcherCallback(arguments),
                 schema = newScapeSchema(type),
                 myObject = false,
                 ScapeObject = function(myName, myParent, mySchema) {
-                    var that = this,
-                        myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
+                    var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
                     Object.defineProperty(this, 'dispatcher', {
                         value: myDispatcher
                     });
@@ -85,7 +84,7 @@ socioscapes.fn.coreExtend(
                             });
                         }
                         if  (myChildIsArray) {
-                            this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema))
+                            this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                         }
                     }
                 };

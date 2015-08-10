@@ -1,11 +1,6 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
-var socioscapes = require('./core/socioscapes.js'), // loaded in exactly this order to avoid circular dependencies
-    coreSchema = require('./core/coreSchema.js'),
-    newScapeObject = require('./construct/newScapeObject.js'),
-    newScapeMenu = require('./construct/newScapeMenu.js'),
-    coreInit = require('./core/coreInit.js');
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
@@ -19,4 +14,11 @@ var socioscapes = require('./core/socioscapes.js'), // loaded in exactly this or
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
  * the University of Toronto.
  */
-module.exports = socioscapes;
+/// load in exactly this order to avoid circular dependencies ///
+var core = require('./core/core.js'),
+    schema = require('./core/schema.js'),
+    newScapeObject = require('./construct/newScapeObject.js'),
+    newScapeMenu = require('./construct/newScapeMenu.js'),
+    init = require('./core/init.js');
+/// load in exactly this order to avoid circular dependencies ///
+module.exports = core;

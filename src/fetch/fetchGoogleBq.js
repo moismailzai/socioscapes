@@ -1,21 +1,18 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, gapi, bigquery, execute, jobs, fields, totalRows*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    fetchGoogleAuth = require('./fetchGoogleAuth.js'),
-    bqSort = function (bq) {
-        var callback = newDispatcherCallback(arguments),
-            thisRow = {};
-        if (!callback) {
-            return;
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    bqParser = function(values, callback) {
+        var thisRow = {};
+        if (callback) {
+            values.result.rows.forEach(function (row) {
+                for (var i = 0; i < row.f.length; i++) {
+                    thisRow[i] = row.f[i].v;
+                }
+                callback(thisRow);
+            });
         }
-        callback = (typeof callback === 'function') ? callback : function () { };
-        bq.result.rows.forEach(function (row) {
-            for (var i = 0; i < row.f.length; i++) {
-                thisRow[i] = row.f[i].v;
-            }
-            callback(thisRow);
-        });
     };
 /**
  * This method authorizes and fetches a BigQuery request, parses the results, and returns them to a callback.
@@ -32,16 +29,16 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
 function fetchGoogleBq(config) {
     var callback = newDispatcherCallback(arguments),
         data = {},
-        _clientId = config ? config.clientId:_clientId ,
-        _dataId = config ? config.id:_dataId,
-        _projectId = config ? config.projectId:_projectId,
-        _queryString = config ? config.queryString:_queryString,
-        _request,
-        _totalRows,
-        _values = [],
-        _gapiConfig = {
+        request,
+        totalRows,
+        values = [],
+        clientId = config ? config.clientId:false,
+        dataId = config ? config.id:false,
+        projectId = config ? config.projectId:false,
+        queryString = config ? config.queryString:false,
+        gapiConfig = {
             auth: {
-                "client_id": _clientId,
+                "client_id": clientId,
                 'scope': ['https://www.googleapis.com/auth/bigquery'],
                 'immediate': true
             },
@@ -50,28 +47,27 @@ function fetchGoogleBq(config) {
                 'version': 'v2'
             },
             query: {
-                'projectId': _projectId,
+                'projectId': projectId,
                 'timeoutMs': '30000',
-                'query': _queryString
+                'query': queryString
             }
         };
-    callback = (typeof callback === 'function') ? callback : function () { };
     if (config) {
-        fetchGoogleAuth(_gapiConfig, function () {
-            _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
-            _request.execute(function (bqResult) {
-                for (var i = 0; i < bqResult.schema.fields.length; i++){
-                    data['column'+i] = bqResult.schema.fields[i].name
+        fetchGoogleAuth(gapiConfig, function() {
+            request = gapi.client.bigquery.jobs.query(gapiConfig.query);
+            request.execute(function(result) {
+                for (var i = 0; i < result.schema.fields.length; i++) {
+                    data['column'+i] = result.schema.fields[i].name;
                 }
-                _totalRows = parseFloat(bqResult.result.totalRows);
-                data.columns = bqResult.schema.fields.length;
-                data.rows = _totalRows;
-                bqSort(bqResult, function (sortedResult) {
-                    _values.push(sortedResult);
-                    if (_values.length === _totalRows) {
-                        data.values = _values;
-                        data.query = _queryString;
-                        data.name = _dataId;
+                data.columns = result.schema.fields.length;
+                totalRows = parseFloat(result.result.totalRows);
+                data.rows = totalRows;
+                bqParser(result, function (parsed) {
+                    values.push(parsed);
+                    if (values.length === totalRows) {
+                        data.values = values;
+                        data.query = queryString;
+                        data.name = dataId;
                         callback(data);
                         return data;
                     }

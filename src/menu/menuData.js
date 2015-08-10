@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
@@ -8,7 +8,7 @@ function menuData(context, command, config) {
         myCommand = {};
     myCommand.bq = fetchGoogleBq;
     if (myCommand[command]) {
-        this.dispatcher({
+        this.dispatcher({ // todo jshint errors regarding 'this', however this method is always called with a context
                 myFunction: myCommand[command],
                 myArguments: [config]
             },
@@ -23,7 +23,7 @@ function menuData(context, command, config) {
                 }
             });
     } else {
-        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+        console.log('Sorry, "' + command + '" is not a valid fetch function.');
     }
     callback(this);
     return this;

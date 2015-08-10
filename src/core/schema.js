@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require*/
+/*global module, require, socioscapes*/
 'use strict';
 var menuClass = socioscapes.fn.menuClass,
     menuConfig = socioscapes.fn.menuConfig,
@@ -7,11 +7,11 @@ var menuClass = socioscapes.fn.menuClass,
     menuGeom = socioscapes.fn.menuGeom,
     menuRequire = socioscapes.fn.menuRequire,
     newDispatcherCallback = socioscapes.fn.newDispatcherCallback;
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [
-        { path: 'coreSchema', extension: {}
+        { path: 'schema', extension: {}
         },
-        { path: 'coreSchema/schema', extension: { "scape": {
+        { path: 'schema/structure', extension: { "scape": {
             "children": [
                 {
                     "class": "[state]"
@@ -91,28 +91,28 @@ socioscapes.fn.coreExtend(
         }}}
     ]
 );
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [
-        { path: 'coreSchema/classes', extension:
+        { path: 'schema/classes', extension:
             [
                 'scape',
                 'state',
                 'layer',
                 'view'
             ]},
-        { path: 'coreSchema/types', extension:
+        { path: 'schema/types', extension:
             [
                 'scape.sociJson',
                 'state.scape.sociJson',
                 'layer.state.scape.sociJson',
                 'view.state.scape.sociJson'
             ]},
-        { path: 'coreSchema/index', extension:
+        { path: 'schema/index', extension:
             {
-                "scape": socioscapes.fn.coreSchema.schema.scape,
-                "state": socioscapes.fn.coreSchema.schema.scape.state[0],
-                "layer": socioscapes.fn.coreSchema.schema.scape.state[0].layer[0],
-                "view": socioscapes.fn.coreSchema.schema.scape.state[0].view[0]
+                "scape": socioscapes.fn.schema.structure.scape,
+                "state": socioscapes.fn.schema.structure.scape.state[0],
+                "layer": socioscapes.fn.schema.structure.scape.state[0].layer[0],
+                "view": socioscapes.fn.schema.structure.scape.state[0].view[0]
             }},
         { path: 'newScapeSchema', extension:
             function newScapeSchema(type) {
@@ -120,9 +120,9 @@ socioscapes.fn.coreExtend(
                     isClass,
                     isType,
                     myObject = false,
-                    myTypes  = socioscapes.fn.coreSchema.types,
-                    myClasses  = socioscapes.fn.coreSchema.classes,
-                    index = socioscapes.fn.coreSchema.index;
+                    myTypes  = socioscapes.fn.schema.types,
+                    myClasses  = socioscapes.fn.schema.classes,
+                    index = socioscapes.fn.schema.index;
                 isType = (myTypes.indexOf(type) > -1) ? type.split('.')[0]:false;
                 isClass = (myClasses.indexOf(type) > -1) ? type:false;
                 if (isType || isClass) {

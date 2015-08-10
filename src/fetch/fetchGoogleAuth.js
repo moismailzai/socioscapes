@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, gapi, authorize, access_token*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -12,7 +12,6 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
  * @param {Object} config.client.name - The name of the Google API client to load.
  * @param {Object} config.client.version - The version of the Google API client to load.
- * @param {Function} callback - This is an optional callback that returns the result of the client load.
  * @return this {Object}
  */
 function fetchGoogleAuth(config) {

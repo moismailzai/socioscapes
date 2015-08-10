@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, geocode, maps, GeocoderStatus*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -23,7 +23,7 @@ function fetchGoogleGeocode(address) {
             callback(geocode);
             return geocode;
         }
-        alert('Error: Google Geocoder was unable to locate ' + address);
+        console.log('Error: Google Geocoder was unable to locate ' + address);
     });
 }
 module.exports = fetchGoogleGeocode;

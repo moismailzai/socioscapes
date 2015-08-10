@@ -1,21 +1,31 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global global, module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 function newGlobal(name, object, overwrite) {
     var callback = newDispatcherCallback(arguments),
-        myGlobal = false;
+        myGlobal;
     if (fetchGlobal(name)) {
         if (overwrite) {
-            window[name] = object;
-            myGlobal = window[name];
+            if (window) {
+                window[name] = object;
+                myGlobal = window[name];
+            } else if (global) {
+                global[name] = object;
+                myGlobal = global[name];
+            }
         } else {
             console.log('Sorry, a global object called "' + name + '" already exists.');
         }
     } else {
-        window[name] = object;
-        myGlobal = window[name];
+        if (window) {
+            window[name] = object;
+            myGlobal = window[name];
+        } else if (global) {
+            window[name] = object;
+            myGlobal = window[name];
+        }
         console.log('Creating a new global object called "' + name + '".');
     }
     callback(myGlobal);

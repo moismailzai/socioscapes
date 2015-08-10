@@ -1,7 +1,7 @@
 /*jslint node: true */
-/*global module*/
+/*global module, require*/
 'use strict';
-function coreTest(option, config) {
+function test(option, config) {
     var myOption = {};
     myOption.bq = {
         id: '2011_census_of_canada',
@@ -16,4 +16,4 @@ function coreTest(option, config) {
     };
     return myOption[option];
 }
-module.exports = coreTest;
+module.exports = test;

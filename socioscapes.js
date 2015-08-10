@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -118,7 +118,7 @@ function isValidName(name) {
 module.exports = isValidName;
 },{"./../construct/newDispatcherCallback.js":5}],2:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -128,8 +128,8 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 function isValidObject(object) {
     var callback = newDispatcherCallback(arguments),
         isValid = false;
-    if (object && object.meta && object.meta.type && object.meta.type.includes('scape.sociJson')) {
-        isValid = true
+    if (object && object.meta && object.meta.type && object.meta.type.indexOf('scape.sociJson') > -1) {
+        isValid = true;
     }
     callback(isValid);
     return isValid;
@@ -137,7 +137,7 @@ function isValidObject(object) {
 module.exports = isValidObject;
 },{"./../construct/newDispatcherCallback.js":5}],3:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -148,8 +148,6 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @memberof! socioscapes
  * @param {string} url - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
- * @param [callback] - If the url passes validation, this optional callback can be used to do a server-side check for a
- * resource at that location (allowing you to bypass javascript CORS restrictions).
  * @returns {Boolean}
  */
 function isValidUrl(url) {
@@ -159,6 +157,7 @@ function isValidUrl(url) {
             if (typeof url === 'string' && /^(http|HTTP|https|HTTPS|ftp|FTP|ftps|FTPS):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?(\#([a-zA-Z0-9$\-_.+!*'(),;:@&=\/?]|%[0-9a-fA-F]{2})*)?)?$/.test(url)) {
                 isValid = true;
             } else {
+                console.log();
                 //console.log('Sorry, that is not a valid url. Currently, socioscapes supports the HTTP(S) and FTP(S) protocols. Valid URLS must begin with the protocol name followed by an address (eg. "ftp://socioscapes.com/myScape.json", "https://socioscapes.com/myScape.json").');
             }
     }
@@ -168,70 +167,90 @@ function isValidUrl(url) {
 module.exports = isValidUrl;
 },{"./../construct/newDispatcherCallback.js":5}],4:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
+/**
+ * The socioscapes Dispatcher class is helps to facilitate asynchronous method chaining and queues. Socioscapes
+ * associates every new 'scape' object with a unique dispatcher instance. The dispatcher allows for API calls to be
+ * queued and synchronously resolved. Calls to the dispatcher provide a configuration object and an optional callback.
+ * The configuration object must include the function to be called, an array of arguments to be sent to the function,
+ * an optional 'this' context to be included, and an optional return value or object to be sent back to the caller.
+ * Inside the dispatcher, the function to be queued is evaluated for the number of arguments it expects using .length.
+ * The dispatcher then appends null values to the arguments array for each expected argument that is not explicitly
+ * provided and appends this list with a callback. When the queue is initiated, a for loop is used to iterate through
+ * the list and a status boolean prevents further iterations until the current one is processed. While the queue is
+ * being processed, new queue items are pushed to the queue array. Internal socioscapes methods begin by evaluating the
+ * final argument of the 'arguments' array to test if a dispatcher callback was provided. If one was, results are sent
+ * to the callback, which also triggers a new iteration of the queue loop.
+ * */
 function newDispatcher() {
-    var Dispatcher = function() {
-        var _queue = [],
-            _queuedItem,
-            _servedItem,
-            _lastResult,
-            _status = true,
-            _this,
-            _that = this,
-            itemServer = function(myItem, myThis, dispatcherCallback) {
-                var args = [];
-                for (; myItem.myFunction.length > myItem.myArguments.length; myItem.myArguments.push(null)) {}
-                for (var i = 0; i < myItem.myArguments.length; i++) {
-                    args.push(myItem.myArguments[i]);
-                }
-                args.push(dispatcherCallback);
-                myItem.myFunction.apply(myThis, args);
-            };
+    var queueServer = function(item, itemThis, callback) { // unpacks the queued item
+            var args = [];
+            for (; item.myFunction.length > item.myArguments.length; ) { // fills missing parameters with 'null' so that the dispatcher callback is not mistaken for an expected parameter
+                item.myArguments.push(null);
+            }
+            for (var i = 0; i < item.myArguments.length; i++) { // because the 'arguments' array isn't really an array, repackages its contents so we can push to it
+                args.push(item.myArguments[i]);
+            }
+            args.push(callback); // pushes the callback from the dispatcher queue to the function being called
+            item.myFunction.apply(itemThis, args);
+        },
+        Dispatcher = function() {
+        var lastResult, // if a 'this' argument is not explicitly provided, te results of the last operation are used as the 'this' context
+            queue = [],
+            queuedItem,
+            status = true,
+            that = this;
         this.dispatcher = function (config, callback) {
             if (config) {
                 if (config.myFunction && typeof config.myFunction === 'function') {
-                    callback = (callback && typeof callback === 'function') ? callback : function (result) { return result };
-                    _queue.push({
+                    callback = (callback && typeof callback === 'function') ? callback : function (result) { return result; };
+                    queue.push({ // packs requests for the dispatcher queue
                         myFunction: config.myFunction, // the function to be called
                         myArguments: config.myArguments, // its arguments
                         myThis: config.myThis, // [optional] arbitrary 'this' value
                         myReturn: config.myReturn, // [optional] arbitrary 'return' value
                         myCallback: callback // [optional] return to context that made this queue request (if callback is requested, the 'real' return value is sent to it but the fake return value is actually returned.
                     });
-                    _that.dispatcher();
+                    that.dispatcher();
                 }
             }
-            if (!config && _status) {
-                for (; _queue.length > 0 ;) {
-                    if (_status === true) {
-                        _status = false;
-                        _queuedItem = _queue.shift();
-                        _this = (_queuedItem.myThis) ? _queuedItem.myThis:_lastResult;
-                        itemServer(_queuedItem, _this, function(result) {
-                            if (typeof _queuedItem.myCallback === 'function') {
-                                _queuedItem.myCallback(result);
+            if (!config && status) {
+                for (; queue.length > 0 ;) {
+                    if (status === true) { // this prevents the queue resuming during asynchronous calls
+                        status = false;
+                        queuedItem = queue.shift();
+                        queuedItem.myThis = queuedItem.myThis ? queuedItem.myThis:lastResult; // use either a provided .this context or the results of the last queue operation
+                        queueServer(queuedItem, queuedItem.myThis, function(result) { // serve the current queue ietm and wait for a callback
+                            if (typeof queuedItem.myCallback === 'function') {
+                                queuedItem.myCallback(result);
                             }
-                            if (_queuedItem.myReturn) {
-                                _lastResult = _queuedItem.myReturn;
+                            if (queuedItem.myReturn) {
+                                lastResult = queuedItem.myReturn;
                             } else {
-                                _lastResult = result;
+                                lastResult = result;
                             }
-                            _status = true;
-                            _that.dispatcher();
-                        });
+                            status = true; // reset the status of the for loop
+                            that.dispatcher(); // trigger a new iteration
+                        }); // todo jshint error -- unsure how to fix this
                     }
                 }
             }
         };
-        Object.defineProperty(this.dispatcher, 'lastResult', {
-            value: function() { return _lastResult }
+        Object.defineProperty(this.dispatcher, 'result', {
+            value: function() {
+                return lastResult;
+            }
         });
         Object.defineProperty(this.dispatcher, 'status', {
-            value: function() { return _status }
+            value: function() {
+                return status;
+            }
         });
         Object.defineProperty(this.dispatcher, 'queue', {
-            value: function() { return _queue }
+            value: function() {
+                return queue;
+            }
         });
         Object.defineProperty(this, 'dispatcher', {
             configurable: false
@@ -243,7 +262,7 @@ function newDispatcher() {
 module.exports = newDispatcher;
 },{}],5:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 function newDispatcherCallback(argumentsArray) {
     var myCallback;
@@ -252,14 +271,14 @@ function newDispatcherCallback(argumentsArray) {
     } else {
         myCallback = function(result) {
             return result;
-        }
+        };
     }
     return myCallback;
 }
 module.exports = newDispatcherCallback;
 },{}],6:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -274,7 +293,7 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 // TODO proper documentation of events
 function newEvent(name, message) {
     var callback = newDispatcherCallback(arguments);
-    new CustomEvent(
+    new CustomEvent( // todo jshin error, not sure what to do here
         name,
         {
             detail: {
@@ -290,33 +309,46 @@ function newEvent(name, message) {
 }
 module.exports = newEvent;
 },{"./../construct/newDispatcherCallback.js":5}],7:[function(require,module,exports){
+(function (global){
 /*jslint node: true */
-/*global module, require, google*/
+/*global global, module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 function newGlobal(name, object, overwrite) {
     var callback = newDispatcherCallback(arguments),
-        myGlobal = false;
+        myGlobal;
     if (fetchGlobal(name)) {
         if (overwrite) {
-            window[name] = object;
-            myGlobal = window[name];
+            if (window) {
+                window[name] = object;
+                myGlobal = window[name];
+            } else if (global) {
+                global[name] = object;
+                myGlobal = global[name];
+            }
         } else {
             console.log('Sorry, a global object called "' + name + '" already exists.');
         }
     } else {
-        window[name] = object;
-        myGlobal = window[name];
+        if (window) {
+            window[name] = object;
+            myGlobal = window[name];
+        } else if (global) {
+            window[name] = object;
+            myGlobal = window[name];
+        }
         console.log('Creating a new global object called "' + name + '".');
     }
     callback(myGlobal);
     return myGlobal;
 }
 module.exports = newGlobal;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
 },{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGlobal.js":16}],8:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, socioscapes*/
 'use strict';
 var fetchScapeObject = socioscapes.fn.fetchScapeObject,
     isValidObject = socioscapes.fn.isValidObject,
@@ -329,7 +361,7 @@ var fetchScapeObject = socioscapes.fn.fetchScapeObject,
  * @memberof! socioscapes
  * @return
  */
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [{ path: 'newScapeMenu', extension:
         function newScapeMenu(scapeObject) {
         var callback = newDispatcherCallback(arguments),
@@ -427,7 +459,7 @@ socioscapes.fn.coreExtend(
                                 }
                             });
                         }
-                    })(mySchema.children[i]);
+                    })(mySchema.children[i]); // todo jshin error, unsure how to resolve this
                 }
             };
         if (isValidObject(scapeObject)) {
@@ -440,7 +472,7 @@ socioscapes.fn.coreExtend(
 );
 },{}],9:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, socioscapes*/
 'use strict';
 var fetchFromScape = socioscapes.fn.fetchFromScape,
     fetchGlobal = socioscapes.fn.fetchGlobal,
@@ -449,15 +481,14 @@ var fetchFromScape = socioscapes.fn.fetchFromScape,
     newDispatcher = socioscapes.fn.newDispatcher,
     newGlobal = socioscapes.fn.newGlobal,
     newScapeSchema = socioscapes.fn.newScapeSchema;
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [{ path: 'newScapeObject', extension:
         function newScapeObject(name, parent, type) {
             var callback = newDispatcherCallback(arguments),
                 schema = newScapeSchema(type),
                 myObject = false,
                 ScapeObject = function(myName, myParent, mySchema) {
-                    var that = this,
-                        myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
+                    var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
                     Object.defineProperty(this, 'dispatcher', {
                         value: myDispatcher
                     });
@@ -526,7 +557,7 @@ socioscapes.fn.coreExtend(
                             });
                         }
                         if  (myChildIsArray) {
-                            this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema))
+                            this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                         }
                     }
                 };
@@ -565,23 +596,91 @@ socioscapes.fn.coreExtend(
 );
 },{}],10:[function(require,module,exports){
 /*jslint node: true */
-/*global module*/
+/*global module, require*/
 'use strict';
-function coreExtend(config) {
+var socioscapes,
+    version = '0.5.2',
+    extend = require('./extend.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
+    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
+    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js'),
+    isValidObject = require('./../bool/isValidObject.js'),
+    isValidName = require('./../bool/isValidName.js'),
+    isValidUrl = require('./../bool/isValidUrl.js'),
+    menuClass = require('./../menu/menuClass.js'),
+    menuConfig = require('./../menu/menuConfig.js'),
+    menuData = require('./../menu/menuData.js'),
+    menuGeom = require('./../menu/menuGeom.js'),
+    menuRequire = require('./../menu/menuRequire.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    test = require('./test.js');
+/**
+ * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
+ * simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with
+ * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
+ * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
+ * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
+ * MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean
+ * ecosystem, under the hood socioscapes will ensure that your module is integrated with all other modules which accept
+ * data fetchers.
+ * */
+socioscapes = function(name) {
+    return new socioscapes.fn.init(name);
+};
+socioscapes.fn = socioscapes.prototype = {
+    constructor: socioscapes,
+    extend: extend,
+    fetchFromScape: fetchFromScape,
+    fetchGlobal: fetchGlobal,
+    fetchGoogleAuth: fetchGoogleAuth,
+    fetchGoogleBq: fetchGoogleBq,
+    fetchGoogleGeocode: fetchGoogleGeocode,
+    fetchScapeObject: fetchScapeObject,
+    fetchWfs: fetchWfs,
+    init: function() {  },
+    isValidObject: isValidObject,
+    isValidName: isValidName,
+    isValidUrl: isValidUrl,
+    menuClass: menuClass,
+    menuConfig: menuConfig,
+    menuData: menuData,
+    menuGeom: menuGeom,
+    menuRequire: menuRequire,
+    newDispatcher: newDispatcher,
+    newDispatcherCallback: newDispatcherCallback,
+    newEvent: newEvent,
+    newGlobal: newGlobal,
+    test: test,
+    version: version
+};
+window.socioscapes = socioscapes;
+module.exports = socioscapes;
+},{"./../bool/isValidName.js":1,"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcher.js":4,"./../construct/newDispatcherCallback.js":5,"./../construct/newEvent.js":6,"./../construct/newGlobal.js":7,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScapeObject.js":20,"./../fetch/fetchWfs.js":21,"./../menu/menuClass.js":23,"./../menu/menuConfig.js":24,"./../menu/menuData.js":25,"./../menu/menuGeom.js":26,"./../menu/menuRequire.js":27,"./extend.js":11,"./test.js":14}],11:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, socioscapes*/
+'use strict';
+function extend(config) {
     var myExtension, myName, myPath, myTarget, i, ii;
     for (i = 0; i < config.length; i++) {
         myTarget = socioscapes.fn;
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
         if (myPath && myExtension) {
-            if (myPath.includes('/')){
+            if (myPath.indexOf('/') > -1){
                 myPath = myPath.split('/');
                 for (ii = 0; myTarget[myPath[ii]] ; ii++) {
                     myTarget = myTarget[myPath[ii]];
                 }
                 myName = myPath[ii];
             } else {
-                myName = myPath
+                myName = myPath;
             }
             if (myTarget) {
                 console.log('Extending socioscapes.fn with "' + myPath + '".');
@@ -593,18 +692,18 @@ function coreExtend(config) {
     }
     return socioscapes.fn;
 }
-module.exports = coreExtend;
+module.exports = extend;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require*/
+/*global module, require, socioscapes*/
 'use strict';
 var fetchScapeObject = socioscapes.fn.fetchScapeObject,
     newScapeObject = socioscapes.fn.newScapeObject,
     newScapeMenu = socioscapes.fn.newScapeMenu;
-socioscapes.fn.coreExtend([
+socioscapes.fn.extend([
     {
-        path: 'coreInit', extension: function coreInit(name) {
+        path: 'init', extension: function coreInit(name) {
         var myScape;
         if (name) {
             myScape = fetchScapeObject(name);
@@ -615,9 +714,9 @@ socioscapes.fn.coreExtend([
         return this.s;
     }}
 ]);
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require*/
+/*global module, require, socioscapes*/
 'use strict';
 var menuClass = socioscapes.fn.menuClass,
     menuConfig = socioscapes.fn.menuConfig,
@@ -625,11 +724,11 @@ var menuClass = socioscapes.fn.menuClass,
     menuGeom = socioscapes.fn.menuGeom,
     menuRequire = socioscapes.fn.menuRequire,
     newDispatcherCallback = socioscapes.fn.newDispatcherCallback;
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [
-        { path: 'coreSchema', extension: {}
+        { path: 'schema', extension: {}
         },
-        { path: 'coreSchema/schema', extension: { "scape": {
+        { path: 'schema/structure', extension: { "scape": {
             "children": [
                 {
                     "class": "[state]"
@@ -709,28 +808,28 @@ socioscapes.fn.coreExtend(
         }}}
     ]
 );
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [
-        { path: 'coreSchema/classes', extension:
+        { path: 'schema/classes', extension:
             [
                 'scape',
                 'state',
                 'layer',
                 'view'
             ]},
-        { path: 'coreSchema/types', extension:
+        { path: 'schema/types', extension:
             [
                 'scape.sociJson',
                 'state.scape.sociJson',
                 'layer.state.scape.sociJson',
                 'view.state.scape.sociJson'
             ]},
-        { path: 'coreSchema/index', extension:
+        { path: 'schema/index', extension:
             {
-                "scape": socioscapes.fn.coreSchema.schema.scape,
-                "state": socioscapes.fn.coreSchema.schema.scape.state[0],
-                "layer": socioscapes.fn.coreSchema.schema.scape.state[0].layer[0],
-                "view": socioscapes.fn.coreSchema.schema.scape.state[0].view[0]
+                "scape": socioscapes.fn.schema.structure.scape,
+                "state": socioscapes.fn.schema.structure.scape.state[0],
+                "layer": socioscapes.fn.schema.structure.scape.state[0].layer[0],
+                "view": socioscapes.fn.schema.structure.scape.state[0].view[0]
             }},
         { path: 'newScapeSchema', extension:
             function newScapeSchema(type) {
@@ -738,9 +837,9 @@ socioscapes.fn.coreExtend(
                     isClass,
                     isType,
                     myObject = false,
-                    myTypes  = socioscapes.fn.coreSchema.types,
-                    myClasses  = socioscapes.fn.coreSchema.classes,
-                    index = socioscapes.fn.coreSchema.index;
+                    myTypes  = socioscapes.fn.schema.types,
+                    myClasses  = socioscapes.fn.schema.classes,
+                    index = socioscapes.fn.schema.index;
                 isType = (myTypes.indexOf(type) > -1) ? type.split('.')[0]:false;
                 isClass = (myClasses.indexOf(type) > -1) ? type:false;
                 if (isType || isClass) {
@@ -752,11 +851,11 @@ socioscapes.fn.coreExtend(
         }
     ]
 );
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*jslint node: true */
-/*global module*/
+/*global module, require*/
 'use strict';
-function coreTest(option, config) {
+function test(option, config) {
     var myOption = {};
     myOption.bq = {
         id: '2011_census_of_canada',
@@ -771,81 +870,19 @@ function coreTest(option, config) {
     };
     return myOption[option];
 }
-module.exports = coreTest;
-},{}],14:[function(require,module,exports){
+module.exports = test;
+},{}],15:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
-'use strict';
-var socioscapes,
-    version = '0.5.0',
-    coreExtend = require('./../core/coreExtend.js'),
-    coreTest = require('./../core/coreTest.js'),
-    fetchFromScape = require('./../fetch/fetchFromScape.js'),
-    fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
-    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
-    fetchWfs = require('./../fetch/fetchWfs.js'),
-    isValidObject = require('./../bool/isValidObject.js'),
-    isValidName = require('./../bool/isValidName.js'),
-    isValidUrl = require('./../bool/isValidUrl.js'),
-    menuClass = require('./../menu/menuClass.js'),
-    menuConfig = require('./../menu/menuConfig.js'),
-    menuData = require('./../menu/menuData.js'),
-    menuGeom = require('./../menu/menuGeom.js'),
-    menuRequire = require('./../menu/menuRequire.js'),
-    newDispatcher = require('./../construct/newDispatcher.js'),
-    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    newEvent = require('./../construct/newEvent.js'),
-    newGlobal = require('./../construct/newGlobal.js');
-/**
- * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.coreExtend' and provide an array of entries that are composed of an object with
- * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
- * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
- * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
- * MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean
- * ecosystem, under the hood socioscapes will ensure that your module is integrated with all other modules which accept
- * data fetchers.
- * */
-socioscapes = function(name) {
-    return new socioscapes.fn.coreInit(name);
-};
-socioscapes.fn = socioscapes.prototype = {
-    constructor: socioscapes,
-    coreExtend: coreExtend,
-    coreInit: function() {  },
-    coreTest: coreTest,
-    fetchFromScape: fetchFromScape,
-    fetchGlobal: fetchGlobal,
-    fetchGoogleAuth: fetchGoogleAuth,
-    fetchGoogleBq: fetchGoogleBq,
-    fetchGoogleGeocode: fetchGoogleGeocode,
-    fetchScapeObject: fetchScapeObject,
-    fetchWfs: fetchWfs,
-    isValidObject: isValidObject,
-    isValidName: isValidName,
-    isValidUrl: isValidUrl,
-    menuClass: menuClass,
-    menuConfig: menuConfig,
-    menuData: menuData,
-    menuGeom: menuGeom,
-    menuRequire: menuRequire,
-    newDispatcher: newDispatcher,
-    newDispatcherCallback: newDispatcherCallback,
-    newEvent: newEvent,
-    newGlobal: newGlobal,
-    version: version
-};
-window.socioscapes = socioscapes;
-module.exports = socioscapes;
-},{"./../bool/isValidName.js":1,"./../bool/isValidObject.js":2,"./../bool/isValidUrl.js":3,"./../construct/newDispatcher.js":4,"./../construct/newDispatcherCallback.js":5,"./../construct/newEvent.js":6,"./../construct/newGlobal.js":7,"./../core/coreExtend.js":10,"./../core/coreTest.js":13,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScapeObject.js":20,"./../fetch/fetchWfs.js":21,"./../menu/menuClass.js":23,"./../menu/menuConfig.js":24,"./../menu/menuData.js":25,"./../menu/menuGeom.js":26,"./../menu/menuRequire.js":27}],15:[function(require,module,exports){
-/*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var isValidName = require('./../bool/isValidName.js'),
     newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+// isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+Number.isInteger = Number.isInteger || function(value) {
+        return typeof value === "number" &&
+            isFinite(value) &&
+            Math.floor(value) === value;
+    };
 function fetchFromScape(key, metaProperty, array) {
     var callback = newDispatcherCallback(arguments),
         myKey = false;
@@ -865,25 +902,28 @@ function fetchFromScape(key, metaProperty, array) {
 }
 module.exports = fetchFromScape;
 },{"./../bool/isValidName.js":1,"./../construct/newDispatcherCallback.js":5}],16:[function(require,module,exports){
+(function (global){
 /*jslint node: true */
-/*global module, google, require, define, define.amd*/
+/*global global, module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 function fetchGlobal(name) {
     var callback = newDispatcherCallback(arguments),
-        myGlobal = false;
-    if (window[name] === undefined) {
-
-    } else {
+        myGlobal;
+    if (window) {
         myGlobal = window[name];
+    } else if (global) {
+        myGlobal = global[name];
     }
     callback(myGlobal);
     return myGlobal;
 }
 module.exports = fetchGlobal;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
 },{"./../construct/newDispatcherCallback.js":5}],17:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, gapi, authorize, access_token*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -896,7 +936,6 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
  * @param {Object} config.client.name - The name of the Google API client to load.
  * @param {Object} config.client.version - The version of the Google API client to load.
- * @param {Function} callback - This is an optional callback that returns the result of the client load.
  * @return this {Object}
  */
 function fetchGoogleAuth(config) {
@@ -913,23 +952,20 @@ function fetchGoogleAuth(config) {
 module.exports = fetchGoogleAuth;
 },{"./../construct/newDispatcherCallback.js":5}],18:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, gapi, bigquery, execute, jobs, fields, totalRows*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    fetchGoogleAuth = require('./fetchGoogleAuth.js'),
-    bqSort = function (bq) {
-        var callback = newDispatcherCallback(arguments),
-            thisRow = {};
-        if (!callback) {
-            return;
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    bqParser = function(values, callback) {
+        var thisRow = {};
+        if (callback) {
+            values.result.rows.forEach(function (row) {
+                for (var i = 0; i < row.f.length; i++) {
+                    thisRow[i] = row.f[i].v;
+                }
+                callback(thisRow);
+            });
         }
-        callback = (typeof callback === 'function') ? callback : function () { };
-        bq.result.rows.forEach(function (row) {
-            for (var i = 0; i < row.f.length; i++) {
-                thisRow[i] = row.f[i].v;
-            }
-            callback(thisRow);
-        });
     };
 /**
  * This method authorizes and fetches a BigQuery request, parses the results, and returns them to a callback.
@@ -946,16 +982,16 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
 function fetchGoogleBq(config) {
     var callback = newDispatcherCallback(arguments),
         data = {},
-        _clientId = config ? config.clientId:_clientId ,
-        _dataId = config ? config.id:_dataId,
-        _projectId = config ? config.projectId:_projectId,
-        _queryString = config ? config.queryString:_queryString,
-        _request,
-        _totalRows,
-        _values = [],
-        _gapiConfig = {
+        request,
+        totalRows,
+        values = [],
+        clientId = config ? config.clientId:false,
+        dataId = config ? config.id:false,
+        projectId = config ? config.projectId:false,
+        queryString = config ? config.queryString:false,
+        gapiConfig = {
             auth: {
-                "client_id": _clientId,
+                "client_id": clientId,
                 'scope': ['https://www.googleapis.com/auth/bigquery'],
                 'immediate': true
             },
@@ -964,28 +1000,27 @@ function fetchGoogleBq(config) {
                 'version': 'v2'
             },
             query: {
-                'projectId': _projectId,
+                'projectId': projectId,
                 'timeoutMs': '30000',
-                'query': _queryString
+                'query': queryString
             }
         };
-    callback = (typeof callback === 'function') ? callback : function () { };
     if (config) {
-        fetchGoogleAuth(_gapiConfig, function () {
-            _request = gapi.client.bigquery.jobs.query(_gapiConfig.query);
-            _request.execute(function (bqResult) {
-                for (var i = 0; i < bqResult.schema.fields.length; i++){
-                    data['column'+i] = bqResult.schema.fields[i].name
+        fetchGoogleAuth(gapiConfig, function() {
+            request = gapi.client.bigquery.jobs.query(gapiConfig.query);
+            request.execute(function(result) {
+                for (var i = 0; i < result.schema.fields.length; i++) {
+                    data['column'+i] = result.schema.fields[i].name;
                 }
-                _totalRows = parseFloat(bqResult.result.totalRows);
-                data.columns = bqResult.schema.fields.length;
-                data.rows = _totalRows;
-                bqSort(bqResult, function (sortedResult) {
-                    _values.push(sortedResult);
-                    if (_values.length === _totalRows) {
-                        data.values = _values;
-                        data.query = _queryString;
-                        data.name = _dataId;
+                data.columns = result.schema.fields.length;
+                totalRows = parseFloat(result.result.totalRows);
+                data.rows = totalRows;
+                bqParser(result, function (parsed) {
+                    values.push(parsed);
+                    if (values.length === totalRows) {
+                        data.values = values;
+                        data.query = queryString;
+                        data.name = dataId;
                         callback(data);
                         return data;
                     }
@@ -995,9 +1030,9 @@ function fetchGoogleBq(config) {
     }
 }
 module.exports = fetchGoogleBq;
-},{"./../construct/newDispatcherCallback.js":5,"./fetchGoogleAuth.js":17}],19:[function(require,module,exports){
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleAuth.js":17}],19:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, google, geocode, maps, GeocoderStatus*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -1021,13 +1056,13 @@ function fetchGoogleGeocode(address) {
             callback(geocode);
             return geocode;
         }
-        alert('Error: Google Geocoder was unable to locate ' + address);
+        console.log('Error: Google Geocoder was unable to locate ' + address);
     });
 }
 module.exports = fetchGoogleGeocode;
 },{"./../construct/newDispatcherCallback.js":5}],20:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchFromScape = require('./../fetch/fetchFromScape.js'),
@@ -1043,14 +1078,10 @@ var fetchGlobal = require('./../fetch/fetchGlobal.js'),
  */
 function fetchScapeObject(object, source, container) {
     var callback = newDispatcherCallback(arguments),
-        // was an object sent to be validated? if so let's prioritize sending it back
-        myObject = (typeof object === 'string') ? fetchGlobal(object):(isValidObject(object) ? object:false),
-        // otherwise was a parent object provided?
-        myParent = myObject ? false:isValidObject(source),
-        // if not was a parent url provided?
-        myUrl = myParent ? false:isValidUrl(source);
-    // if we don't have an object and we do have either a name or url, proceed
-    if (!myObject && (myParent || myUrl)) {
+        myObject = (typeof object === 'string') ? fetchGlobal(object):(isValidObject(object) ? object:false), // was an object sent to be validated? if so let's prioritize sending it back
+        myParent = myObject ? false:isValidObject(source), // otherwise was a parent object provided?
+        myUrl = myParent ? false:isValidUrl(source); // if not was a parent url provided?
+    if (!myObject && (myParent || myUrl)) {     // if we don't have an object and we do have either a name or url, proceed
         if (myParent) {
             myObject = fetchFromScape(object, 'name', source[container]);
         } else {
@@ -1072,39 +1103,30 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  *
  * @function fetchWfs
  * @memberof! socioscapes
- * @param {Object} config - An object with configuration options for the Web Feature Service fetchScapeObject.
- * @param {String} config.url - The Web Feature Service query url.
- * @param {String} config.id - The id property (these values are matched to the values of a corresponding data column).
- * @param {Object} callback - This is a mandatory callback that returns the results of the asynchronous fetchScapeObject.
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
 function fetchWfs(url) {
     var callback = newDispatcherCallback(arguments),
-        _xobj = new XMLHttpRequest(),
+        xobj = new XMLHttpRequest(),
         geom;
-    _xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
-    _xobj.open('GET', url, true);
-    _xobj.onreadystatechange = function () {
-        if (_xobj.readyState == 4 && _xobj.status == "200") {
+    xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
+    xobj.open('GET', url, true);
+    xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") { // todo jshin error about == instead of === but when I change to === function does not behave as expected
             geom = {};
-            geom.features = _xobj.responseText;
+            geom.features = xobj.responseText;
             geom.url = url;
             callback(geom);
             return geom;
         }
     };
-    _xobj.send(null);
+    xobj.send(null);
 }
 module.exports = fetchWfs;
 },{"./../construct/newDispatcherCallback.js":5}],22:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
-var socioscapes = require('./core/socioscapes.js'), // loaded in exactly this order to avoid circular dependencies
-    coreSchema = require('./core/coreSchema.js'),
-    newScapeObject = require('./construct/newScapeObject.js'),
-    newScapeMenu = require('./construct/newScapeMenu.js'),
-    coreInit = require('./core/coreInit.js');
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
@@ -1118,10 +1140,17 @@ var socioscapes = require('./core/socioscapes.js'), // loaded in exactly this or
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
  * the University of Toronto.
  */
-module.exports = socioscapes;
-},{"./construct/newScapeMenu.js":8,"./construct/newScapeObject.js":9,"./core/coreInit.js":11,"./core/coreSchema.js":12,"./core/socioscapes.js":14}],23:[function(require,module,exports){
+/// load in exactly this order to avoid circular dependencies ///
+var core = require('./core/core.js'),
+    schema = require('./core/schema.js'),
+    newScapeObject = require('./construct/newScapeObject.js'),
+    newScapeMenu = require('./construct/newScapeMenu.js'),
+    init = require('./core/init.js');
+/// load in exactly this order to avoid circular dependencies ///
+module.exports = core;
+},{"./construct/newScapeMenu.js":8,"./construct/newScapeObject.js":9,"./core/core.js":10,"./core/init.js":12,"./core/schema.js":13}],23:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchScapeObject = require ('./../fetch/fetchScapeObject.js');
@@ -1172,7 +1201,7 @@ function menuConfig(command, layer, config) {
 module.exports = menuConfig;
 },{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}],25:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
@@ -1181,7 +1210,7 @@ function menuData(context, command, config) {
         myCommand = {};
     myCommand.bq = fetchGoogleBq;
     if (myCommand[command]) {
-        this.dispatcher({
+        this.dispatcher({ // todo jshint errors regarding 'this', however this method is always called with a context
                 myFunction: myCommand[command],
                 myArguments: [config]
             },
@@ -1196,7 +1225,7 @@ function menuData(context, command, config) {
                 }
             });
     } else {
-        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+        console.log('Sorry, "' + command + '" is not a valid fetch function.');
     }
     callback(this);
     return this;
@@ -1204,7 +1233,7 @@ function menuData(context, command, config) {
 module.exports = menuData;
 },{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}],26:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchWfs = require('./../fetch/fetchWfs.js');
@@ -1213,7 +1242,7 @@ function menuGeom(context, command, config) {
         myCommand = {};
     myCommand.wfs = fetchWfs;
     if (myCommand[command]) {
-        this.dispatcher({
+        this.dispatcher({ // todo jshint errors regarding 'this', however this method is always called with a context
                 myFunction: myCommand[command],
                 myArguments: [config]
             },
@@ -1228,7 +1257,7 @@ function menuGeom(context, command, config) {
                 }
             });
     } else {
-        console.log('Sorry, "' + command + '" is not a valid fetch function.')
+        console.log('Sorry, "' + command + '" is not a valid fetch function.');
     }
     callback(this);
     return this;
@@ -1236,7 +1265,7 @@ function menuGeom(context, command, config) {
 module.exports = menuGeom;
 },{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchWfs.js":21}],27:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');

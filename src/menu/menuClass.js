@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, this*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
     fetchScapeObject = require ('./../fetch/fetchScapeObject.js');

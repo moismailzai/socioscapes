@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
@@ -14,7 +14,7 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 // TODO proper documentation of events
 function newEvent(name, message) {
     var callback = newDispatcherCallback(arguments);
-    new CustomEvent(
+    new CustomEvent( // todo jshin error, not sure what to do here
         name,
         {
             detail: {

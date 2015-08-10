@@ -1,21 +1,21 @@
 /*jslint node: true */
-/*global module*/
+/*global module, require, socioscapes*/
 'use strict';
-function coreExtend(config) {
+function extend(config) {
     var myExtension, myName, myPath, myTarget, i, ii;
     for (i = 0; i < config.length; i++) {
         myTarget = socioscapes.fn;
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
         if (myPath && myExtension) {
-            if (myPath.includes('/')){
+            if (myPath.indexOf('/') > -1){
                 myPath = myPath.split('/');
                 for (ii = 0; myTarget[myPath[ii]] ; ii++) {
                     myTarget = myTarget[myPath[ii]];
                 }
                 myName = myPath[ii];
             } else {
-                myName = myPath
+                myName = myPath;
             }
             if (myTarget) {
                 console.log('Extending socioscapes.fn with "' + myPath + '".');
@@ -27,4 +27,4 @@ function coreExtend(config) {
     }
     return socioscapes.fn;
 }
-module.exports = coreExtend;
+module.exports = extend;

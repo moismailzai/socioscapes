@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 function newDispatcherCallback(argumentsArray) {
     var myCallback;
@@ -8,7 +8,7 @@ function newDispatcherCallback(argumentsArray) {
     } else {
         myCallback = function(result) {
             return result;
-        }
+        };
     }
     return myCallback;
 }

@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, socioscapes*/
 'use strict';
 var fetchScapeObject = socioscapes.fn.fetchScapeObject,
     isValidObject = socioscapes.fn.isValidObject,
@@ -12,7 +12,7 @@ var fetchScapeObject = socioscapes.fn.fetchScapeObject,
  * @memberof! socioscapes
  * @return
  */
-socioscapes.fn.coreExtend(
+socioscapes.fn.extend(
     [{ path: 'newScapeMenu', extension:
         function newScapeMenu(scapeObject) {
         var callback = newDispatcherCallback(arguments),
@@ -110,7 +110,7 @@ socioscapes.fn.coreExtend(
                                 }
                             });
                         }
-                    })(mySchema.children[i]);
+                    })(mySchema.children[i]); // todo jshin error, unsure how to resolve this
                 }
             };
         if (isValidObject(scapeObject)) {
