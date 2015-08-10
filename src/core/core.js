@@ -2,7 +2,7 @@
 /*global module, require*/
 'use strict';
 var socioscapes,
-    version = '0.5.2',
+    version = '0.5.5',
     extend = require('./extend.js'),
     fetchFromScape = require('./../fetch/fetchFromScape.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js'),
