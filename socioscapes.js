@@ -1275,7 +1275,7 @@ function menuRequires(command, config, myContainer) {
     return this;
 }
 module.exports = menuRequires;
-},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}]},{},[22]);
+},{"./../construct/newDispatcherCallback.js":5,"./../fetch/fetchGoogleBq.js":18}]},{},[22])
 
 
 //# sourceMappingURL=socioscapes.js.map
