@@ -23,8 +23,10 @@
 ***  
 **Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes-min.js)
 
-    <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes.js"></script>
-    <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes-min.js"></script>
+    <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes.js">
+    
+    <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes-min.js">
+ 
  
 **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
 
@@ -52,7 +54,7 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
 
 **Note:** While the servers and datasets in these examples are functioning, due to XSS security it is not possible to test these from an outside domain. However, *app.socioscapes.com* hosts a publically exposed copy of the socioscapes API which can be accessed via the developer's console and which has been configured to access the example servers. Don't forget to change the Big Query client id to your Google client id, found in the Google Developer Console).  
 
-// some setup first...   
+**// first, some setup**   
 // create a wfs url
 
     var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?
@@ -71,6 +73,7 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
                         Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
     };  
 
+**// now, use the api**  
 // create a new scape object to store our work in. let's call it 'vancity'*  
 
     socioscapes().new('vancity')
