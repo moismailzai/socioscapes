@@ -89,8 +89,7 @@ Prior to version 1.0, expect breaking changes to the API.
 
 >The socioscapes structure is inspired by the jQuery team's module management approach. To extend socioscapes, you simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where in the socioscapes prototype to store your extension. The path for most modules will be the root path, which is socioscapes.fn. Your module should be appropriately named to ensure that it is exposed to existing elements. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean ecosystem, but under the hood socioscapes also exposed modules contextually based on prefixes.
   
->*// **example: socioscapes.fn.init** the following snippet is from src/core/init.js. it creates a new member*   
->*// "init" at socioscapes.fn.init and populates its value with a function.*  
+>*// **example: socioscapes.fn.init** the following snippet is from src/core/init.js. it creates a new member "init" at socioscapes.fn.init and populates its value with a function.*  
   
     socioscapes.fn.extend([
        {
