@@ -94,12 +94,12 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
 
     socioscapes('vancity').state('census2011').layer().geom('wfs', wfs)
 
-// too verbose? you can create navigation shortcuts...  
+// too verbose? you can create navigation shortcuts  
 
     l = socioscapes('vancity').state('census2011').layer()
     l.data('bq', bq);
 
-// of course, you can chain all of the above:
+// and of course, you can chain everything
 
     socioscapes() .new('vancity')
                   .state()
