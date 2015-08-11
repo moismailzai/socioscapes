@@ -101,7 +101,12 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
 
 // of course, you can chain all of the above:
 
-    socioscapes().new('vancity').state().new('census2011').layer().data('bq', config.bq).geom('wfs', config.wfs)
+    socioscapes() .new('vancity')
+                  .state()
+                  .new('census2011')
+                  .layer()
+                  .data('bq', config.bq)
+                  .geom('wfs', config.wfs)
    
    
    
