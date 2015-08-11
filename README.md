@@ -15,7 +15,9 @@
 >**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 ### Installation  
-**Standalone**: \<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js" \>\</script\>
+**Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js)
+
+    <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js"></script>
  
 **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
 
