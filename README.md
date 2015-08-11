@@ -109,8 +109,8 @@ Now suppose that besides a map, the user also wishes to include some charts, gra
                   .state()
                   .new('census2011')
                   .layer()
-                  .data('bq', config.bq)
-                  .geom('wfs', config.wfs)
+                  .data('bq', bq)
+                  .geom('wfs', wfs)
    
    
    
