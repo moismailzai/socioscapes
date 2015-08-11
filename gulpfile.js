@@ -1,5 +1,5 @@
+/*global require, pipe,  */
 'use strict';
-
 var watchify = require('watchify');
 var browserify = require('browserify');
 var gulp = require('gulp');
@@ -8,6 +8,9 @@ var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
 var sourcemaps = require('gulp-sourcemaps');
 var assign = require('lodash.assign');
+var uglify = require('gulp-uglify');
+var rename = require('gulp-rename');
+var filesize = require('gulp-filesize');
 
 // add custom browserify options here
 var customOpts = {
@@ -37,5 +40,15 @@ function bundle() {
         .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
         // Add transformation tasks to the pipeline here.
         .pipe(sourcemaps.write('./')) // writes .map file
-        .pipe(gulp.dest('./'));
+        .pipe(gulp.dest('./release'));
 }
+
+gulp.task('min', function() {
+    return gulp.src('./release/socioscapes.js')
+        .pipe(filesize())
+        .pipe(uglify())
+        .pipe(rename('socioscapes-min.js'))
+            .pipe(gulp.dest('./release'))
+            .pipe(filesize())
+            .on('error', gutil.log);
+});
