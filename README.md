@@ -3,18 +3,20 @@
 ### Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.
 
 ### Details
->**Current version**:     0.5.5  
+***  
+**Current version**:     0.5.5  
 *(expect breaking changes prior to version 1.0)*
 
->**Source code**:     [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
+**Source code**:     [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
  
->**Reference implementation**:  [http://app.socioscapes.com](http://app.socioscapes.com "app.socioscapes.com")
+**Reference implementation**:  [http://app.socioscapes.com](http://app.socioscapes.com "app.socioscapes.com")
  
->**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
+**License**:         [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
  
->**Copyright**:       &copy; 2015 Misaqe Ismailzai
+**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 ### Installation  
+***  
 **Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js)
 
     <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js"></script>
@@ -36,11 +38,12 @@ For developers, socioscapes provides a semantic API that is designed to standard
 (https://raw.githubusercontent.com/moismailzai/socioscapes/master/schema-small.png)
 This diagram is a visual representation of the core socioscapes schema. Currently, socioscapes defines the following classes [scape], [state], [layer], and [view]. Each instance of these classes includes a {meta} member whose purpose is to store metadata about the unique aspects of that instance. Since the root socioscapes object is itself just an instance of the [scape] class, it also has a {meta} member. The [states] array in the root object stores instances of the [state] class, which are conceptualized as the complete contents of the DOM at a particular moment. A particular {state} instance stores all of the data and configuration that are necessary to reproduce a corresponding screen state. Each such state can include multiple maps, charts, graphs, and other visualizations. For instance, suppose a user wishes to create a thematic map of their neighbourhood and to display the ways in which income is distributed across their city. Besides a map, they may also wish to include charts, graphs, and tables. Socioscapes approaches this task by differentiating between [layer] elements, which are static collections of raw numerical and geometric data, and [view] elements, which are conceptualized unique DOM-rendered instances of these layers. Views are always directly incorporated into the DOM whereas layers never simply datastores. A chart contained within a DOM \<div\> element constitutes a socioscapes view but the same data from the same layer could also be used in my different maps, charts, graphs, and tables. Since this is a common GIS scenario, both the socioscapes API and the datastructure has been organized to help facilitate such tasks. This schema is not set in stone and users can use the socioscapes.fn.extend function to edit, remove, and add classes as they see fit. To get a feel for the API, jump into the code or read through the following examples:
 
-**Note:** While the servers and datasets in these examples are functioning, due to XSS security it is not possible to test these from an outside domain. However, *app.socioscapes.com* hosts a publically exposed copy of the socioscapes API which can be accessed via the developer's console and which has been configured to access the example servers. Don't forget to change the Big Query client id to your Google client id, found in the Google Developer Console).  
-
-#### Config: 
+#### Usage: 
 *** 
 
+**Note:** While the servers and datasets in these examples are functioning, due to XSS security it is not possible to test these from an outside domain. However, *app.socioscapes.com* hosts a publically exposed copy of the socioscapes API which can be accessed via the developer's console and which has been configured to access the example servers. Don't forget to change the Big Query client id to your Google client id, found in the Google Developer Console).  
+
+// some setup first...
 // create a wfs url
 
     var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?
@@ -58,9 +61,6 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
                         (Characteristic CONTAINS 'Population in 2011' AND 
                         Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
     };  
-
-#### Usage:
-*** 
 
 // create a new scape object to store our work in. let's call it 'vancity'*  
 
