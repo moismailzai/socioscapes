@@ -44,13 +44,13 @@ Prior to version 1.0, expect breaking changes to the API.
 >// *create a google big query request*  
     
     var bq = {  
-       id: '2011_census_of_canada',  
-       clientId: '1234567890.apps.googleusercontent.com', 
-       projectId: '1234567890',
-       queryString: 'SELECT Geo_Code, Total FROM 
-                    [2011_census_of_canada.british_columbia_da] WHERE 
-                    (Characteristic CONTAINS 'Population in 2011' AND 
-                    Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
+           id: '2011_census_of_canada',  
+           clientId: '1234567890.apps.googleusercontent.com', 
+           projectId: '1234567890',
+           queryString: 'SELECT Geo_Code, Total FROM 
+                        [2011_census_of_canada.british_columbia_da] WHERE 
+                        (Characteristic CONTAINS 'Population in 2011' AND 
+                        Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
     };  
 
 #### Usage:
