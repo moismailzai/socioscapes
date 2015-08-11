@@ -15,13 +15,13 @@
 >**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 ### Installation  
-> **Standalone**: \<script src="path/to/socioscapes.js"\>\</script\>
+**Standalone**: \<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes-min.js" \>\</script\>
  
-> **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
+**NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
 
     npm install socioscapes
  
-> **Bower**: [bower](http://bower.io/search/?q=socioscapes)
+**Bower**: [bower](http://bower.io/search/?q=socioscapes)
 
     bower install socioscapes
 
