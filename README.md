@@ -85,7 +85,7 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
     l = socioscapes('vancity').state('census2011').layer()
     l.data('bq', bq);
 
-// socioscapes has a built in dispatcher and was built from the ground up to work asynchronously while also providing and easy to use API. This means that all of the above could simply be achieved in one line:
+// of course, you can chain all of the above:
 
     socioscapes().new('vancity').state().new('census2011').layer().data('bq', config.bq).geom('wfs', config.wfs)
 
