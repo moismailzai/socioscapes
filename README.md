@@ -41,11 +41,15 @@
 ### What Does It Do?
 ***
 
-For developers, socioscapes provides a semantic API that is designed to standardize how you interact with an extendable set of current and future open-source tools. For the end user, socioscapes has been designed to allow simple and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary way. Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you choose to work with. A .scape file is just a JSON object with the following structure:
+For developers, socioscapes provides an extendable asynchronous API that standardizes interaction with various open-source tools and standards. For the end user, socioscapes allows simple and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary format. Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you choose to work with. A .scape file is [just a JSON object] (https://github.com/moismailzai/socioscapes/blob/master/src/core/schema.js) with the following structure:
   
 ![Image of the Soscioscapes Schema]
 (https://raw.githubusercontent.com/moismailzai/socioscapes/master/docs/schema-small.png)
-This diagram is a visual representation of the core socioscapes schema. Currently, socioscapes defines the following classes [scape], [state], [layer], and [view]. Each instance of these classes includes a {meta} member whose purpose is to store metadata about the unique aspects of that instance. Since the root socioscapes object is itself just an instance of the [scape] class, it also has a {meta} member. The [states] array in the root object stores instances of the [state] class, which are conceptualized as the complete contents of the DOM at a particular moment. A particular {state} instance stores all of the data and configuration that are necessary to reproduce a corresponding screen state. Each such state can include multiple maps, charts, graphs, and other visualizations. For instance, suppose a user wishes to create a thematic map of their neighbourhood and to display the ways in which income is distributed across their city. Besides a map, they may also wish to include charts, graphs, and tables. Socioscapes approaches this task by differentiating between [layer] elements, which are static collections of raw numerical and geometric data, and [view] elements, which are conceptualized unique DOM-rendered instances of these layers. Views are always directly incorporated into the DOM whereas layers never simply datastores. A chart contained within a DOM \<div\> element constitutes a socioscapes view but the same data from the same layer could also be used in my different maps, charts, graphs, and tables. Since this is a common GIS scenario, both the socioscapes API and the datastructure has been organized to help facilitate such tasks. This schema is not set in stone and users can use the socioscapes.fn.extend function to edit, remove, and add classes as they see fit. To get a feel for the API, jump into the code or read through the following examples:
+The above is a visual representation of the socioscapes [scape] class, which is itself composed of [state], [layer], and [view] classes. All class instances include a {meta} object that holds arbitrary data unique to the instance, such as a name, an author, and a source. Since the {scape} object is itself just an instance of the [scape] class, it also includes a {meta} member.  
+  
+The [state] array stores instances of the [state] class, which are meant to organize all of the data and configuration necessary to reproduce a corresponding DOM state. This structure fascilitates comparative and time series visualization. For instance, suppose a user wishes to demonstrate a change in the way income is distributed across their city. They could create several {state} instances, one for each point in the time series. This allows for maximum data mobility because each {state} is entirely independent of the others and can be edited, saved, and shared independently.  
+  
+Now suppose that besides a map, the user also wishes to include some charts, graphs, and tables. Socioscapes approaches this problem by organizing each {state} into [layer] and [view] stores. {layer} objects are static collections of raw numerical and geometric data; {view} objects are indexes that store settings and point to data necessary to recreate a particular element (such a chart). Views are directly incorporated into the DOM whereas layers are just datastores. The above schema is not set in stone and users can use [socioscapes.fn.extend()] (https://github.com/moismailzai/socioscapes/blob/master/src/core/extend.js) to edit, remove, and add additional classes. To get a feel for the API, jump into the code or read through the following examples:
    
    
    
@@ -105,8 +109,8 @@ This diagram is a visual representation of the core socioscapes schema. Currentl
                   .state()
                   .new('census2011')
                   .layer()
-                  .data('bq', config.bq)
-                  .geom('wfs', config.wfs)
+                  .data('bq', bq)
+                  .geom('wfs', wfs)
    
    
    
