@@ -14,7 +14,7 @@
 >**Copyright**:       &copy; 2015 Misaqe Ismailzai
 
 ### Installation  
-Prior to version 1.0, expect breaking changes and assume all browsers except Google Chrome will be broken.  
+Prior to version 1.0, expect breaking changes to the API.  
 > **Standalone**: \<script src="path/to/socioscapes.js"\>\</script\>
  
 > **NodeJS**: [npm install socioscapes](https://www.npmjs.com/package/socioscapes)
@@ -37,7 +37,9 @@ Prior to version 1.0, expect breaking changes and assume all browsers except Goo
 
 >// *create a wfs url*  
 
-    var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;service=WFS&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=ccsuid=1218001'**
+    var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?
+               &service=WFS&request=GetFeature&typeName=socioscapes:2011-canada-census-da
+               &outputFormat=json&cql_filter=ccsuid=1218001'
 
 >// *create a google big query request*  
     
@@ -45,7 +47,9 @@ Prior to version 1.0, expect breaking changes and assume all browsers except Goo
         id: '2011_census_of_canada',  
         clientId: '1234567890.apps.googleusercontent.com', 
         projectId: '1234567890',
-        queryString: 'SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] WHERE (Characteristic CONTAINS &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'Population in 2011' AND Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
+        queryString: 'SELECT Geo_Code, Total FROM [2011_census_of_canada.british_columbia_da] 
+                      WHERE (Characteristic CONTAINS 'Population in 2011' AND Total IS NOT NULL) 
+                      GROUP BY Geo_Code, Total, LIMIT 10;'
     };  
 
 #### Usage:
@@ -72,6 +76,12 @@ Prior to version 1.0, expect breaking changes and assume all browsers except Goo
 
 >*// socioscapes has a built in dispatcher and was built from the ground up to work asynchronously while also providing and easy to use API. This means that all of the above could simply be achieved in one line:*  
 **socioscapes().new('vancity').state().new('census2011').layer().data('bq', config.bq).geom('wfs', config.wfs)**  
+
+#### Asynchronous:
+***
+
+>The socioscapes Dispatcher class facilitate asynchronous method chaining through the use of instanced queues. Socioscapes associates every 'scape' object with a dispatcher instance. The dispatcher allows for API calls to be queued and synchronously resolved. Calls to the dispatcher can provide a configuration object and a callback. The configuration object must include the function to be called and an array of arguments to be sent to the function, but can also include an optional 'this' context and preferred return value once the call has been resolved. Inside the dispatcher, the function to be queued is evaluated for the number of arguments it expects. The dispatcher then appends null values to the arguments array if the arguments supplied are less than the arguments expected, and appends a callback. When the queue is initiated, a for loop is used to work through the queue and a status boolean prevents further iterations until the current one is processed. While the queue is being processed, new queue items are pushed to the queue array. Socioscapes methods start by evaluating the final argument of the 'arguments' array to test if a dispatcher callback was provided. If one was, the method's results are sent to the callback, before being returned as usual. The callback triggers a new iteration of the queue loop.
+
 
 #### Extendability:
 ***
