@@ -61,21 +61,23 @@ Now suppose that besides a map, the user also wishes to include some charts, gra
 **// first, some setup**   
 // create a wfs url
 
-    var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?
-               &service=WFS&request=GetFeature&typeName=socioscapes:2011-canada-census-da
-               &outputFormat=json&cql_filter=ccsuid=1218001'
+```
+var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?&service=WFS&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=ccsuid=1218001'
+```
 
 // create a google big query request 
- 
-    var bq = {  
-           id: '2011_census_of_canada',  
-           clientId: '1234567890.apps.googleusercontent.com', 
-           projectId: '1234567890',
-           queryString: 'SELECT Geo_Code, Total FROM 
-                        [2011_census_of_canada.british_columbia_da] WHERE 
-                        (Characteristic CONTAINS 'Population in 2011' AND 
-                        Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
-    };  
+
+```
+var bq = {
+      id: '2011_census_of_canada',
+      clientId: '`<YOUR-CLIENT-ID-HERE>`',
+      projectId: '1234567890',
+      queryString: 'SELECT Geo_Code, Total FROM 
+                   [2011_census_of_canada.british_columbia_da] WHERE 
+                   (Characteristic CONTAINS 'Population in 2011' AND 
+                   Total IS NOT NULL) GROUP BY Geo_Code, Total, LIMIT 10;'
+};
+```
 
 **// now, use the api**  
 // create a new scape object to store our work in. let's call it 'vancity'*  
@@ -105,12 +107,12 @@ Now suppose that besides a map, the user also wishes to include some charts, gra
 
 // and of course, you can chain everything
 
-    socioscapes() .new('vancity')
-                  .state()
-                  .new('census2011')
-                  .layer()
-                  .data('bq', bq)
-                  .geom('wfs', wfs)
+    socioscapes().new('vancity')
+                 .state()
+                 .new('census2011')
+                 .layer()
+                 .data('bq', bq)
+                 .geom('wfs', wfs)
    
    
    
@@ -141,5 +143,5 @@ The socioscapes structure is inspired by the jQuery team's module management app
            return this.s;
        }}
     ]);
-       
+
 *This software was written as partial fulfilment of the Masters Research Paper, a degree requirement for the Masters of Arts in Sociology at the University of Toronto.*
