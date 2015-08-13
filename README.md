@@ -70,7 +70,7 @@ var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?&service=WF
 ```
 var bq = {
       id: '2011_census_of_canada',
-      clientId: '`<YOUR-CLIENT-ID-HERE>`',
+      clientId: '<YOUR-CLIENT-ID-HERE>',
       projectId: '1234567890',
       queryString: 'SELECT Geo_Code, Total FROM 
                    [2011_census_of_canada.british_columbia_da] WHERE 
