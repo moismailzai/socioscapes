@@ -1,0 +1,14 @@
+# dev
+.idea
+*.iml
+
+# deps
+node_modules/
+bower_components/
+
+# testing / build
+gulpfile.js
+index.html
+
+# os
+.DS_Store
