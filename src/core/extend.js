@@ -18,10 +18,15 @@ function extend(config) {
                 myName = myPath;
             }
             if (myTarget) {
-                console.log('Extending socioscapes.fn with "' + myPath + '".');
                 myTarget[myName] = myExtension;
+                if (config[i].alias) {
+                    myTarget.schema.alias[config[i].alias] = myTarget[myName];
+                }
+                if (!config[i].silent) {
+                    console.log('Extended socioscapes.fn with "' + myPath + (config[i].alias ? ('" alias "' + config[i].alias + '".'):('".')));
+                }
             } else {
-                console.log('Sorry, unable to add your extension. Please check your .path string.');
+                console.log('Sorry, unable to add your extension. Please check the .path string.');
             }
         }
     }

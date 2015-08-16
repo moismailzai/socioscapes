@@ -1,15 +1,11 @@
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    fetchScapeObject = require ('./../fetch/fetchScapeObject.js');
-function menuClass(context, element) {
-    var callback = newDispatcherCallback(arguments),
-        myResult;
-    fetchScapeObject(element || context.myChildSchema.name, this, context.myChildSchema.class,
-        function(result) {
-            myResult = result;
-        });
+var newCallback = require('./../construct/newCallback.js'),
+    fetchFromScape = require ('./../fetch/fetchFromScape.js');
+function menuClass(context, name) {
+    var callback = newCallback(arguments),
+        myResult = fetchFromScape(name || context.schema.name, 'name', context.object);
     callback (myResult);
     return myResult;
 }

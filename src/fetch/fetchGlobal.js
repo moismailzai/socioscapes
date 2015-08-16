@@ -1,9 +1,9 @@
 /*jslint node: true */
 /*global global, module, require*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+var newCallback = require('./../construct/newCallback.js');
 function fetchGlobal(name) {
-    var callback = newDispatcherCallback(arguments),
+    var callback = newCallback(arguments),
         myGlobal;
     if (window) {
         myGlobal = window[name];

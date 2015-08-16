@@ -2,9 +2,9 @@
 /*global global, module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+    newCallback = require('./newCallback.js');
 function newGlobal(name, object, overwrite) {
-    var callback = newDispatcherCallback(arguments),
+    var callback = newCallback(arguments),
         myGlobal;
     if (fetchGlobal(name)) {
         if (overwrite) {

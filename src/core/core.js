@@ -2,28 +2,28 @@
 /*global module, require*/
 'use strict';
 var socioscapes,
-    version = '0.5.5',
+    chroma = require('chroma-js'),
+    geostats = require('./../lib/geostats.min.js'),
+    version = '0.5.6',
     extend = require('./extend.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    newEvent = require('./../construct/newEvent.js'),
     fetchFromScape = require('./../fetch/fetchFromScape.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
     fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
     fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScapeObject = require('./../fetch/fetchScapeObject.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
     fetchWfs = require('./../fetch/fetchWfs.js'),
     isValidObject = require('./../bool/isValidObject.js'),
     isValidName = require('./../bool/isValidName.js'),
     isValidUrl = require('./../bool/isValidUrl.js'),
     menuClass = require('./../menu/menuClass.js'),
     menuConfig = require('./../menu/menuConfig.js'),
-    menuData = require('./../menu/menuData.js'),
-    menuGeom = require('./../menu/menuGeom.js'),
+    menuStore = require('./../menu/menuStore.js'),
     menuRequire = require('./../menu/menuRequire.js'),
-    newDispatcher = require('./../construct/newDispatcher.js'),
-    newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    newEvent = require('./../construct/newEvent.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    test = require('./test.js');
+    newGlobal = require('./../construct/newGlobal.js');
 /**
  * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
  * simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with
@@ -35,17 +35,20 @@ var socioscapes,
  * data fetchers.
  * */
 socioscapes = function(name) {
-    return new socioscapes.fn.init(name);
+    return socioscapes.fn.init(name);
 };
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
     extend: extend,
+    chroma: chroma,
+    geostats: geostats,
+    newEvent: newEvent,
     fetchFromScape: fetchFromScape,
     fetchGlobal: fetchGlobal,
     fetchGoogleAuth: fetchGoogleAuth,
     fetchGoogleBq: fetchGoogleBq,
     fetchGoogleGeocode: fetchGoogleGeocode,
-    fetchScapeObject: fetchScapeObject,
+    fetchScape: fetchScape,
     fetchWfs: fetchWfs,
     init: function() {  },
     isValidObject: isValidObject,
@@ -53,15 +56,12 @@ socioscapes.fn = socioscapes.prototype = {
     isValidUrl: isValidUrl,
     menuClass: menuClass,
     menuConfig: menuConfig,
-    menuData: menuData,
-    menuGeom: menuGeom,
+    menuStore: menuStore,
     menuRequire: menuRequire,
+    newCallback: newCallback,
     newDispatcher: newDispatcher,
-    newDispatcherCallback: newDispatcherCallback,
-    newEvent: newEvent,
     newGlobal: newGlobal,
-    test: test,
     version: version
 };
-newGlobal('socioscapes', socioscapes, true);
+socioscapes.fn.newGlobal('socioscapes', socioscapes, true);
 module.exports = socioscapes;

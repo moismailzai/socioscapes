@@ -14,11 +14,12 @@
  * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
  * the University of Toronto.
  */
+
 /// load in exactly this order to avoid circular dependencies ///
 var core = require('./core/core.js'),
     schema = require('./core/schema.js'),
     newScapeObject = require('./construct/newScapeObject.js'),
     newScapeMenu = require('./construct/newScapeMenu.js'),
-    init = require('./core/init.js');
-/// load in exactly this order to avoid circular dependencies ///
+    init = require('./core/init.js'),
+    gmap = require('./extension/gmaps.js'); // added as an addon module
 module.exports = core;

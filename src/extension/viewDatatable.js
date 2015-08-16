@@ -1,9 +1,9 @@
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+var newCallback = require('./../construct/newCallback.js');
 module.exports = function (datatable_column_names) {
-    var callback = newDispatcherCallback(arguments),
+    var callback = newCallback(arguments),
         columns_includeds = [],
         columns_excludeds = [],
         i = 0,

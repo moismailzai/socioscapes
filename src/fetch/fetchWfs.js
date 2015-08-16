@@ -1,7 +1,7 @@
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
  * queried url, the id parameter, and the fetched features.
@@ -11,20 +11,25 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
 function fetchWfs(url) {
-    var callback = newDispatcherCallback(arguments),
+    var callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;
     xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
     xobj.open('GET', url, true);
     xobj.onreadystatechange = function () {
-        if (xobj.readyState == 4 && xobj.status == "200") { // todo jshin error about == instead of === but when I change to === function does not behave as expected
+        if (xobj.readyState === 4 && xobj.status === 200) {
             geom = {};
-            geom.features = xobj.responseText;
-            geom.url = url;
+            geom.geoJson = JSON.parse(xobj.responseText);
+            geom.meta = {};
+            geom.meta.crs = geom.geoJson.crs.properties.name;
+            geom.meta.totalFeatures = parseInt(geom.geoJson.totalFeatures);
+            geom.meta.type = 'geoJson';
+            geom.meta.source = 'Web Feature Service';
+            geom.meta.wfsQueryString = url;
             callback(geom);
-            return geom;
         }
     };
     xobj.send(null);
+    return this;
 }
 module.exports = fetchWfs;

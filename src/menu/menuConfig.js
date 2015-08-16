@@ -1,33 +1,30 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require, socioscapes, this*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
-function menuConfig(command, layer, config) {
-    var callback = newDispatcherCallback(arguments),
-        myCommand = {};
-    myCommand.gmap = setGmap;
-    myCommand.gmaplayer = setGmapLayer;
-    myCommand.gmaplabel = setGmapLabel;
-    myCommand.datatable = setDatatable;
-    myCommand.breaks = setBreaks;
-    myCommand.class = setClassification;
-    myCommand.colours = setColourscale;
-    myCommand.domain = setDataDomain;
-    if (myCommand[command]) {
+var newCallback = require('./../construct/newCallback.js');
+function menuConfig(context, command, config) {
+    var callback = newCallback(arguments),
+        myResult = context.that,
+        myCommand = socioscapes.fn[command] ||  // if command matches a full command name
+        socioscapes.fn.schema.alias[command] || // or an alias
+            ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
+    config = (typeof config === 'object') ? config: { "name": config || command }; // if a string was provided as the config argument, use it as a name
+    if (myCommand) {
         this.dispatcher({
-                myFunction: myCommand[command],
-                myArguments: [config, layer]
+                myFunction: myCommand,
+                myArguments: [config],
+                myThis: context.that
             },
             function (result) {
                 if (result) {
-                    console.log('Config element ' + command + ' has been updated.');
+                    console.log('The results of your "' + command + '" are ready.');
+                    myResult = result;
+                    socioscapes.fn.newEvent(command+'.success', command+'.success');
                 }
+                socioscapes.fn.newEvent(command+'.fail', command+'.fail');
             });
-    } else {
-        console.log('Sorry, "' + command + '" is not a valid configuration function.')
     }
-    callback(this);
-    return this;
+    callback(myResult);
+    return myResult;
 }
 module.exports = menuConfig;

@@ -1,9 +1,9 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
+var newCallback = require('./../construct/newCallback.js');
 /**
- * This internal method tests if a name used for a socioscapes scape, state, layer, or view adheres to naming
+ * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
  * restrictions.
  *
  * @function isValidName
@@ -13,7 +13,7 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  * @returns {Boolean}
  */
 function isValidName(name) {
-    var callback = newDispatcherCallback(arguments),
+    var callback = newCallback(arguments),
         isValid = false,
         isReserved = [
             'help',

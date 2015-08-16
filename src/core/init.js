@@ -1,19 +1,22 @@
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
-var fetchScapeObject = socioscapes.fn.fetchScapeObject,
+var fetchScape = socioscapes.fn.fetchScape,
     newScapeObject = socioscapes.fn.newScapeObject,
-    newScapeMenu = socioscapes.fn.newScapeMenu;
+    newScapeMenu = socioscapes.fn.newScapeMenu,
+    newGlobal = socioscapes.fn.newGlobal,
+    fetchGlobal = socioscapes.fn.fetchGlobal;
 socioscapes.fn.extend([
     {
-        path: 'init', extension: function coreInit(name) {
-        var myScape;
-        if (name) {
-            myScape = fetchScapeObject(name);
-        } else {
-            myScape = newScapeObject(name || 'scape0', null, 'scape');
-        }
-        this.s = newScapeMenu(myScape);
-        return this.s;
-    }}
+        path: 'init',
+        silent: true,
+        extension:
+            function coreInit(scape) {
+                var myScape;
+                myScape = fetchScape(scape || 'scape0') || newScapeObject('scape0', null, 'scape');
+                socioscapes.s = myScape;
+                newGlobal('socioscapes', socioscapes, true);
+                return newScapeMenu(myScape);
+            }
+    }
 ]);

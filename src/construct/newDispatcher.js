@@ -1,6 +1,8 @@
 /*jslint node: true */
-/*global module, require*/
+/*global module, require, socioscapes*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * The socioscapes Dispatcher class is helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every new 'scape' object with a unique dispatcher instance. The dispatcher allows for API calls to be
@@ -29,6 +31,8 @@ function newDispatcher() {
         },
         Dispatcher = function() {
         var lastResult, // if a 'this' argument is not explicitly provided, te results of the last operation are used as the 'this' context
+            myEvent,
+            myMessage,
             queue = [],
             queuedItem,
             status = true,
@@ -36,7 +40,7 @@ function newDispatcher() {
         this.dispatcher = function (config, callback) {
             if (config) {
                 if (config.myFunction && typeof config.myFunction === 'function') {
-                    callback = (callback && typeof callback === 'function') ? callback : function (result) { return result; };
+                    callback = newCallback(arguments);
                     queue.push({ // packs requests for the dispatcher queue
                         myFunction: config.myFunction, // the function to be called
                         myArguments: config.myArguments, // its arguments
@@ -54,14 +58,15 @@ function newDispatcher() {
                         queuedItem = queue.shift();
                         queuedItem.myThis = queuedItem.myThis ? queuedItem.myThis:lastResult; // use either a provided .this context or the results of the last queue operation
                         queueServer(queuedItem, queuedItem.myThis, function(result) { // serve the current queue ietm and wait for a callback
-                            if (typeof queuedItem.myCallback === 'function') {
-                                queuedItem.myCallback(result);
-                            }
+                            queuedItem.myCallback(result);
                             if (queuedItem.myReturn) {
                                 lastResult = queuedItem.myReturn;
                             } else {
                                 lastResult = result;
                             }
+                            myMessage = result ? 'success':'failure';
+                            myEvent = newEvent(queuedItem.myFunction.name, myMessage);
+                            document.dispatchEvent(myEvent);
                             status = true; // reset the status of the for loop
                             that.dispatcher(); // trigger a new iteration
                         }); // todo jshint error -- unsure how to fix this
@@ -82,6 +87,11 @@ function newDispatcher() {
         Object.defineProperty(this.dispatcher, 'queue', {
             value: function() {
                 return queue;
+            }
+        });
+        Object.defineProperty(this.dispatcher, 'nowServing', {
+            value: function() {
+                return queuedItem;
             }
         });
         Object.defineProperty(this, 'dispatcher', {

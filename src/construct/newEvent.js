@@ -1,7 +1,6 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
 /**
  * This function is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal updates.
  * For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
@@ -13,19 +12,8 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js');
  */
 // TODO proper documentation of events
 function newEvent(name, message) {
-    var callback = newDispatcherCallback(arguments);
-    new CustomEvent( // todo jshin error, not sure what to do here
-        name,
-        {
-            detail: {
-                message: message,
-                time: new Date()
-            },
-            bubbles: true,
-            cancelable: true
-        }
-    );
-    callback(true);
-    return true;
+    var myEvent;
+    myEvent = new CustomEvent(name, { "detail" : message });
+    return (myEvent);
 }
 module.exports = newEvent;

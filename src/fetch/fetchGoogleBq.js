@@ -1,25 +1,14 @@
 /*jslint node: true */
-/*global module, require, google, gapi, bigquery, execute, jobs, fields, totalRows*/
+/*global module, require, google, gapi, socioscapes*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
-    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    bqParser = function(values, callback) {
-        var thisRow = {};
-        if (callback) {
-            values.result.rows.forEach(function (row) {
-                for (var i = 0; i < row.f.length; i++) {
-                    thisRow[i] = row.f[i].v;
-                }
-                callback(thisRow);
-            });
-        }
-    };
+var newCallback = require('./../construct/newCallback.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js');
 /**
  * This method authorizes and fetches a BigQuery request, parses the results, and returns them to a callback.
  *
  * @function fetchGoogleBq
  * @memberof! socioscapes
- * @param {Object} config - An object with configuration options for the Google Big Query fetchScapeObject.
+ * @param {Object} config - An object with configuration options for the Google Big Query fetchScape.
  * @param {String} config.clientId - The Google Big Query client id.
  * @param {String} config.projectId - The Google Big Query project id.
  * @param {String} config.queryString - The Google Big Query query string.
@@ -27,15 +16,18 @@ var newDispatcherCallback = require('./../construct/newDispatcherCallback.js'),
  * @return {Array} data - An object with .values, .url, and .id members. This can be used to populate myLayer.data.
  */
 function fetchGoogleBq(config) {
-    var callback = newDispatcherCallback(arguments),
-        data = {},
-        request,
-        totalRows,
-        values = [],
-        clientId = config ? config.clientId:false,
+    var callback = newCallback(arguments),
+        clientId = (config && config.clientId) ? config.clientId:false,
         dataId = config ? config.id:false,
+        valueIdProperty = (config && config.valueIdProperty) ? config.valueIdProperty.toLowerCase():'total',
+        valueIndex = 0,
+        featureIdProperty = (config && config.featureIdProperty) ? config.featureIdProperty.toLowerCase():'dauid',
+        featureIndex = 1,
         projectId = config ? config.projectId:false,
         queryString = config ? config.queryString:false,
+        request,
+        bq = {},
+        that = this,
         gapiConfig = {
             auth: {
                 "client_id": clientId,
@@ -56,23 +48,39 @@ function fetchGoogleBq(config) {
         fetchGoogleAuth(gapiConfig, function() {
             request = gapi.client.bigquery.jobs.query(gapiConfig.query);
             request.execute(function(result) {
+                bq.byColumn = {};
+                bq.byId = {};
+                bq.geoJson = { "type": "FeatureCollection", "features": [] };
+                bq.meta = {};
+                bq.meta.bqQueryString = queryString;
+                bq.meta.bqTableId = dataId;
+                bq.meta.columns = [];
+                bq.meta.totalRows = parseInt(result.totalRows);
+                bq.meta.source = "Google BigQuery, " + gapiConfig.client.version;
+                bq.raw = result;
                 for (var i = 0; i < result.schema.fields.length; i++) {
-                    data['column'+i] = result.schema.fields[i].name;
+                    bq.meta.columns.push(result.schema.fields[i].name.toLowerCase());
+                    bq.byColumn[result.schema.fields[i].name.toLowerCase()] = [];
+                    featureIndex = (result.schema.fields[i].name.toLowerCase() === featureIdProperty) ? i:featureIndex;
+                    valueIndex = (result.schema.fields[i].name.toLowerCase() === valueIdProperty) ? i:valueIndex;
                 }
-                data.columns = result.schema.fields.length;
-                totalRows = parseFloat(result.result.totalRows);
-                data.rows = totalRows;
-                bqParser(result, function (parsed) {
-                    values.push(parsed);
-                    if (values.length === totalRows) {
-                        data.values = values;
-                        data.query = queryString;
-                        data.name = dataId;
-                        callback(data);
-                        return data;
+                result.rows.forEach(function(row) {
+                    for (var i = 0, parsedRow = {}; i < row.f.length; i++) {
+                        if (i === valueIndex) {
+                            row.f[i].v = parseFloat(row.f[i].v);
+                        }
+                        parsedRow[result.schema.fields[i].name] = row.f[i].v;
+                        bq.byColumn[result.schema.fields[i].name].push(row.f[i].v);
                     }
+                    bq.geoJson.features.push( { "type": "Feature", "properties": parsedRow } );
+                    bq.byId[parsedRow[featureIdProperty]] = parsedRow;
                 });
+                if (bq.geoJson.features.length === bq.meta.totalRows) {
+                    bq.geostats = new socioscapes.fn.geostats(bq.byColumn[valueIdProperty]);
+                    callback(bq);
+                }
             });
+            return that;
         });
     }
 }
