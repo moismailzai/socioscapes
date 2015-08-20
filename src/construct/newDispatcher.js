@@ -64,8 +64,7 @@ function newDispatcher() {
                             } else {
                                 lastResult = result;
                             }
-                            myMessage = result ? 'success':'failure';
-                            myEvent = newEvent(queuedItem.myFunction.name, myMessage);
+                            myEvent = newEvent('socioscapes.dispatcher.' + queuedItem.myFunction.name, 'update');
                             document.dispatchEvent(myEvent);
                             status = true; // reset the status of the for loop
                             that.dispatcher(); // trigger a new iteration

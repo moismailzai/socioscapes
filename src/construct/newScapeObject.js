@@ -6,6 +6,7 @@ var fetchFromScape = socioscapes.fn.fetchFromScape,
     fetchScapeObject = socioscapes.fn.fetchScape,
     newCallback = socioscapes.fn.newCallback,
     newDispatcher = socioscapes.fn.newDispatcher,
+    newEvent = socioscapes.fn.newEvent,
     newGlobal = socioscapes.fn.newGlobal,
     fetchScapeSchema = socioscapes.fn.fetchScapeSchema;
 socioscapes.fn.extend([
@@ -16,6 +17,8 @@ socioscapes.fn.extend([
                 function newScapeObject(name, parent, type) {
                     var callback = newCallback(arguments),
                         schema = fetchScapeSchema(type),
+                        myEvent,
+                        myMessage,
                         myObject = false,
                         ScapeObject = function(myName, myParent, mySchema) {
                             var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
@@ -90,6 +93,10 @@ socioscapes.fn.extend([
                                     this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                                 }
                             }
+                            if (this.meta.type !== 'scape.sociJson') {
+                                myEvent = newEvent('socioscapes.object.' + this.meta.type, name);
+                                document.dispatchEvent(myEvent);
+                            }
                             return this;
                         };
                     parent = fetchScapeObject(parent);
@@ -118,6 +125,19 @@ socioscapes.fn.extend([
                                     console.log('Sorry, there is already a global object called "' + name + '".');
                                 }
                             }
+                        }
+                    }
+                    if (myObject && myObject.meta.type === 'scape.sociJson') {
+                        if (socioscapes.s && socioscapes.s.meta) {
+                            if (myObject.meta.name !== socioscapes.s.meta.name) {
+                                myEvent = newEvent('socioscapes.object.' + myObject.meta.type, myObject.meta.name);
+                                socioscapes.s = myObject;
+                                document.dispatchEvent(myEvent);
+                            }
+                        } else {
+                            myEvent = newEvent('socioscapes.object.' + myObject.meta.type, myObject.meta.name);
+                            socioscapes.s = myObject;
+                            document.dispatchEvent(myEvent);
                         }
                     }
                     callback(myObject);

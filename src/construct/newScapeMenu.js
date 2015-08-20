@@ -13,6 +13,7 @@ socioscapes.fn.extend([
                 function newScapeMenu(scapeObject) {
                     var callback = newCallback(arguments),
                         myMenu = this,
+                        myEvent,
                         ScapeMenu = function(myObject) {
                             var that = this,
                                 myResult = this,
@@ -60,7 +61,7 @@ socioscapes.fn.extend([
                                         },
                                         function (result) {
                                             if (result) {
-                                                myEvent = newEvent(pong, 'pong!');
+                                                myEvent = newEvent('socioscapes.' + pong, 'pong!');
                                                 setTimeout(function(){ document.dispatchEvent(myEvent); }, seconds * 1000);
                                             }
                                         });
@@ -125,6 +126,19 @@ socioscapes.fn.extend([
                         };
                     if (isValidObject(scapeObject)) {
                         myMenu = new ScapeMenu(scapeObject);
+                    }
+                    if (scapeObject && scapeObject.meta.type === 'scape.sociJson') {
+                        if (socioscapes.s && socioscapes.s.meta) {
+                            if (scapeObject.meta.name !== socioscapes.s.meta.name) {
+                                myEvent = newEvent('socioscapes.object.' + scapeObject.meta.type, scapeObject.meta.name);
+                                socioscapes.s = scapeObject;
+                                document.dispatchEvent(myEvent);
+                            }
+                        } else {
+                            myEvent = newEvent('socioscapes.object.' + scapeObject.meta.type, scapeObject.meta.name);
+                            socioscapes.s = scapeObject;
+                            document.dispatchEvent(myEvent);
+                        }
                     }
                     callback(myMenu);
                     return myMenu;

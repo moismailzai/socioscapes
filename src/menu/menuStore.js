@@ -6,6 +6,7 @@ var newCallback = require('./../construct/newCallback.js'),
 function menuStore(context, command, config) {
     var callback = newCallback(arguments),
         myResult = context.that,
+        myEvent,
         myCommand = socioscapes.fn[command] || socioscapes.fn.schema.alias[command] || ((typeof command === 'function') ? command:false);
     if (myCommand) {
         this.dispatcher({
@@ -21,7 +22,11 @@ function menuStore(context, command, config) {
                     }
                     console.log('The results of your "' + command + '" query are ready.');
                     myResult = result;
+                    myEvent = newEvent('socioscapes.store.' + myCommand.name, 'update');
+                    document.dispatchEvent(myEvent);
+                    console.log('socioscapes.store.' + myCommand.name);
                 }
+
             });
     } else {
         console.log('Sorry, "' + command + '" is not a valid function.');

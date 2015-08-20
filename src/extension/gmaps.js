@@ -221,14 +221,14 @@ socioscapes.fn.extend([
                             return this;
                         }
                     };
-            // check to see that this is a view and that the view.config options point to a valid layer
-            view = socioscapes.fn.isValidObject(view) ? view:(this || false);
-            layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
-            if (layer) {
-                view.gmap.mapSymbology = new GmapLayer(view);
-                callback(view);
-            }
-            return view;
+                // check to see that this is a view and that the view.config options point to a valid layer
+                view = socioscapes.fn.isValidObject(view) ? view:(this || false);
+                layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
+                if (layer) {
+                    view.gmap.mapSymbology = new GmapLayer(view);
+                    callback(view);
+                }
+                return view;
             }
     }]);
 socioscapes.fn.extend([
@@ -272,7 +272,8 @@ socioscapes.fn.extend([
                                         "color": "#000000"
                                     },
                                     {
-                                        "weight": 5
+                                        "lightness": 13
+                                        //"weight": 5
                                     }
                                 ]
                             }
@@ -308,34 +309,19 @@ socioscapes.fn.extend([
         "silent": true,
         extension:
             function viewGmapMap(view) {
-                var callback = newCallback(arguments);
+                var callback = newCallback(arguments),
+                    myDiv;
                 view = view || this;
                 if (isValidObject(view)) {
                     view.gmap = view.gmap || {};
+                    view.config.address = view.config.address || 'Toronto, Canada';
                     view.config.gmap = view.config.gmap || {};
-                    view.config.gmap.address = view.config.gmap.address || 'Toronto, Canada';
-                    view.config.gmap.div = document.getElementById(view.config.gmap.div) || document.getElementById('map-canvas');
-                    view.config.gmap.options = view.config.gmap.options || {
-                            "zoom": 13,
-                            "mapTypeId": google.maps.MapTypeId.ROADMAP,
-                            "mapTypeControl": true,
-                            "MapTypeControlOptions": {
-                                "mapTypeIds": [
-                                    google.maps.MapTypeId.ROADMAP,
-                                    google.maps.MapTypeId.SATELLITE
-                                ],
-                                "style": google.maps.MapTypeControlStyle.DROPDOWN_MENU
-                            },
-                            "scaleControl": true,
-                            "disableDoubleClickZoom": true,
-                            "streetViewControl": true,
-                            "overviewMapControl": true
-                        };
+                    view.config.gmap.div = view.config.gmap.div || 'map-canvas';
                     view.config.gmap.styles = view.config.gmap.styles || {};
                     view.config.gmap.styles.map = view.config.gmap.styles.map || [
                             {
                                 "featureType": "all",
-                                "elementType": "labels",
+                                "elementType": "labels.text",
                                 "stylers": [
                                     {
                                         "visibility": "off"
@@ -344,51 +330,155 @@ socioscapes.fn.extend([
                             },
                             {
                                 "featureType": "landscape",
-                                "elementType": "all",
+                                "elementType": "geometry.fill",
                                 "stylers": [
                                     {
-                                        "color": "#f2f2f2"
+                                        "visibility": "on"
+                                    },
+                                    {
+                                        "saturation": -100
                                     }
                                 ]
                             },
                             {
                                 "featureType": "poi",
-                                "elementType": "all",
+                                "elementType": "geometry.fill",
                                 "stylers": [
                                     {
-                                        "visibility": "off"
+                                        "visibility": "on"
+                                    },
+                                    {
+                                        "color": "#dadada"
+                                    },
+                                    {
+                                        "saturation": -100
                                     }
                                 ]
                             },
                             {
-                                "featureType": "road",
-                                "elementType": "geometry",
+                                "featureType": "poi",
+                                "elementType": "labels.icon",
                                 "stylers": [
                                     {
-                                        "visibility": "simplified"
+                                        "visibility": "off"
+                                    },
+                                    {
+                                        "saturation": -100
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "transit.line",
+                                "elementType": "geometry.fill",
+                                "stylers": [
+                                    {
+                                        "color": "#ffffff"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "transit.line",
+                                "elementType": "geometry.stroke",
+                                "stylers": [
+                                    {
+                                        "color": "#dbdbdb"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "road.highway",
+                                "elementType": "geometry.fill",
+                                "stylers": [
+                                    {
+                                        "color": "#ffffff"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "road.highway",
+                                "elementType": "geometry.stroke",
+                                "stylers": [
+                                    {
+                                        "color": "#dbdbdb"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "road.arterial",
+                                "elementType": "geometry.stroke",
+                                "stylers": [
+                                    {
+                                        "color": "#d7d7d7"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "road.local",
+                                "elementType": "geometry.fill",
+                                "stylers": [
+                                    {
+                                        "color": "#ffffff"
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "road.local",
+                                "elementType": "geometry.stroke",
+                                "stylers": [
+                                    {
+                                        "color": "#d7d7d7"
+                                    },
+                                    {
+                                        "saturation": -100
+                                    }
+                                ]
+                            },
+                            {
+                                "featureType": "transit.station",
+                                "elementType": "labels.icon",
+                                "stylers": [
+                                    {
+                                        "hue": "#5e5791"
                                     }
                                 ]
                             },
                             {
                                 "featureType": "water",
-                                "elementType": "all",
+                                "elementType": "geometry.fill",
                                 "stylers": [
                                     {
-                                        "color": "#46bcec"
+                                        "hue": "#0032ff"
                                     },
                                     {
-                                        "visibility": "on"
+                                        "gamma": "0.45"
                                     }
                                 ]
                             }
                         ];
-                    if (view.config.gmap.div) {
-                        fetchGoogleGeocode(view.config.gmap.address, function(geocodeResult) {
+                    myDiv = document.getElementById(view.config.gmap.div);
+                    if (myDiv) {
+                        fetchGoogleGeocode(view.config.address, function(geocodeResult) {
                             if (geocodeResult) {
                                 view.config.gmap.geocode = geocodeResult;
-                                view.config.gmap.options.center = view.config.gmap.options.center || { "lat": geocodeResult.lat, "lng": geocodeResult.lng };
+                                view.config.gmap.options = view.config.gmap.options || {
+                                        "zoom": 13,
+                                        "mapTypeId": google.maps.MapTypeId.ROADMAP,
+                                        "mapTypeControl": true,
+                                        "center": geocodeResult,
+                                        "MapTypeControlOptions": {
+                                            "mapTypeIds": [
+                                                google.maps.MapTypeId.ROADMAP,
+                                                google.maps.MapTypeId.SATELLITE
+                                            ],
+                                            "style": google.maps.MapTypeControlStyle.DROPDOWN_MENU
+                                        },
+                                        "scaleControl": true,
+                                        "disableDoubleClickZoom": true,
+                                        "streetViewControl": true,
+                                        "overviewMapControl": true
+                                    };
                                 view.config.gmap.options.styles = view.config.gmap.styles.map;
-                                view.gmap.mapBase = new google.maps.Map(view.config.gmap.div, view.config.gmap.options);
+                                view.gmap.mapBase = new google.maps.Map(myDiv, view.config.gmap.options);
                                 view.gmap.mapBase.setTilt(45);
                                 callback(view);
                             } else {
@@ -414,8 +504,27 @@ socioscapes.fn.extend([
                     gsymbology = socioscapes.fn.viewGmapSymbology;
                 view = view || this;
                 if (isValidObject(view)) {
-                    gmap(view, function(mapResult) {
-                        if (mapResult) {
+                    if (!view.gmap.mapBase) {
+                        gmap(view, function(mapResult) {
+                            if (mapResult) {
+                                glabel(view, function(labelResult) {
+                                    if (labelResult) {
+                                        gsymbology(view, function(symbologyResult) {
+                                            if (symbologyResult) {
+                                                view.gmap.mapSymbology.init(function(initResult) {
+                                                    if (initResult) {
+                                                        view.gmap.mapSymbology.on();
+                                                        callback(view);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        if (!view.gmap.mapLabels) {
                             glabel(view, function(labelResult) {
                                 if (labelResult) {
                                     gsymbology(view, function(symbologyResult) {
@@ -430,8 +539,19 @@ socioscapes.fn.extend([
                                     });
                                 }
                             });
+                        } else {
+                            gsymbology(view, function(symbologyResult) {
+                                if (symbologyResult) {
+                                    view.gmap.mapSymbology.init(function(initResult) {
+                                        if (initResult) {
+                                            view.gmap.mapSymbology.on();
+                                            callback(view);
+                                        }
+                                    });
+                                }
+                            });
                         }
-                    });
+                    }
                 }
                 return this;
             }
