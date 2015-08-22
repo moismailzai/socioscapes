@@ -24,7 +24,7 @@ socioscapes.fn.extend([
                     ],
                     "class": "scape",
                     "menu": menuClass,
-                    "name": "scape",
+                    "name": "scape0",
                     "state": [
                         {
                             "class": "state",

@@ -4,6 +4,7 @@
 var isValidObject = socioscapes.fn.isValidObject,
     newCallback = socioscapes.fn.newCallback,
     newScapeObject = socioscapes.fn.newScapeObject,
+    fetchFromScape = socioscapes.fn.fetchFromScape,
     newEvent = require('./../construct/newEvent.js');
 socioscapes.fn.extend([
         {
@@ -13,14 +14,13 @@ socioscapes.fn.extend([
                 function newScapeMenu(scapeObject) {
                     var callback = newCallback(arguments),
                         myMenu = this,
-                        myEvent,
                         ScapeMenu = function(myObject) {
                             var that = this,
-                                myResult = this,
                                 mySchema = myObject.schema,
                                 myClass = mySchema.class,
                                 myParent = mySchema.parent,
-                                myType = mySchema.type;
+                                myType = mySchema.type,
+                                myEvent;
                             Object.defineProperty(this, 'drop', {
                                 value: function() {
                                     delete window[myObject];
@@ -38,7 +38,8 @@ socioscapes.fn.extend([
                             });
                             Object.defineProperty(this, 'new', {
                                 value: function (name) {
-                                    var myNew;
+                                    var myNew,
+                                        myResult;
                                     name = name || mySchema.name + myClass.length;
                                     myNew = newScapeObject(name, myParent, myType);
                                     myResult = myNew ? new ScapeMenu(myNew):myResult;
@@ -52,19 +53,13 @@ socioscapes.fn.extend([
                                 value: ''
                             });
                             Object.defineProperty(this, 'ping', {
-                                value: function(pong, seconds) {
+                                value: function(pong, callback) {
                                     var myEvent;
-                                    seconds = seconds || 4;
-                                    myObject.dispatcher({
-                                            myFunction: isValidObject,
-                                            myArguments: [myObject]
-                                        },
-                                        function (result) {
-                                            if (result) {
-                                                myEvent = newEvent('socioscapes.' + pong, 'pong!');
-                                                setTimeout(function(){ document.dispatchEvent(myEvent); }, seconds * 1000);
-                                            }
-                                        });
+                                    myEvent = newEvent(pong, 'pong!');
+                                    document.dispatchEvent(myEvent);
+                                    if (typeof callback === 'function') {
+                                        callback();
+                                    }
                                     return  that;
                                 }
                             });
@@ -89,7 +84,7 @@ socioscapes.fn.extend([
                                     myChildContext = {
                                         "object": myObject[myChildClass], // this is the actual child object
                                         "schema": myChildSchema, // this is the prototype of the child object
-                                        "that": that.this // this is the actual parent object that contains the actual object
+                                        "that": myObject // this is the actual parent object that contains the actual object
                                     };
 
                                     if (myChildSchema.menu) {
@@ -101,44 +96,40 @@ socioscapes.fn.extend([
                                         Object.defineProperty(that, myChildClass, {
                                             value: function () {
                                                 var myArgs = [],
-                                                    callback = newCallback(arguments);
+                                                    myNewObject,
+                                                    myResult;
                                                 myArgs.push(myChildContext);
                                                 for (var i = 0; i < arguments.length; i++) {
                                                     myArgs.push(arguments[i]);
                                                 }
-                                                myObject.dispatcher({
-                                                        myFunction: myChildSchema.menu,
-                                                        myArguments: myArgs,
-                                                        myThis: myObject
-                                                    },
-                                                    function (result) {
-                                                        if (result) {
-                                                            myResult = new ScapeMenu(result);
-                                                            callback();
-                                                        }
-                                                    });
+                                                if (myChildSchema.menu.name === 'menuClass') {
+                                                    myNewObject = myChildSchema.menu.apply(myObject, myArgs);
+                                                    myResult = newScapeMenu(myNewObject);
+                                                } else {
+                                                    myObject.dispatcher({
+                                                            myFunction: myChildSchema.menu,
+                                                            myArguments: myArgs,
+                                                            myThis: myObject
+                                                        },
+                                                        function (result) {
+                                                            if (result) {
+                                                                myResult = result;
+                                                            }
+                                                        });
+                                                    myResult = that;
+                                                }
                                                 return myResult;
                                             }
                                         });
                                     }
                                 })(mySchema.children[i]); // todo jshin error, unsure how to resolve this
                             }
+                            myEvent = newEvent('socioscapes.active', myObject.meta);
+                            document.dispatchEvent(myEvent);
+                            return this;
                         };
                     if (isValidObject(scapeObject)) {
                         myMenu = new ScapeMenu(scapeObject);
-                    }
-                    if (scapeObject && scapeObject.meta.type === 'scape.sociJson') {
-                        if (socioscapes.s && socioscapes.s.meta) {
-                            if (scapeObject.meta.name !== socioscapes.s.meta.name) {
-                                myEvent = newEvent('socioscapes.object.' + scapeObject.meta.type, scapeObject.meta.name);
-                                socioscapes.s = scapeObject;
-                                document.dispatchEvent(myEvent);
-                            }
-                        } else {
-                            myEvent = newEvent('socioscapes.object.' + scapeObject.meta.type, scapeObject.meta.name);
-                            socioscapes.s = scapeObject;
-                            document.dispatchEvent(myEvent);
-                        }
                     }
                     callback(myMenu);
                     return myMenu;

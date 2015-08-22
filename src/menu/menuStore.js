@@ -22,9 +22,8 @@ function menuStore(context, command, config) {
                     }
                     console.log('The results of your "' + command + '" query are ready.');
                     myResult = result;
-                    myEvent = newEvent('socioscapes.store.' + myCommand.name, 'update');
+                    myEvent = newEvent('socioscapes.ready.' + myCommand.name, context);
                     document.dispatchEvent(myEvent);
-                    console.log('socioscapes.store.' + myCommand.name);
                 }
 
             });
