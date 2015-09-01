@@ -2,23 +2,21 @@
 
 #### Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.
 
-
 ## Details
- 
+
 **Current version**: 0.6  
 *(expect breaking changes prior to version 1.0)*
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
- 
+
 **Reference implementation**: [http://app.socioscapes.com](http://app.socioscapes.com "app.socioscapes.com")
- 
+
 **License**: [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
- 
+
 **Copyright**: &copy; 2015 Misaqe Ismailzai
 
-
 ## Installation  
- 
+
 **Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.min.js)
 
 ```js
@@ -32,17 +30,15 @@
 **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
 
 `npm install socioscapes`
- 
+
 **Bower**: [bower](http://bower.io/search/?q=socioscapes)
 
 `bower install socioscapes`
-
 
 ## Dependancies 
 
 **geostats:** Simon Georget's [geostats](https://github.com/simogeo/geostats) library for classifications and basic statistics.
 **chroma:** Gregor Aisch's [chroma](https://github.com/gka/chroma.js) library for all-things-colour.
-
 
 ## What Does It Do?
 
@@ -55,7 +51,6 @@ The above is a visual representation of the socioscapes [scape] class, which is 
 The [state] array stores instances of the [state] class, which are meant to organize all of the data and configuration necessary to reproduce a corresponding DOM state. This structure fascilitates comparative and time series visualization. For instance, suppose a user wishes to demonstrate a change in the way income is distributed across their city. They could create several {state} instances, one for each point in the time series. This allows for maximum data mobility because each {state} is entirely independent of the others and can be edited, saved, and shared independently.  
 
 Now suppose that besides a map, the user also wishes to include some charts, graphs, and tables. Socioscapes approaches this problem by organizing each {state} into [layer] and [view] stores. {layer} objects are static collections of raw numerical and geometric data; {view} objects are indexes that store settings and point to data necessary to recreate a particular element (such a chart). Views are directly incorporated into the DOM whereas layers are just datastores. The above schema is not set in stone and users can use [socioscapes.fn.extend()] (https://github.com/moismailzai/socioscapes/blob/master/src/core/extend.js) to edit, remove, and add additional classes. To get a feel for the API, jump into the code or read through the following examples:
-
 
 ## Usage:
 
@@ -116,12 +111,9 @@ socioscapes().new('tdot')
              .geom('wfs', wfs)
 ```
 
-
 ## Asynchronous:
 
 The socioscapes Dispatcher class facilitate asynchronous method chaining through the use of instanced queues. Socioscapes associates every 'scape' object with a dispatcher instance. The dispatcher allows for API calls to be queued and synchronously resolved. Calls to the dispatcher can provide a configuration object and a callback. The configuration object must include the function to be called and an array of arguments to be sent to the function, but can also include an optional 'this' context and preferred return value once the call has been resolved. Inside the dispatcher, the function to be queued is evaluated for the number of arguments it expects. The dispatcher then appends null values to the arguments array if the arguments supplied are less than the arguments expected, and appends a callback. When the queue is initiated, a for loop is used to work through the queue and a status boolean prevents further iterations until the current one is processed. While the queue is being processed, new queue items are pushed to the queue array. Socioscapes methods start by evaluating the final argument of the 'arguments' array to test if a dispatcher callback was provided. If one was, the method's results are sent to the callback, before being returned as usual. The callback triggers a new iteration of the queue loop.
-
-
 
 ## Extendable:
 
