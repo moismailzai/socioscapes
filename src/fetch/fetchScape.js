@@ -1,10 +1,11 @@
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
-var fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    isValidObject = require('./../bool/isValidObject.js'),
-    newCallback = require('./../construct/newCallback.js');
 function fetchScape(object) {
+    var fetchGlobal = fetchScape.prototype.fetchGlobal,
+        isValidObject = fetchScape.prototype.isValidObject,
+        newCallback = fetchScape.prototype.newCallback;
+    //
     var callback = newCallback(arguments),
         myObject;
     if (typeof object === 'string') {

@@ -1,7 +1,7 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-function newDispatcherCallback(argumentsArray) {
+function newCallback(argumentsArray) {
     var myCallback;
     if (typeof argumentsArray[argumentsArray.length - 1] === 'function') {
        myCallback = argumentsArray[argumentsArray.length - 1];
@@ -12,4 +12,4 @@ function newDispatcherCallback(argumentsArray) {
     }
     return myCallback;
 }
-module.exports = newDispatcherCallback;
+module.exports = newCallback;

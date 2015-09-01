@@ -1,10 +1,10 @@
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
 function extend(config) {
     var myExtension, myName, myPath, myTarget, i, ii;
     for (i = 0; i < config.length; i++) {
-        myTarget = socioscapes.fn;
+        myTarget = extend.prototype;
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
         if (myPath && myExtension) {
@@ -19,6 +19,7 @@ function extend(config) {
             }
             if (myTarget) {
                 myTarget[myName] = myExtension;
+                myTarget[myName].prototype = extend.prototype;
                 if (config[i].alias) {
                     myTarget.schema.alias[config[i].alias] = myTarget[myName];
                 }
@@ -30,6 +31,6 @@ function extend(config) {
             }
         }
     }
-    return socioscapes.fn;
+    return extend.prototype;
 }
 module.exports = extend;

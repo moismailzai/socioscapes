@@ -1,11 +1,11 @@
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
-var newDispatcherCallback = require('./../construct/newCallback.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js');
-function menuRequires(command, config, myContainer) {
-    var callback = newDispatcherCallback(arguments);
-    callback(this);
-    return this;
+function menuRequire(context, command, config) {
+    var newCallback = menuRequire.prototype.newCallback;
+    //
+    var callback = newCallback(arguments);
+    callback(context.that);
+    return context.that;
 }
-module.exports = menuRequires;
+module.exports = menuRequire;

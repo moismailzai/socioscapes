@@ -1,8 +1,9 @@
 /*jslint node: true */
 /*global global, module, require*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js');
 function fetchGlobal(name) {
+    var newCallback = fetchGlobal.prototype.newCallback;
+    //
     var callback = newCallback(arguments),
         myGlobal;
     if (window) {

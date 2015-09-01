@@ -5,7 +5,7 @@
 
 ## Details
  
-**Current version**: 0.5.6  
+**Current version**: 0.6  
 *(expect breaking changes prior to version 1.0)*
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
@@ -19,14 +19,14 @@
 
 ## Installation  
  
-**Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes-min.js)
+**Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.min.js)
 
 ```js
-<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes.js">
+<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js">
 ```
 
 ```js
-<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/release/socioscapes-min.js">
+<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.min.js">
 ```
 
 **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
@@ -49,7 +49,7 @@
 For developers, socioscapes provides an extendable asynchronous API that standardizes interaction with various open-source tools and standards. For the end user, socioscapes allows simple and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary format. Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you choose to work with. A .scape file is [just a JSON object] (https://github.com/moismailzai/socioscapes/blob/master/src/core/schema.js) with the following structure:
 
 ![Image of the Soscioscapes Schema]
-(https://raw.githubusercontent.com/moismailzai/socioscapes/master/docs/schema-small.png)
+(https://raw.githubusercontent.com/moismailzai/socioscapes/master/schema-small.png)
 The above is a visual representation of the socioscapes [scape] class, which is itself composed of [state], [layer], and [view] classes. All class instances include a {meta} object that holds arbitrary data unique to the instance, such as a name, an author, and a source. Since the {scape} object is itself just an instance of the [scape] class, it also includes a {meta} member.  
 
 The [state] array stores instances of the [state] class, which are meant to organize all of the data and configuration necessary to reproduce a corresponding DOM state. This structure fascilitates comparative and time series visualization. For instance, suppose a user wishes to demonstrate a change in the way income is distributed across their city. They could create several {state} instances, one for each point in the time series. This allows for maximum data mobility because each {state} is entirely independent of the others and can be edited, saved, and shared independently.  
@@ -126,33 +126,5 @@ The socioscapes Dispatcher class facilitate asynchronous method chaining through
 ## Extendable:
 
 The socioscapes structure is inspired by the jQuery team's module management approach. To extend socioscapes, you simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where in the socioscapes prototype to store your extension. The path for most modules will be the root path, which is socioscapes.fn. Your module should be appropriately named to ensure that it is exposed to existing elements. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean ecosystem, but under the hood socioscapes also exposed modules contextually based on prefixes.
-
-// the following snippet is from [src/core/init.js] (https://cdn.rawgit.com/moismailzai/socioscapes/master/src/core/init.js). it creates a new member "init", defines it as a function, and exposes it in the API at socioscapes.fn.init.
- 
-```js
-var fetchScape = socioscapes.fn.fetchScape,
-    newScapeObject = socioscapes.fn.newScapeObject,
-    newScapeMenu = socioscapes.fn.newScapeMenu,
-    newGlobal = socioscapes.fn.newGlobal,
-    fetchGlobal = socioscapes.fn.fetchGlobal;
-socioscapes.fn.extend([
-    {
-        path: 'init',
-        silent: true,
-        extension:
-            function coreInit(scape) {
-                var myScape;
-                scape = scape || 'scape0';
-                myScape = fetchScape(scape);
-                if (!myScape) {
-                    myScape = newScapeObject('scape0', null, 'scape');
-                }
-                socioscapes.s = myScape; // reference to current scape object
-                newGlobal('socioscapes', socioscapes, true);
-                return newScapeMenu(myScape);
-            }
-    }
-]);
-```
 
 *This software was written as partial fulfilment of the Masters Research Paper, a degree requirement for the Masters of Arts in Sociology at the University of Toronto.*

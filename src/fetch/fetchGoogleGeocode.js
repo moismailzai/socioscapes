@@ -26,6 +26,5 @@ function fetchGoogleGeocode(address) {
             console.log('Error: Google Geocoder was unable to locate ' + address);
         }
     });
-    return this;
 }
 module.exports = fetchGoogleGeocode;
