@@ -1,7 +1,7 @@
 /*jslint node: true */
 /*global module, require, document, window, google, gapi*/
 'use strict';
-var version = '0.6',
+var version = '0.6.1',
     chroma = require('chroma-js'),
     extend = require('./../core/extend'),
     newCallback = require('./../construct/newCallback.js'),
