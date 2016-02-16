@@ -4,7 +4,7 @@
 /**
  * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
  * simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with
- * '.path' (a string), and '.extension' (a value) members. The '.path'
+ * '.path' (a string), and '.extension' (a value) members.
  *
  * @function extender
  * @param {Object[]} config - A valid socioscapes extension configuration.
