@@ -2,7 +2,10 @@
 /*global module, require*/
 'use strict';
 /**
+ * This internal method tests if an object adheres to the scape.sociJson standard.
  *
+ * @function isValidObject
+ * @param {Object} object - An object whose .meta.type === 'scape.sociJson'.
  * @returns {Boolean}
  */
 function isValidObject(object) {

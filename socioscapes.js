@@ -2474,7 +2474,6 @@
  * restrictions.
  *
  * @function isValidName
- * @memberof! socioscapes
  * @param {string} name - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
@@ -2589,7 +2588,10 @@ module.exports = isValidName;
 /*global module, require*/
 'use strict';
 /**
+ * This internal method tests if an object adheres to the scape.sociJson standard.
  *
+ * @function isValidObject
+ * @param {Object} object - An object whose .meta.type === 'scape.sociJson'.
  * @returns {Boolean}
  */
 function isValidObject(object) {
@@ -2614,7 +2616,6 @@ var newCallback = require('./../construct/newCallback.js');
  * "protocol://my.valid.url/my.file" and supports the http, https, ftp, and ftps protocols.
  *
  * @function isValidUrl
- * @memberof! socioscapes
  * @param {string} url - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
@@ -2637,6 +2638,14 @@ module.exports = isValidUrl;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+/**
+ * This internal method checks to see if the last argument in an array contains a function. If it does, return that
+ * function, else return an empty function.
+ *
+ * @function newCallback
+ * @param {Object[]} argumentsArray - The arguments array of a function.
+ * @return {Function} myCallback - Any function.
+ */
 function newCallback(argumentsArray) {
     var myCallback;
     if (typeof argumentsArray[argumentsArray.length - 1] === 'function') {
@@ -2654,114 +2663,63 @@ module.exports = newCallback;
 /*global module, require, socioscapes*/
 'use strict';
 /**
- * The socioscapes Dispatcher class is helps to facilitate asynchronous method chaining and queues. Socioscapes
- * associates every new 'scape' object with a unique dispatcher instance. The dispatcher allows for API calls to be
- * queued and synchronously resolved. Calls to the dispatcher provide a configuration object and an optional callback.
- * The configuration object must include the function to be called, an array of arguments to be sent to the function,
- * an optional 'this' context to be included, and an optional return value or object to be sent back to the caller.
- * Inside the dispatcher, the function to be queued is evaluated for the number of arguments it expects using .length.
- * The dispatcher then appends null values to the arguments array for each expected argument that is not explicitly
- * provided and appends this list with a callback. When the queue is initiated, a for loop is used to iterate through
- * the list and a status boolean prevents further iterations until the current one is processed. While the queue is
- * being processed, new queue items are pushed to the queue array. Internal socioscapes methods begin by evaluating the
- * final argument of the 'arguments' array to test if a dispatcher callback was provided. If one was, results are sent
- * to the callback, which also triggers a new iteration of the queue loop.
+ * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
+ * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
+ * queued and synchronously resolved on a per-scape basis by attaching a unique dispatcher instance to every scape. The
+ * api itself remains asynchronous. Calls to the dispatcher are expeted to provide an arguments array, myArguments, and
+ * a function, myFunction. The first argument in myArguments should always be the object that myFunction modifes and/or
+ * returns. myFunction is evaluated for the number of expected arguments (myFunction.length) and the dispatcher appends
+ * null values for expected arguments that are missing. This is done so that a callback function can be appended to the
+ * array and all functions that are executed through the dispatcher can safely assume that the element at index
+ * myArguments.length is the dispatcher callback. Finally, a queue item consisting of the myFunction and myArguments
+ * members is pushed into the dispatcher's queue array. The dispatcher works through each item in its queue by executing
+ * myFunction(myArguments) and waiting for the callback function to fire an event that signals that the function has
+ * returned a value and the dispatcher can safely move on to the next item its queue.
+ *
+ * @function newDispatcher
+ * @return {Function}
  * */
 function newDispatcher() {
-    var newCallback = newDispatcher.prototype.newCallback,
-        newEvent = newDispatcher.prototype.newEvent;
+    var newEvent = newDispatcher.prototype.newEvent;
     //
     var Dispatcher = function() {
-        var lastResult, // if a 'this' argument is not explicitly provided, te results of the last operation are used as the 'this' context
-            myEvent,
-            myMessage,
-            queue = [],
+        var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
+            dispatcherQueue = [],
+            dispatcherReady = true,
             queueItem,
-            status = true,
-            that = this,
-            queueItemArgsGenerator = function(item) {
-                var args = [];
-                for (var i = 0; i < item.myArguments.length; i++) {
-                    args.push(item.myArguments[i]);
-                }
-                item.myArguments = args;
-                return item;
-            },
-            queueItemFunctionFiller = function(item) {
-                for (; item.myFunction.length > item.myArguments.length; ) {
-                    item.myArguments.push(null);
-                }
-                return item;
-            },
-            queueItemServer = function(item) {
-                item.myArguments.push(function(result) { // serve the current queue item and wait for a callback
-                    queueItem.myCallback(result);
-                    if (queueItem.myReturn) {
-                        lastResult = queueItem.myReturn;
-                    } else {
-                        lastResult = result;
-                    }
-                    myMessage = {};
-                    myMessage.item = queueItem;
-                    myMessage.result = result;
-                    myEvent = newEvent('socioscapes.dispatcher', myMessage);
-                    document.dispatchEvent(myEvent);
-                    status = true; // reset the status of the for loop
-                    that.dispatch(); // trigger a new iteration
-                }); // pushes the callback from the dispatcher queue to the function being called
-                item.myFunction.apply(item.myThis, item.myArguments);
-            },
-            queueItemThisGenerator = function(item) {
-                item.myThis = queueItem.myThis ? queueItem.myThis:lastResult;
-                return item;
-            };
+            that = this;
+        // add a unique event listener persistent to this dispatcher instance
+        document.addEventListener("socioscapes.dispatched." + dispatcherId, function(event) {
+            dispatcherReady = true;
+            that.dispatch();
+        });
         Object.defineProperty(this, 'dispatch', {
-            value: function (config, callback) {
+            value: function (config) {
                 if (config) {
-                    if (config.myFunction && typeof config.myFunction === 'function') {
-                        callback = newCallback(arguments);
-                        queue.push({ // packs requests for the dispatcher queue
-                            myFunction: config.myFunction, // the function to be called
-                            myArguments: config.myArguments, // its arguments
-                            myThis: config.myThis, // [optional] arbitrary 'this' value
-                            myReturn: config.myReturn, // [optional] arbitrary 'return' value
-                            myCallback: callback // [optional] return to context that made this queue request (if callback is requested, the 'real' return value is sent to it but the fake return value is actually returned.
-                        });
-                        that.dispatch();
-                    }
+                    config.myArguments.unshift(config.myContext);
+                    for (; config.myFunction.length > config.myArguments.length; ) {
+                        config.myArguments.push(null);
+                    } // pack arguments array with null values if there are missing params so that the last param is always the dispatcher callback
+                    config.myArguments.push(function(result) { // append the dispatcher callback to the arguments array
+                        config.myCallback(result);
+                        newEvent("socioscapes.dispatched." + dispatcherId, result);
+                    }); // this event executes the callback and triggers the next item in the queue to be processed
+                    dispatcherQueue.push({ // push the function and argument array to the dispatcher queue
+                        "myArguments": config.myArguments,
+                        "myFunction": config.myFunction
+                    });
                 }
-                if (!config && status) {
-                    for (; queue.length > 0;) {
-                        if (status === true) { // this prevents the queue resuming during asynchronous calls
-                            status = false;
-                            queueItem = queue.shift();
-                            queueItem = queueItemThisGenerator(queueItem); // use either a provided .this context or the results of the last queue operation
-                            queueItem = queueItemArgsGenerator(queueItem); // because the 'arguments' array isn't really an array, repackages its contents so we can push to it
-                            queueItem = queueItemFunctionFiller(queueItem); // fills missing parameters with 'null' so that the dispatcher callback is not mistaken for an expected parameter
-                            queueItemServer(queueItem);
-                        }
-                    }
+                if (dispatcherReady && dispatcherQueue.length > 0) {
+                    dispatcherReady = false;
+                    queueItem = dispatcherQueue.shift();
+                    queueItem.myFunction.apply(that, queueItem.myArguments);
                 }
+                return this;
             }
         });
-        Object.defineProperty(this.dispatch, 'result', {
+        Object.defineProperty(this, 'id', {
             value: function() {
-                return lastResult;
-            }
-        });
-        Object.defineProperty(this.dispatch, 'status', {
-            value: function() {
-                return status;
-            }
-        });
-        Object.defineProperty(this.dispatch, 'queue', {
-            value: function() {
-                return queue;
-            }
-        });
-        Object.defineProperty(this.dispatch, 'nowServing', {
-            value: function() {
-                return queueItem;
+                return dispatcherId;
             }
         });
         return this;
@@ -2774,13 +2732,12 @@ module.exports = newDispatcher;
 /*global module, require, document, window*/
 'use strict';
 /**
- * This function is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal updates.
- * For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
+ * This internal method is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal
+ * updates. For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
  *
  * @function newEvent
- * @memberof! socioscapes
  * @param {String} name - The name of the new event (this is what your event handler will listen for).
- * @param {String} message - The content of the event.
+ * @param {Object} message - The content of the event.detail.
  */
 // CustomEvent Polyfill
 (function () {
@@ -2790,16 +2747,14 @@ module.exports = newDispatcher;
         evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
         return evt;
     }
-
     CustomEvent.prototype = window.Event.prototype;
-
     window.CustomEvent = CustomEvent;
 })();
 // TODO proper documentation of events
 function newEvent(name, message) {
     var myEvent;
     myEvent = new CustomEvent(name, {"detail": message });
-    return (myEvent);
+    document.dispatchEvent(myEvent);
 }
 module.exports = newEvent;
 },{}],8:[function(require,module,exports){
@@ -2807,6 +2762,15 @@ module.exports = newEvent;
 /*jslint node: true */
 /*global global, module, require, window*/
 'use strict';
+/**
+ * This internal method creates a new global object. *gasp*
+ *
+ * @function newGlobal
+ * @param {string} name - A valid name JavaScript object name.
+ * @param {Object} object - The global object, either window or global.
+ * @param {Boolean} overwrite - If true, overwrite existing objects.
+ * @return {Object} myGlobal - The newly-created global object.
+ */
 function newGlobal(name, object, overwrite) {
     var fetchGlobal = newGlobal.prototype.fetchGlobal,
         newCallback = newGlobal.prototype.newCallback;
@@ -2842,106 +2806,88 @@ module.exports = newGlobal;
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+/**
+ * This method creates ScapeMenu objects, which are the api interfaces that developers interact with.
+ *
+ * @function newScapeMenu
+ * @param {Object} scapeObject - A valid @ScapeObject.
+ * @return {Object} - A socioscapes ScapeMenu object.
+ */
 var newScapeMenu = function newScapeMenu(scapeObject) {
     var isValidObject = newScapeMenu.prototype.isValidObject,
         newScapeObject = newScapeMenu.prototype.newScapeObject,
         newEvent = newScapeMenu.prototype.newEvent,
-        newChildMenu = function(myChild, mySchema, myObject, that) {
-            var myChildClass = myChild.class, // child item class
-                myChildIsArray,
-                myChildSchema, // child item datastructure schema
-                myChildContext; // context object to be prepended to all menu item calls
-            if (myChildClass.match(/\[(.*?)]/g)) {
-                myChildClass = /\[(.*?)]/g.exec(myChildClass)[1];
-                myChildIsArray = true;
-            }
-            myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass];
-            myChildContext = {
-                "object": myObject[myChildClass], // this is the actual child object
-                "schema": myChildSchema, // this is the prototype of the child object
-                "that": myObject // this is the actual parent object that contains the actual object
-            };
-            if (myChildSchema.menu) {
-                // if the schema definition includes a .menu member, it is used as an API interface for that
-                // item. for example, if the 'geom' class had the following '.menu' entry:
-                //                                               function(foo) { console.log(foo, 'bar!'); };
-                // then 'socioscapes().state().layer().geom('foo')' would result in a console printout of 'foobar!'
-                // child items without a .menu member are ignored.
-                Object.defineProperty(that, myChildClass, {
-                    value: function () {
-                        var myArgs = [],
-                            myNewObject,
-                            myResult;
-                        myArgs.push(myChildContext);
-                        for (var i = 0; i < arguments.length; i++) {
-                            myArgs.push(arguments[i]);
-                        }
-                        if (myChildSchema.menu.name === 'menuClass') {
-                            myNewObject = myChildSchema.menu.apply(myObject, myArgs);
-                            myResult = newScapeMenu(myNewObject);
-                        } else {
-                            myObject.dispatcher.dispatch({
-                                    myFunction: myChildSchema.menu,
-                                    myArguments: myArgs,
-                                    myThis: myObject
+        //
+        newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
+            var myChildIsArray = myChild.class.match(/\[(.*?)]/g) ? true : false,
+                myChildClass = myChildIsArray ? /\[(.*?)]/g.exec(myChild.class)[1] : myChild.class,
+                myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass]; // child item datastructure
+            if (myChildSchema.menu) { // if the datastructure defines a menu stub
+                Object.defineProperty(thisMenu, myChildClass, { // "myChildClass" evaluates to a classname string (eg. 'state' or 'view' or 'config')
+                    value: function (command, config, callback) {
+                            var myArguments = [],
+                                myCallback = ((typeof command === 'function') && !config && !callback) ? command // test to see if the first argument is the only one provided and a function. if it is, assume it's a callback
+                                    : ((typeof config === 'function') && !callback) ? config // otherwise, if the second argument is a function and there's no third argument, assume it's a callback
+                                    : ((typeof callback === 'function') ? callback : function() { }), // otherwise, if the third argument is a function, assume it's a callback or create an empty one
+                                myContext = { // this object points to several important references
+                                    "object": myObject[myChildClass], // this is the object that the menu calls will manipulate
+                                    "schema": myChildSchema, // this is the datastructure of the above object
+                                    "that": myObject // this is the parent object of the above object (to be used as the "this" return object to facilitate method chaining)
                                 },
-                                function (result) {
-                                    if (result) {
-                                        myResult = result;
-                                    }
-                                });
-                            myResult = that;
+                                myFunction = myChildSchema.menu,
+                                myReturn = thisMenu; // default return value (to facilitate method chaining in the api)
+                        if (myChildSchema.menu.name === 'menuClass') { // if the object we need to create is of class 'menuClass' (which means it will be an api menu object)
+                            myObject = myChildSchema.menu(myContext, command, config); // just generate it on the fly since it's not async
+                            myReturn = newScapeMenu(myObject); // trigger the callback (so that method chaining works even for synchronous api calls)
+                            myCallback(myReturn); // and set the return value to be the new api menu object
+                        } else { // otherwise, it might produce an asynchronous call so queue to the dispatcher so it can be evaluated sequentially
+                            if (command) { // setup the myArguments array for the dispatcher
+                                myArguments.push(command); // if a command arg was provided, push it to the myArguments array
+                                if (typeof config !== 'function') { // do the same for config
+                                    myArguments.push(config);
+                                }
+                            }
+                            myObject.dispatch({
+                                "myArguments": myArguments,
+                                "myCallback": myCallback,
+                                "myContext": myContext,
+                                "myFunction": myFunction
+                            });
                         }
-                        return myResult;
+                        return myReturn;
                     }
                 });
             }
-        };
-    //
-    var ScapeMenu = function(myObject) {
-        var that = this,
-            mySchema = myObject.schema,
-            myClass = mySchema.class,
-            myParent = mySchema.parent,
-            myType = mySchema.type,
-            myEvent;
-        Object.defineProperty(this, 'schema', {
-            value: myObject.schema
-        });
-        Object.defineProperty(this, 'this', {
-            value: myObject
-        });
-        Object.defineProperty(this, 'meta', {
-            value: myObject.meta
-        });
-        Object.defineProperty(this, 'new', {
-            value: function (name) {
-                var myNew,
-                    myResult = this;
-                name = name || mySchema.name + myClass.length;
-                myNew = newScapeObject(name, myParent, myType);
-                myResult = myNew ? new ScapeMenu(myNew):myResult;
-                return myResult;
-            }
-        });
-        Object.defineProperty(this, 'ping', {
-            value: function(pong, callback) {
-                var myEvent;
-                myEvent = newEvent(pong, 'pong!');
-                document.dispatchEvent(myEvent);
-                if (typeof callback === 'function') {
-                    callback();
+        },
+        ScapeMenu = function(myObject) {
+            var mySchema = myObject.schema,
+                myClass = mySchema.class,
+                myParent = mySchema.parent,
+                myType = mySchema.type,
+                thisMenu = this;
+            Object.defineProperty(this, 'schema', {
+                value: myObject.schema
+            });
+            Object.defineProperty(this, 'this', {
+                value: myObject
+            });
+            Object.defineProperty(this, 'meta', {
+                value: myObject.meta
+            });
+            Object.defineProperty(this, 'new', {
+                value: function (name) {
+                    var myNew;
+                    name = name || mySchema.name + myClass.length;
+                    myNew = newScapeObject(name, myParent, myType);
+                    return myNew ? new ScapeMenu(myNew) : thisMenu;
                 }
-                return that;
+            });
+            for (var i = 0; i < mySchema.children.length; i++) {
+                newChildMenu(this, myObject, mySchema, mySchema.children[i]);
             }
-        });
-        for (var i = 0; i < mySchema.children.length; i++) {
-            newChildMenu(mySchema.children[i], mySchema, myObject, this);
-        }
-        myEvent = newEvent('socioscapes.active', myObject.meta);
-        document.dispatchEvent(myEvent);
-        return this;
-    };
+            newEvent('socioscapes.active', myObject.meta);
+            return this;
+        };
     if (isValidObject(scapeObject)) {
         return new ScapeMenu(scapeObject);
     }
@@ -2951,23 +2897,36 @@ module.exports = newScapeMenu;
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+/**
+ * This method creates socioscape ScapeObject objects.
+ *
+ * @function newScapeObject
+ * @param {string} name - A valid JavaScript name.
+ * @param {Object} parent - A valid ScapeObject or null.
+ * @param {string} type - A valid scape.sociJson scape class.
+ * @return {Object} - A socioscapes ScapeObject object.
+ */
 var newScapeObject = function newScapeObject(name, parent, type) {
     var fetchFromScape = newScapeObject.prototype.fetchFromScape,
         fetchGlobal = newScapeObject.prototype.fetchGlobal,
         fetchScapeObject = newScapeObject.prototype.fetchScape,
         newCallback = newScapeObject.prototype.newCallback,
         newDispatcher = newScapeObject.prototype.newDispatcher,
+        newScapeMenu = newScapeObject.prototype.newScapeMenu,
         newEvent = newScapeObject.prototype.newEvent,
         newGlobal = newScapeObject.prototype.newGlobal,
         fetchScapeSchema = newScapeObject.prototype.fetchScapeSchema;
+    //
     var callback = newCallback(arguments),
         schema = fetchScapeSchema(type),
-        myEvent,
         myObject = false,
         ScapeObject = function(myName, myParent, mySchema) {
             var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
             Object.defineProperty(this, 'dispatcher', {
                 value: myDispatcher
+            });
+            Object.defineProperty(this, 'dispatch', {
+                value: myDispatcher.dispatch
             });
             Object.defineProperty(this, 'schema', {
                 value: mySchema
@@ -2985,36 +2944,35 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                 writeable: true,
                 enumerable: true
             });
-            Object.defineProperty(this.meta, 'author', {
-                value: '',
-                writeable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'name', {
-                value: myName,
-                writeable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'summary', {
-                value: '',
-                writeable: true,
-                enumerable: true
-            });
-            Object.defineProperty(this.meta, 'type', {
-                value: mySchema.type,
-                enumerable: true
-            });
+                Object.defineProperty(this.meta, 'author', {
+                    value: '',
+                    writeable: true,
+                    enumerable: true
+                });
+                Object.defineProperty(this.meta, 'name', {
+                    value: myName,
+                    writeable: true,
+                    enumerable: true
+                });
+                Object.defineProperty(this.meta, 'summary', {
+                    value: '',
+                    writeable: true,
+                    enumerable: true
+                });
+                Object.defineProperty(this.meta, 'type', {
+                    value: mySchema.type,
+                    enumerable: true
+                });
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // scape objects are defined in the 'fetchScapeSchema' function and follow a json format. each level of a   //
-            // scape object can have an arbitrary number of child elements and socioscapes will produce the necessary //
-            // data structure and corresponding menu items. the following loop creates a member for each item in the  //
-            // current schema's '.children' array. the children array is simply a list of names which correspond to   //
-            // members in the schema's data structure. this means that extending socioscapes can simply be a matter   //
-            // of altering the'fetchScapeSchema' function and allowing the API to do the rest. child entries in         //
-            // [brackets] denote arrays and are populated by instances of the corresponding class. for example, if    //
-            // 'mySchema.children[i].class' is '[state]', then 'mySchema.state[0]' will be created  as the            //
-            // datastructure prototype for all entries in 'this.state'. all such prototypes and schema definitions    //
-            // are stored in the fetchScapeSchema function.                                                             //
+            // scape objects are defined in the 'socioscapes.prototype.schema' member and follow a json format. each
+            // level of a scape object can have an arbitrary number of child elements and socioscapes will produce the
+            // necessary data structure and corresponding menu items. the following loop creates a member for each item
+            // in the current schema's '.children' array. the children array is simply a list of names which correspond
+            // to members in the schema's data structure. this means that extending socioscapes can simply be a matter
+            // of altering the '.schema' member and allowing the API to do the rest. child entries in [brackets] denote
+            // arrays and are populated by instances of the corresponding class. for example, if 'mySchema.children[i].class'
+            // is '[state]', then 'mySchema.state[0]' will be created  as the datastructure prototype for all entries in
+            // 'this.state'. all such prototypes and schema definitions are stored in the socioscapes.prototype.schema.
             for (var i = 0; i < mySchema.children.length; i++) {
                 var myChildClass = mySchema.children[i].class, // child item class
                     myChildIsArray,
@@ -3039,8 +2997,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                 }
             }
-            myEvent = newEvent('socioscapes.new', this.meta);
-            document.dispatchEvent(myEvent);
+            newEvent('socioscapes.new.' + this.meta.type, this);
             return this;
         };
     parent = fetchScapeObject(parent);
@@ -3048,21 +3005,21 @@ var newScapeObject = function newScapeObject(name, parent, type) {
         if (parent) {
             if (schema) {
                 if (fetchFromScape(name, 'name', parent[schema.class])) {
-                    //console.log('Fetching existing scape object "' + name + '" of class "' + schema.class + '".');
+                    console.log('Fetching existing scape object "' + name + '" of class "' + schema.class + '".');
                     myObject = fetchFromScape(name, 'name', parent[schema.class]);
                 } else {
-                    //console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.schema.class + '.');
+                    console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.schema.class + '.');
                     myObject = new ScapeObject(name, parent, schema);
                     parent[schema.class].push(myObject);
                 }
             }
         } else {
             if (fetchScapeObject(name)) {
-                //console.log('Fetching exisisting scape "' + name + '".');
+                console.log('Fetching exisisting scape "' + name + '".');
                 myObject = fetchScapeObject(name);
             } else {
                 if (!fetchGlobal(name)) {
-                    //console.log('Creating a new scape called "' + name + '".');
+                    console.log('Creating a new scape called "' + name + '".');
                     myObject = new ScapeObject(name, null, schema);
                     newGlobal(name, myObject);
                 }
@@ -3076,212 +3033,237 @@ module.exports = newScapeObject;
 
 },{}],11:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, document, window, google, gapi*/
+/*global module, require, this*/
 'use strict';
-var version = '0.6',
-    chroma = require('chroma-js'),
-    extend = require('./../core/extend'),
-    newCallback = require('./../construct/newCallback.js'),
-    newDispatcher = require('./../construct/newDispatcher.js'),
-    newEvent = require('./../construct/newEvent.js'),
-    fetchFromScape = require('./../fetch/fetchFromScape.js'),
-    fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
-    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScape = require('./../fetch/fetchScape.js'),
-    fetchWfs = require('./../fetch/fetchWfs.js'),
-    geostats = require('./../lib/geostats.min.js'),
-    isValidObject = require('./../bool/isValidObject.js'),
-    isValidName = require('./../bool/isValidName.js'),
-    isValidUrl = require('./../bool/isValidUrl.js'),
-    menuClass = require('./../menu/menuClass.js'),
-    menuConfig = require('./../menu/menuConfig.js'),
-    menuStore = require('./../menu/menuStore.js'),
-    menuRequire = require('./../menu/menuRequire.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    socioscapes;
 /**
- * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with
- * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
- * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
- * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
- * MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean
- * ecosystem, under the hood socioscapes will ensure that your module is integrated with all other modules which accept
- * data fetchers.
- * */
-socioscapes = function(name) {
-    return socioscapes.fn.init(name);
-};
-socioscapes.fn = socioscapes.prototype = {
-    constructor: socioscapes,
-    chroma: chroma,
-    extend: extend,
-    version: version,
-    geostats: geostats
-};
-socioscapes.fn.extend.prototype = socioscapes.fn;
-socioscapes.fn.newCallback = newCallback;
-socioscapes.fn.newCallback.prototype = socioscapes.fn;
-socioscapes.fn.newEvent = newEvent;
-socioscapes.fn.newEvent.prototype = socioscapes.fn;
-socioscapes.fn.newDispatcher = newDispatcher;
-socioscapes.fn.newDispatcher.prototype = socioscapes.fn;
-socioscapes.fn.menuStore = menuStore;
-socioscapes.fn.menuStore.prototype = socioscapes.fn;
-socioscapes.fn.newGlobal= newGlobal;
-socioscapes.fn.newGlobal.prototype = socioscapes.fn;
-socioscapes.fn.menuRequire = menuRequire;
-socioscapes.fn.menuRequire.prototype = socioscapes.fn;
-socioscapes.fn.menuStore = menuStore;
-socioscapes.fn.menuStore.prototype = socioscapes.fn;
-socioscapes.fn.menuConfig = menuConfig;
-socioscapes.fn.menuConfig.prototype = socioscapes.fn;
-socioscapes.fn.menuClass = menuClass;
-socioscapes.fn.menuClass.prototype = socioscapes.fn;
-socioscapes.fn.isValidUrl = isValidUrl;
-socioscapes.fn.isValidUrl = socioscapes.fn;
-socioscapes.fn.isValidName = isValidName;
-socioscapes.fn.isValidName.prototype = socioscapes.fn;
-socioscapes.fn.isValidObject = isValidObject;
-socioscapes.fn.isValidObject.prototype = socioscapes.fn;
-socioscapes.fn.fetchWfs = fetchWfs;
-socioscapes.fn.fetchWfs.prototype = socioscapes.fn;
-socioscapes.fn.fetchScape = fetchScape;
-socioscapes.fn.fetchScape.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleGeocode = fetchGoogleGeocode;
-socioscapes.fn.fetchGoogleGeocode.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleBq = fetchGoogleBq;
-socioscapes.fn.fetchGoogleBq.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleAuth = fetchGoogleAuth;
-socioscapes.fn.fetchGoogleAuth.prototype = socioscapes.fn;
-socioscapes.fn.fetchGlobal = fetchGlobal;
-socioscapes.fn.fetchGlobal.prototype = socioscapes.fn;
-socioscapes.fn.fetchFromScape = fetchFromScape;
-socioscapes.fn.fetchFromScape.prototype = socioscapes.fn;
-socioscapes.fn.schema = {
-    structure: {
-        "scape": {
-            "children": [
-                {
-                    "class": "[state]"
-                }
-            ],
+ * This method creates socioscape ScapeSchema objects.
+ *
+ * @function newSchema
+ * @return {Object} - A socioscapes ScapeSchema object.
+ */
+function newSchema() {
+    var fetchGoogleBq = newSchema.prototype.fetchGoogleBq,
+        fetchWfs = newSchema.prototype.fetchWfs,
+        menuClass = newSchema.prototype.menuClass,
+        menuRequire = newSchema.prototype.menuRequire,
+        menuStore = newSchema.prototype.menuStore,
+        menuConfig = newSchema.prototype.menuConfig,
+        myVersion = newSchema.prototype.version;
+    //
+    var ScapeSchema = function() {
+        this.structure = {
+            "scape": {
+                "children": [
+                    {
+                        "class": "[state]"
+                    }
+                ],
                 "class": "scape",
                 "menu": menuClass,
                 "name": "scape0",
                 "state": [
-                {
-                    "class": "state",
-                    "children": [
-                        {
-                            "class": "[layer]"
-                        },
-                        {
-                            "class": "[view]"
-                        }
-                    ],
-                    "layer": [
-                        {
-                            "children": [
-                                {
-                                    "class": "data"
+                    {
+                        "class": "state",
+                        "children": [
+                            {
+                                "class": "[layer]"
+                            },
+                            {
+                                "class": "[view]"
+                            }
+                        ],
+                        "layer": [
+                            {
+                                "children": [
+                                    {
+                                        "class": "data"
+                                    },
+                                    {
+                                        "class": "geom"
+                                    }
+                                ],
+                                "class": "layer",
+                                "data": {
+                                    "menu": menuStore,
+                                    "value": {}
                                 },
-                                {
-                                    "class": "geom"
-                                }
-                            ],
-                            "class": "layer",
-                            "data": {
-                                "menu": menuStore,
-                                "value": {}
-                            },
-                            "geom": {
-                                "menu": menuStore,
-                                "value": {}
-                            },
-                            "menu": menuClass,
-                            "name": "layer0",
-                            "parent": "state",
-                            "type": "layer.state.scape.sociJson"
-                        }
-                    ],
-                    "menu": menuClass,
-                    "name": "state0",
-                    "parent": "scape",
-                    "type": "state.scape.sociJson",
-                    "view": [
-                        {
-                            "config": {
-                                "menu": menuConfig,
-                                "value": {
-                                    "breaks": 5, // number of groups the data should be classified into
-                                    "classification": "jenks", // the classification formula to use for geostats
-                                    "classes": [], // class cut-off values based on the classifictaion formula and number of breaks
-                                    "colourScale": "YlOrRd", // the colorbrew colorscale to use for chroma
-                                    "featureIdProperty": "dauid", // the feature's unique id, used to match geometery features with corresponding data values
-                                    "layer": 0, // the name or array id to fetch data and geometry from
-                                    "type": "", // the type of view
-                                    "valueIdProperty": "total", // the primary property to use when visualizing data
-                                    "version": socioscapes.fn.version
-                                }
-                            },
-                            "children": [
-                                {
-                                    "class": "config"
+                                "geom": {
+                                    "menu": menuStore,
+                                    "value": {}
                                 },
-                                {
-                                    "class": "require"
-                                }
-                            ],
-                            "class": "view",
-                            "menu": menuClass,
-                            "name": "view0",
-                            "parent": "state",
-                            "require": {
-                                "menu": menuRequire,
-                                "value": {
-                                    "layers": {}, // a list of layer's in the state's layer array that store values for this view
-                                    "modules": {} // a list of modules required for this view
-                                }
-                            },
-                            "type": "view.state.scape.sociJson"
-                        }
-                    ]
-                }
-            ],
+                                "menu": menuClass,
+                                "name": "layer0",
+                                "parent": "state",
+                                "type": "layer.state.scape.sociJson"
+                            }
+                        ],
+                        "menu": menuClass,
+                        "name": "state0",
+                        "parent": "scape",
+                        "type": "state.scape.sociJson",
+                        "view": [
+                            {
+                                "config": {
+                                    "menu": menuConfig,
+                                    "value": {
+                                        "breaks": 5, // number of groups the data should be classified into
+                                        "classification": "jenks", // the classification formula to use for geostats
+                                        "classes": [], // class cut-off values based on the classifictaion formula and number of breaks
+                                        "colourScale": "YlOrRd", // the colorbrew colorscale to use for chroma
+                                        "featureIdProperty": "dauid", // the feature's unique id, used to match geometery features with corresponding data values
+                                        "layer": 0, // the name or array id to fetch data and geometry from
+                                        "type": "", // the type of view
+                                        "valueIdProperty": "total", // the primary property to use when visualizing data
+                                        "version": myVersion
+                                    }
+                                },
+                                "children": [
+                                    {
+                                        "class": "config"
+                                    },
+                                    {
+                                        "class": "require"
+                                    }
+                                ],
+                                "class": "view",
+                                "menu": menuClass,
+                                "name": "view0",
+                                "parent": "state",
+                                "require": {
+                                    "menu": menuRequire,
+                                    "value": {
+                                        "layers": {}, // a list of layer's in the state's layer array that store values for this view
+                                        "modules": {} // a list of modules required for this view
+                                    }
+                                },
+                                "type": "view.state.scape.sociJson"
+                            }
+                        ]
+                    }
+                ],
                 "type": "scape.sociJson"
-        }
+            }
+        };
+        this.alias = {
+            "bq": fetchGoogleBq,
+            "wfs": fetchWfs
+        };
+        this.index = {
+            "scape": {
+                "class": "scape", "type": "scape.sociJson", "schema": this.structure.scape
+            },
+            "state": {
+                "class": "state", "type": "state.scape.sociJson", "schema": this.structure.scape.state[0]
+            },
+            "layer": {
+                "class": "layer", "type": "layer.state.scape.sociJson" , "schema": this.structure.scape.state[0].layer[0]
+            },
+            "view": {
+                "class": "view", "type": "view.state.scape.sociJson", "schema": this.structure.scape.state[0].view[0]
+            }
+        };
+    };
+    return new ScapeSchema();
+}
+module.exports = newSchema;
+},{}],12:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, document, window, google, gapi*/
+'use strict';
+var version = '0.6.5-0',
+    externalDependencies = ['chroma','geostats'];
+
+/**
+ * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
+ * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
+ * sandboxed environment.
+ *
+ *    Source code...................... http://github.com/moismailzai/socioscapes
+ *    Reference implementation......... http://app.socioscapes.com
+ *    License.......................... MIT license (free as in beer & speech)
+ *    Copyright........................ © 2016 Misaqe Ismailzai
+ *
+ * This software was originally conceived as partial fulfilment of the degree requirements for the Masters of Arts in
+ * Sociology at the University of Toronto.
+ * @global
+ * @namespace
+ * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
+ * creates 'scape0'
+ * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
+ */
+function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
+    var myScape = socioscapes.fn.fetchScape(scapeName || 'scape0') || socioscapes.fn.newScapeObject('scape0', null, 'scape');
+    return socioscapes.fn.newScapeMenu(myScape);
+}
+
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, (use
+// socioscapes.fn as an alias)
+socioscapes.fn = socioscapes.prototype = {
+    constructor: socioscapes,
+    chroma: require('chroma-js'),
+    geostats: require('./../lib/geostats.min.js'),
+    extender: require('./../core/extender'),
+    fetchFromScape: require('./../fetch/fetchFromScape.js'),
+    fetchGlobal: require('./../fetch/fetchGlobal.js'),
+    fetchGoogleAuth: require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleBq: require('./../fetch/fetchGoogleBq.js'),
+    fetchGoogleGeocode: require('./../fetch/fetchGoogleGeocode.js'),
+    fetchScape: require('./../fetch/fetchScape.js'),
+    fetchScapeSchema: require('./../fetch/fetchScapeSchema.js'),
+    fetchWfs: require('./../fetch/fetchWfs.js'),
+    isValidName: require('./../bool/isValidName.js'),
+    isValidObject: require('./../bool/isValidObject.js'),
+    isValidUrl: require('./../bool/isValidUrl.js'),
+    menuClass: require('./../menu/menuClass.js'),
+    menuConfig: require('./../menu/menuConfig.js'),
+    menuRequire: require('./../menu/menuRequire.js'),
+    menuStore: require('./../menu/menuStore.js'),
+    newCallback: require('./../construct/newCallback.js'),
+    newDispatcher: require('./../construct/newDispatcher.js'),
+    newEvent: require('./../construct/newEvent.js'),
+    newGlobal: require('./../construct/newGlobal.js'),
+    newScapeMenu: require('./../construct/newScapeMenu.js'),
+    newScapeObject: require('./../construct/newScapeObject.js'),
+    newSchema: require('./../construct/newSchema.js'),
+    version: version
+};
+
+// lets give all our methods (except external dependencies) access to the method repository by setting their prototypes
+// to the socioscapes prototype. this way, we can avoid circular dependency nightmares and facilitate extensions loading
+// through prototype alteration (which is what the extender method does).
+for (var myMethod in socioscapes.fn) {
+    if (socioscapes.fn.hasOwnProperty(myMethod) && typeof socioscapes.fn[myMethod] === 'function' && externalDependencies.indexOf(myMethod) === -1) {
+        socioscapes.fn[myMethod].prototype = socioscapes.fn;
     }
-};
-socioscapes.fn.schema.alias = {
-    "bq": socioscapes.fn.fetchGoogleBq,
-    "wfs": socioscapes.fn.fetchWfs
-};
-socioscapes.fn.schema.index = {
-    "scape": { "class": "scape", "type": "scape.sociJson", "schema": socioscapes.fn.schema.structure.scape},
-    "state": { "class": "state", "type": "state.scape.sociJson", "schema": socioscapes.fn.schema.structure.scape.state[0]},
-    "layer": { "class": "layer", "type": "layer.state.scape.sociJson" , "schema": socioscapes.fn.schema.structure.scape.state[0].layer[0]},
-    "view": { "class": "view", "type": "view.state.scape.sociJson", "schema": socioscapes.fn.schema.structure.scape.state[0].view[0]}
-};
-socioscapes.fn.fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
-socioscapes.fn.fetchScapeSchema.prototype = socioscapes.fn;
-socioscapes.fn.newScapeObject = require('./../construct/newScapeObject.js');
-socioscapes.fn.newScapeObject.prototype = socioscapes.fn;
-socioscapes.fn.newScapeMenu = require('./../construct/newScapeMenu.js');
-socioscapes.fn.newScapeMenu.prototype = socioscapes.fn;
-socioscapes.fn.init = require('./../core/init.js');
-socioscapes.fn.init.prototype = socioscapes.fn;
+}
+
+// finally lets initialize the base schema tree
+socioscapes.fn.schema = socioscapes.fn.newSchema();
+
 module.exports = socioscapes;
-},{"./../bool/isValidName.js":2,"./../bool/isValidObject.js":3,"./../bool/isValidUrl.js":4,"./../construct/newCallback.js":5,"./../construct/newDispatcher.js":6,"./../construct/newEvent.js":7,"./../construct/newGlobal.js":8,"./../construct/newScapeMenu.js":9,"./../construct/newScapeObject.js":10,"./../core/extend":12,"./../core/init.js":13,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScape.js":20,"./../fetch/fetchScapeSchema.js":21,"./../fetch/fetchWfs.js":22,"./../lib/geostats.min.js":23,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28,"chroma-js":1}],12:[function(require,module,exports){
+},{"./../bool/isValidName.js":2,"./../bool/isValidObject.js":3,"./../bool/isValidUrl.js":4,"./../construct/newCallback.js":5,"./../construct/newDispatcher.js":6,"./../construct/newEvent.js":7,"./../construct/newGlobal.js":8,"./../construct/newScapeMenu.js":9,"./../construct/newScapeObject.js":10,"./../construct/newSchema.js":11,"./../core/extender":13,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScape.js":20,"./../fetch/fetchScapeSchema.js":21,"./../fetch/fetchWfs.js":22,"./../lib/geostats.min.js":23,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28,"chroma-js":1}],13:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
-function extend(config) {
-    var myExtension, myName, myPath, myTarget, i, ii;
+/**
+ * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
+ * simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with
+ * '.path' (a string), and '.extension' (a value) members. The '.path'
+ *
+ * @function extender
+ * @param {Object[]} config - A valid socioscapes extension configuration.
+ * @param {string} config[].path - Tells the API where to store your extension. The path for most modules will be the
+ * root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access
+ * it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the
+ * 'fetch' prefix (eg. 'fetchMysql').
+ * @param {string} config[].alias - A shorter alias that doesn't follow the above naming standards.
+ * @param {Boolean} config[].silent - If true, supresses console.log messages.
+ * @param {Object} config[].extension - Your extension.
+ * */
+function extender(config) {
+    var myExtension, myName, myPath, i, ii,
+        myTarget = extender.prototype;
     for (i = 0; i < config.length; i++) {
-        myTarget = extend.prototype;
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
         if (myPath && myExtension) {
@@ -3296,7 +3278,7 @@ function extend(config) {
             }
             if (myTarget) {
                 myTarget[myName] = myExtension;
-                myTarget[myName].prototype = extend.prototype;
+                myTarget[myName].prototype = extender.prototype;
                 if (config[i].alias) {
                     myTarget.schema.alias[config[i].alias] = myTarget[myName];
                 }
@@ -3308,619 +3290,631 @@ function extend(config) {
             }
         }
     }
-    return extend.prototype;
 }
-module.exports = extend;
-},{}],13:[function(require,module,exports){
-/*jslint node: true */
-/*global module, require, socioscapes*/
-'use strict';
-var init = function init(scape) {
-    var fetchScape = init.prototype.fetchScape,
-        newScapeObject = init.prototype.newScapeObject,
-        newScapeMenu = init.prototype.newScapeMenu;
-    var myScape;
-    myScape = fetchScape(scape || 'scape0') || newScapeObject('scape0', null, 'scape');
-    socioscapes.s = myScape;
-    return newScapeMenu(myScape);
-};
-module.exports = init;
+module.exports = extender;
 },{}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, event, feature, gapi*/
 'use strict';
-var socioscapes = require('./../core/core.js');
-socioscapes.fn.extend([
-    {   path: 'viewGmapSymbology',
-        alias: 'gsymbology',
-        silent: true,
-        extension:
-            function viewGmapSymbology(view) {
-                var chroma = viewGmapSymbology.prototype.chroma,
-                    isValidObject = viewGmapSymbology.prototype.isValidObject,
-                    fetchFromScape = viewGmapSymbology.prototype.fetchFromScape,
-                    newCallback = viewGmapSymbology.prototype.newCallback,
-                    newEvent = viewGmapSymbology.prototype.newEvent;
-                //
-                var callback = newCallback(arguments),
-                    layer,
-                    GmapLayer = function(view) {
-                        var idValue,
-                            listenerClick,
-                            listenerHoverSet,
-                            listenerHoverReset,
-                            that = this;
-                        if (view && view.config && view.config.gmap) {
-                            view.config.gmap.styles = view.config.gmap.styles || {};
-                            view.config.gmap.styles.default = view.config.gmap.styles.default ||  {
-                                    fillOpacity: 0.75,
-                                    fillColor: "purple",
-                                    strokeOpacity: 0.75,
-                                    strokeColor: "black",
-                                    strokeWeight: 1,
-                                    zIndex: 5,
-                                    visible: true,
-                                    clickable: true
-                                };
-                            view.config.gmap.styles.hover  = view.config.gmap.styles.hover ||  {
-                                    fillOpacity: 0.75,
-                                    fillColor: "purple",
-                                    strokeOpacity: 1,
-                                    strokeColor: "black",
-                                    strokeWeight: 2,
-                                    zIndex: 10,
-                                    visible: true,
-                                    clickable: true
-                                };
-                            view.config.gmap.styles.click  = view.config.gmap.styles.click || {
-                                    fillOpacity: 1,
-                                    fillColor: "purple",
-                                    strokeOpacity: 1,
-                                    strokeColor: "black",
-                                    strokeWeight: 3,
-                                    zIndex: 15,
-                                    visible: true,
-                                    clickable: true
-                                };
-                            view.config.features = {
-                                "selected": {},
-                                "selectedCount": 0,
-                                "selectedLimit": 0
-                            };
-                            this.dataLayer = new google.maps.Data();
-                            Object.defineProperty(this, 'init', {
-                                value: function () {
-                                    var callback = newCallback(arguments),
-                                        layer = fetchFromScape(view.config.layer, 'name', view.schema.parent.layer) || false,
-                                        data = layer ? layer.data:false,
-                                        geom = layer ? layer.geom:false,
-                                        featureIdProperty = (typeof view.config.featureIdProperty === 'string') ? view.config.featureIdProperty.toLowerCase():'dauid',
-                                        valueIdProperty = (typeof view.config.valueIdProperty === 'string') ? view.config.valueIdProperty.toLowerCase():'total';
-                                    if (data && geom && featureIdProperty && valueIdProperty) {
-                                        // remove the layer's existing features
-                                        that.dataLayer.forEach(function(feature) {
-                                            that.dataLayer.remove(feature);
-                                        });
-                                        // load features from the layer's geom store
-                                        that.dataLayer.addGeoJson(geom.geoJson, {featureIdProperty: featureIdProperty});
-                                        if (data.geoJson.features[0].properties[valueIdProperty] !== undefined) {
-                                            // join those features with the layer's data store
-                                            that.dataLayer.forEach(function(feature) {
-                                                // [this feature's value]  =  [the   matching   data   object's]    [value field]  (if it exists)
-                                                feature.G[valueIdProperty] = data.byId[feature.G[featureIdProperty]][valueIdProperty] ?
-                                                    data.byId[feature.G[featureIdProperty]][valueIdProperty]:
-                                                    false;
-                                            });
-                                            that.classify(function() {
-                                                that.style(function() {
-                                                    that.onHover();
-                                                    that.onClick(5);
-                                                    callback(that);
-                                                });
-                                            });
-                                        } else {
-                                            console.log('Sorry, that layer does not contain matching data for the geometry.');
-                                        }
-                                    } else {
-                                        console.log('Sorry, there was a problem with your ".config" options. Did you you set a valid layer? Does your layer have data and geometry? Do the property names in your data and geometry correspond to the "featureIdProperty" and "valueIdProperty" fields?');
-                                    }
-                                    return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'classify', {
-                                value: function () {
-                                    var callback = newCallback(arguments),
-                                        layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false,
-                                        data = layer ? layer.data:false,
-                                        classification = 'getClass' + view.config.classification.charAt(0).toUpperCase() + view.config.classification.slice(1),
-                                        breaks = parseInt(view.config.breaks);
-                                    if (data) {
-                                        that.off();
-                                        view.config.classes = layer.data.geostats[classification](breaks);
-                                        that.on();
-                                        callback(that);
-                                    }
-                                    return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'style', {
-                                value: function () {
-                                    var callback = newCallback(arguments),
-                                        myFillScale,
-                                        valueProperty,
-                                        exportType,
-                                        exportOptions;
-                                    that.dataLayer.setStyle(function (feature) {
-                                        myFillScale = chroma.scale(view.config.colourScale).mode('lab').classes(view.config.classes).out('hex');
-                                        valueProperty = feature.getProperty(view.config.valueIdProperty);
-                                        exportType = feature.getProperty('hover') ? 'hover' : (feature.getProperty('selected') ? "click" : "default");
-                                        exportOptions = {
-                                            fillOpacity: view.config.gmap.styles[exportType].fillOpacity,
-                                            fillColor: myFillScale(valueProperty) || view.config.gmap.styles[exportType].fillColor,
-                                            strokeOpacity: view.config.gmap.styles[exportType].strokeOpacity,
-                                            strokeColor: chroma(myFillScale(valueProperty)).darken(1) || view.config.gmap.styles[exportType].strokeColor,
-                                            strokeWeight: view.config.gmap.styles[exportType].strokeWeight,
-                                            zIndex: view.config.gmap.styles[exportType].zIndex,
-                                            visible: view.config.gmap.styles[exportType].visible,
-                                            clickable: view.config.gmap.styles[exportType].clickable
+function viewGmaps(socioscapes) {
+    if (socioscapes && socioscapes.fn && socioscapes.fn.extender) {
+        socioscapes.fn.extender([
+            {   path: 'viewGmapSymbology',
+                alias: 'gsymbology',
+                silent: true,
+                extension:
+                    function viewGmapSymbology(view) {
+                        var chroma = viewGmapSymbology.prototype.chroma,
+                            isValidObject = viewGmapSymbology.prototype.isValidObject,
+                            fetchFromScape = viewGmapSymbology.prototype.fetchFromScape,
+                            newCallback = viewGmapSymbology.prototype.newCallback,
+                            newEvent = viewGmapSymbology.prototype.newEvent;
+                        //
+                        var callback = newCallback(arguments),
+                            layer,
+                            GmapLayer = function(view) {
+                                var idValue,
+                                    listenerClick,
+                                    listenerHoverSet,
+                                    listenerHoverReset,
+                                    that = this;
+                                if (view && view.config && view.config.gmap) {
+                                    view.config.gmap.styles = view.config.gmap.styles || {};
+                                    view.config.gmap.styles.default = view.config.gmap.styles.default ||  {
+                                            fillOpacity: 0.75,
+                                            fillColor: "purple",
+                                            strokeOpacity: 0.75,
+                                            strokeColor: "black",
+                                            strokeWeight: 1,
+                                            zIndex: 5,
+                                            visible: true,
+                                            clickable: true
                                         };
-                                        return /** @type {google.maps.Data.StyleOptions} */(exportOptions);
-                                    });
-                                    callback(that);
-                                    return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'on', {
-                                value: function () {
-                                    var callback = newCallback(arguments);
-                                    that.dataLayer.setMap(view.gmap.mapBase);
-                                    callback(that);
-                                    return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'off', {
-                                value: function () {
-                                    var callback = newCallback(arguments);
-                                    that.dataLayer.setMap(null);
-                                    callback(that);
-                                    return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'onHover', {
-                                value: function (callback) {
-                                    var myEvent;
-                                    callback = newCallback(arguments);
-                                    if (listenerHoverSet) {
-                                        listenerHoverSet.remove();
-                                        listenerHoverReset.remove();
-                                    }
-                                    listenerHoverSet = that.dataLayer.addListener('mouseover', function (event) {
-                                        if (!event.feature.getProperty('selected')) {
-                                            event.feature.setProperty('hover', true);
-                                        }
-                                        myEvent = newEvent('socioscapes.update.featureHover',
-                                            {
-                                                id: event.feature.getProperty(view.config.featureIdProperty),
-                                                value: event.feature.getProperty(view.config.valueIdProperty)
-                                            });
-                                        document.dispatchEvent(myEvent); //todo remove explicit document calls
-                                        callback(event.feature);
-                                    });
-                                    listenerHoverReset = that.dataLayer.addListener('mouseout', function (event) {
-                                        event.feature.setProperty('hover', false);
-                                        myEvent = newEvent('socioscapes.update.featureHover', { id: '', value: '' });
-                                        document.dispatchEvent(myEvent); //todo remove explicit document calls
-                                        callback(event.feature);
-                                    });
-                                return that;
-                                }
-                            });
-                            Object.defineProperty(this, 'onClick', {
-                                value: function (limit, callback) {
-                                    callback = newCallback(arguments);
-                                    // Check for existing listener, remove it, reset previously altered features
-                                    if (listenerClick) {
-                                        listenerClick.remove();
-                                        for (var prop in view.config.features.selected) {
-                                            if (view.config.features.selected.hasOwnProperty(prop)) {
-                                                view.config.features.selected[prop].setProperty('selected', false);
-                                                delete view.config.features.selected[prop];
-                                            }
-                                        }
-                                    }
-                                        view.config.features.selectedLimit = Number.isInteger(limit) ? limit : 0;
-                                        view.config.features.selectedCount = 0;
-                                        listenerClick = that.dataLayer.addListener('click', function (event) {
-                                            idValue = event.feature.getProperty(view.config.featureIdProperty);
-                                            if (event.feature.getProperty('selected')) {
-                                                event.feature.setProperty('selected', false);
-                                                view.config.features.selectedCount = view.config.features.selectedLimit ? Math.max(view.config.features.selectedCount - 1, 0) : view.config.features.selectedCount;
-                                                delete view.config.features.selected[idValue];
-                                                callback(event.feature, false);
-                                            } else {
-                                                if (view.config.features.selectedLimit ? (view.config.features.selectedLimit > view.config.features.selectedCount) : true) {
-                                                    event.feature.setProperty('selected', true);
-                                                    view.config.features.selectedCount = (view.config.features.selectedLimit > view.config.features.selectedCount) ? view.config.features.selectedCount + 1 : view.config.features.selectedCount;
-                                                    view.config.features.selected[idValue] = event.feature;
-                                                }
-                                                callback(event.feature, true);
-                                            }
-                                        });
-                                    return that;
-                                }
-                            });
-                            return this;
-                        }
-                    };
-            // check to see that this is a view and that the view.config options point to a valid layer
-            view = socioscapes.fn.isValidObject(view) ? view:(this || false);
-            layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
-            if (layer) {
-                view.gmap.mapSymbology = new GmapLayer(view);
-                callback(view);
-            }
-            return view;
-            }
-    }]);
-socioscapes.fn.extend([
-    {
-        path: 'viewGmapLabels',
-        alias: 'glabel',
-        silent: true,
-        extension:
-            function viewGmapLabels(view) {
-                var isValidObject = viewGmapLabels.prototype.isValidObject,
-                    newCallback = viewGmapLabels.prototype.newCallback;
-                //
-                var callback = newCallback(arguments),
-                    dom,
-                    layerHack;
-                view = view || that;
-                if (isValidObject(view)) {
-                    view.config.gmap.styles = view.config.gmap.styles || {};
-                    view.config.gmap.styles.mapLabels = view.config.gmap.styles.mapLabels || [
-                            {
-                                "elementType": "all",
-                                "stylers": [
-                                    { "visibility": "off" }
-                                ]
-                            },{
-                                "featureType": "administrative",
-                                "elementType": "labels.text.fill",
-                                "stylers": [
-                                    {
-                                        "visibility": "on"
-                                    },
-                                    {
-                                        "color": "#ffffff"
-                                    }
-                                ]
-                            },{
-                                "featureType": "administrative",
-                                "elementType": "labels.text.stroke",
-                                "stylers": [
-                                    {
-                                        "visibility": "on"
-                                    },
-                                    {
-                                        "color": "#000000"
-                                    },
-                                    {
-                                        "lightness": 13
-                                        //"weight": 5
-                                    }
-                                ]
-                            }
-                        ];
-                    // Create a custom OverlayView class and declare rules that will ensure it appears above all other map content
-                    layerHack = new google.maps.OverlayView();
-                    layerHack.onAdd = function () {
-                        dom = this.getPanes();
-                        dom.mapPane.style.zIndex = 150;
-                    };
-                    layerHack.onRemove = function () {
-                        this.div_.parentNode.removeChild(this.div_);
-                        this.div_ = null;
-                    };
-                    layerHack.draw = function () {
-                    };
-                    if (view.gmap.mapBase) {
-                        layerHack.setMap(view.gmap.mapBase);
-                        view.gmap.mapLabels = new google.maps.StyledMapType(view.config.gmap.styles.mapLabels);
-                        view.gmap.mapBase.overlayMapTypes.insertAt(0, view.gmap.mapLabels);
-                        view.gmap.mapLabels.layerHack = layerHack;
-                        callback(view);
-                    } else {
-                        callback(false);
-                    }
-                }
-                return view;
-            }
-    }]);
-socioscapes.fn.extend([
-    {
-        "path": 'viewGmapMap',
-        "alias": 'gmap',
-        "silent": true,
-        extension:
-            function viewGmapMap(view) {
-                var isValidObject = viewGmapMap.prototype.isValidObject,
-                    fetchGoogleGeocode = viewGmapMap.prototype.fetchGoogleGeocode,
-                    newCallback = viewGmapMap.prototype.newCallback;
-                var callback = newCallback(arguments),
-                    myDiv;
-                if (isValidObject(view)) {
-                    view.gmap = view.gmap || {};
-                    view.config.address = view.config.address || 'Toronto, Canada';
-                    view.config.gmap = view.config.gmap || {};
-                    view.config.gmap.div = view.config.gmap.div || 'map-canvas';
-                    view.config.gmap.styles = view.config.gmap.styles || {};
-                    view.config.gmap.styles.map = view.config.gmap.styles.map || [
-                            {
-                                "featureType": "all",
-                                "elementType": "labels.text",
-                                "stylers": [
-                                    {
-                                        "visibility": "off"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "landscape",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "visibility": "on"
-                                    },
-                                    {
-                                        "saturation": -100
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "poi",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "visibility": "on"
-                                    },
-                                    {
-                                        "color": "#dadada"
-                                    },
-                                    {
-                                        "saturation": -100
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "poi",
-                                "elementType": "labels.icon",
-                                "stylers": [
-                                    {
-                                        "visibility": "off"
-                                    },
-                                    {
-                                        "saturation": -100
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "transit.line",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "color": "#ffffff"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "transit.line",
-                                "elementType": "geometry.stroke",
-                                "stylers": [
-                                    {
-                                        "color": "#dbdbdb"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "road.highway",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "color": "#ffffff"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "road.highway",
-                                "elementType": "geometry.stroke",
-                                "stylers": [
-                                    {
-                                        "color": "#dbdbdb"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "road.arterial",
-                                "elementType": "geometry.stroke",
-                                "stylers": [
-                                    {
-                                        "color": "#d7d7d7"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "road.local",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "color": "#ffffff"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "road.local",
-                                "elementType": "geometry.stroke",
-                                "stylers": [
-                                    {
-                                        "color": "#d7d7d7"
-                                    },
-                                    {
-                                        "saturation": -100
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "transit.station",
-                                "elementType": "labels.icon",
-                                "stylers": [
-                                    {
-                                        "hue": "#5e5791"
-                                    }
-                                ]
-                            },
-                            {
-                                "featureType": "water",
-                                "elementType": "geometry.fill",
-                                "stylers": [
-                                    {
-                                        "hue": "#0032ff"
-                                    },
-                                    {
-                                        "gamma": "0.45"
-                                    }
-                                ]
-                            }
-                        ];
-                    myDiv = document.getElementById(view.config.gmap.div);
-                    if (myDiv) {
-                        fetchGoogleGeocode(view.config.address, function(geocodeResult) {
-                            if (geocodeResult) {
-                                view.config.gmap.geocode = geocodeResult;
-                                view.config.gmap.options = view.config.gmap.options || {
-                                        "zoom": 11,
-                                        "center": geocodeResult,
-                                        "mapTypeId": google.maps.MapTypeId.ROADMAP,
-                                        "mapTypeControl": true,
-                                        "mapTypeControlOptions": {
-                                            "mapTypeIds": [
-                                                google.maps.MapTypeId.ROADMAP,
-                                                google.maps.MapTypeId.SATELLITE,
-                                                google.maps.MapTypeId.TERRAIN,
-                                                google.maps.MapTypeId.HYBRID
-                                            ],
-                                            "style": google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-                                            "position":google.maps.ControlPosition.TOP_RIGHT
-                                        },
-                                        disableDefaultUI: true,
-                                        addressControlOptions: {
-                                            position: google.maps.ControlPosition.BOTTOM_CENTER
-                                        },
-                                        "overviewMapControl": true,
-                                        "overviewMapControlOptions": {
-                                            "position": google.maps.ControlPosition.BOTTOM_LEFT
-                                        },
-                                        "zoomControl": true,
-                                        "zoomControlOptions": {
-                                            "position": google.maps.ControlPosition.LEFT_CENTER,
-                                            "style": google.maps.ZoomControlStyle.LARGE
-                                        },
-                                        "streetViewControl": true,
-                                        "streetViewControlOptions": {
-                                            "position": google.maps.ControlPosition.LEFT_CENTER
-                                        },
-                                        "panControl": false,
-                                        "panControlOptions": {
-                                            "position": google.maps.ControlPosition.RIGHT_CENTER
-                                        },
-                                        "scaleControl": true,
-                                        "scaleControlOptions": {
-                                            "position": google.maps.ControlPosition.BOTTOM_CENTER
-                                        }
+                                    view.config.gmap.styles.hover  = view.config.gmap.styles.hover ||  {
+                                            fillOpacity: 0.75,
+                                            fillColor: "purple",
+                                            strokeOpacity: 1,
+                                            strokeColor: "black",
+                                            strokeWeight: 2,
+                                            zIndex: 10,
+                                            visible: true,
+                                            clickable: true
+                                        };
+                                    view.config.gmap.styles.click  = view.config.gmap.styles.click || {
+                                            fillOpacity: 1,
+                                            fillColor: "purple",
+                                            strokeOpacity: 1,
+                                            strokeColor: "black",
+                                            strokeWeight: 3,
+                                            zIndex: 15,
+                                            visible: true,
+                                            clickable: true
+                                        };
+                                    view.config.features = {
+                                        "selected": {},
+                                        "selectedCount": 0,
+                                        "selectedLimit": 0
                                     };
-                                view.config.gmap.options.styles = view.config.gmap.styles.map;
-                                view.gmap.mapBase = new google.maps.Map(myDiv, view.config.gmap.options);
-                                view.gmap.mapBase.setTilt(45);
+                                    this.dataLayer = new google.maps.Data();
+                                    Object.defineProperty(this, 'init', {
+                                        value: function () {
+                                            var callback = newCallback(arguments),
+                                                layer = fetchFromScape(view.config.layer, 'name', view.schema.parent.layer) || false,
+                                                data = layer ? layer.data:false,
+                                                geom = layer ? layer.geom:false,
+                                                featureIdProperty = (typeof view.config.featureIdProperty === 'string') ? view.config.featureIdProperty.toLowerCase():'dauid',
+                                                valueIdProperty = (typeof view.config.valueIdProperty === 'string') ? view.config.valueIdProperty.toLowerCase():'total';
+                                            if (data && geom && featureIdProperty && valueIdProperty) {
+                                                // remove the layer's existing features
+                                                that.dataLayer.forEach(function(feature) {
+                                                    that.dataLayer.remove(feature);
+                                                });
+                                                // load features from the layer's geom store
+                                                that.dataLayer.addGeoJson(geom.geoJson, {featureIdProperty: featureIdProperty});
+                                                if (data.geoJson.features[0].properties[valueIdProperty] !== undefined) {
+                                                    // join those features with the layer's data store
+                                                    that.dataLayer.forEach(function(feature) {
+                                                        // [this feature's value]  =  [the   matching   data   object's]    [value field]  (if it exists)
+                                                        if (data.byId[feature.getProperty(featureIdProperty)][valueIdProperty]) {
+                                                            feature.setProperty(valueIdProperty, data.byId[feature.getProperty(featureIdProperty)][valueIdProperty]);
+                                                        }
+                                                    });
+                                                    that.classify(function() {
+                                                        that.style(function() {
+                                                            that.onHover();
+                                                            that.onClick(5);
+                                                            callback(that);
+                                                        });
+                                                    });
+                                                } else {
+                                                    console.log('Sorry, that layer does not contain matching data for the geometry.');
+                                                }
+                                            } else {
+                                                console.log('Sorry, there was a problem with your ".config" options. Did you you set a valid layer? Does your layer have data and geometry? Do the property names in your data and geometry correspond to the "featureIdProperty" and "valueIdProperty" fields?');
+                                            }
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'classify', {
+                                        value: function () {
+                                            var callback = newCallback(arguments),
+                                                layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false,
+                                                data = layer ? layer.data:false,
+                                                classification = 'getClass' + view.config.classification.charAt(0).toUpperCase() + view.config.classification.slice(1),
+                                                breaks = parseInt(view.config.breaks);
+                                            if (data) {
+                                                that.off();
+                                                view.config.classes = layer.data.geostats[classification](breaks);
+                                                that.on();
+                                                callback(that);
+                                            }
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'style', {
+                                        value: function () {
+                                            var callback = newCallback(arguments),
+                                                myFillScale,
+                                                valueProperty,
+                                                exportType,
+                                                exportOptions;
+                                            that.dataLayer.setStyle(function (feature) {
+                                                myFillScale = chroma.scale(view.config.colourScale).mode('lab').classes(view.config.classes).out('hex');
+                                                valueProperty = feature.getProperty(view.config.valueIdProperty);
+                                                exportType = feature.getProperty('hover') ? 'hover' : (feature.getProperty('selected') ? "click" : "default");
+                                                exportOptions = {
+                                                    fillOpacity: view.config.gmap.styles[exportType].fillOpacity,
+                                                    fillColor: myFillScale(valueProperty) || view.config.gmap.styles[exportType].fillColor,
+                                                    strokeOpacity: view.config.gmap.styles[exportType].strokeOpacity,
+                                                    strokeColor: chroma(myFillScale(valueProperty)).darken(1) || view.config.gmap.styles[exportType].strokeColor,
+                                                    strokeWeight: view.config.gmap.styles[exportType].strokeWeight,
+                                                    zIndex: view.config.gmap.styles[exportType].zIndex,
+                                                    visible: view.config.gmap.styles[exportType].visible,
+                                                    clickable: view.config.gmap.styles[exportType].clickable
+                                                };
+                                                return /** @type {google.maps.Data.StyleOptions} */(exportOptions);
+                                            });
+                                            callback(that);
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'on', {
+                                        value: function () {
+                                            var callback = newCallback(arguments);
+                                            that.dataLayer.setMap(view.gmap.mapBase);
+                                            callback(that);
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'off', {
+                                        value: function () {
+                                            var callback = newCallback(arguments);
+                                            that.dataLayer.setMap(null);
+                                            callback(that);
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'onHover', {
+                                        value: function (callback) {
+                                            callback = newCallback(arguments);
+                                            if (listenerHoverSet) {
+                                                listenerHoverSet.remove();
+                                                listenerHoverReset.remove();
+                                            }
+                                            listenerHoverSet = that.dataLayer.addListener('mouseover', function (event) {
+                                                if (!event.feature.getProperty('selected')) {
+                                                    event.feature.setProperty('hover', true);
+                                                }
+                                                newEvent('socioscapes.update.featureHover',
+                                                    {
+                                                        id: event.feature.getProperty(view.config.featureIdProperty),
+                                                        value: event.feature.getProperty(view.config.valueIdProperty)
+                                                    });
+                                                callback(event.feature);
+                                            });
+                                            listenerHoverReset = that.dataLayer.addListener('mouseout', function (event) {
+                                                event.feature.setProperty('hover', false);
+                                                newEvent('socioscapes.update.featureHover', { id: '', value: '' });
+                                                callback(event.feature);
+                                            });
+                                            return that;
+                                        }
+                                    });
+                                    Object.defineProperty(this, 'onClick', {
+                                        value: function (limit, callback) {
+                                            callback = newCallback(arguments);
+                                            // Check for existing listener, remove it, reset previously altered features
+                                            if (listenerClick) {
+                                                listenerClick.remove();
+                                                for (var prop in view.config.features.selected) {
+                                                    if (view.config.features.selected.hasOwnProperty(prop)) {
+                                                        view.config.features.selected[prop].setProperty('selected', false);
+                                                        delete view.config.features.selected[prop];
+                                                    }
+                                                }
+                                            }
+                                            view.config.features.selectedLimit = Number.isInteger(limit) ? limit : 0;
+                                            view.config.features.selectedCount = 0;
+                                            listenerClick = that.dataLayer.addListener('click', function (event) {
+                                                idValue = event.feature.getProperty(view.config.featureIdProperty);
+                                                if (event.feature.getProperty('selected')) {
+                                                    event.feature.setProperty('selected', false);
+                                                    view.config.features.selectedCount = view.config.features.selectedLimit ? Math.max(view.config.features.selectedCount - 1, 0) : view.config.features.selectedCount;
+                                                    delete view.config.features.selected[idValue];
+                                                    callback(event.feature, false);
+                                                } else {
+                                                    if (view.config.features.selectedLimit ? (view.config.features.selectedLimit > view.config.features.selectedCount) : true) {
+                                                        event.feature.setProperty('selected', true);
+                                                        view.config.features.selectedCount = (view.config.features.selectedLimit > view.config.features.selectedCount) ? view.config.features.selectedCount + 1 : view.config.features.selectedCount;
+                                                        view.config.features.selected[idValue] = event.feature;
+                                                    }
+                                                    callback(event.feature, true);
+                                                }
+                                            });
+                                            return that;
+                                        }
+                                    });
+                                    return this;
+                                }
+                            };
+                        // check to see that this is a view and that the view.config options point to a valid layer
+                        view = socioscapes.fn.isValidObject(view) ? view:(this || false);
+                        layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
+                        if (layer) {
+                            view.gmap.mapSymbology = new GmapLayer(view);
+                            callback(view);
+                        } else {
+                            callback(false);
+                        }
+                        return view;
+                    }
+            }]);
+        socioscapes.fn.extender([
+            {
+                path: 'viewGmapLabels',
+                alias: 'glabel',
+                silent: true,
+                extension:
+                    function viewGmapLabels(view) {
+                        var isValidObject = viewGmapLabels.prototype.isValidObject,
+                            newCallback = viewGmapLabels.prototype.newCallback;
+                        //
+                        var callback = newCallback(arguments),
+                            dom,
+                            layerHack;
+                        if (isValidObject(view)) {
+                            view.config.gmap.styles = view.config.gmap.styles || {};
+                            view.config.gmap.styles.mapLabels = view.config.gmap.styles.mapLabels || [
+                                    {
+                                        "elementType": "all",
+                                        "stylers": [
+                                            { "visibility": "off" }
+                                        ]
+                                    },{
+                                        "featureType": "administrative",
+                                        "elementType": "labels.text.fill",
+                                        "stylers": [
+                                            {
+                                                "visibility": "on"
+                                            },
+                                            {
+                                                "color": "#ffffff"
+                                            }
+                                        ]
+                                    },{
+                                        "featureType": "administrative",
+                                        "elementType": "labels.text.stroke",
+                                        "stylers": [
+                                            {
+                                                "visibility": "on"
+                                            },
+                                            {
+                                                "color": "#000000"
+                                            },
+                                            {
+                                                "lightness": 13
+                                                //"weight": 5
+                                            }
+                                        ]
+                                    }
+                                ];
+                            // Create a custom OverlayView class and declare rules that will ensure it appears above all other map content
+                            layerHack = new google.maps.OverlayView();
+                            layerHack.onAdd = function () {
+                                dom = this.getPanes();
+                                dom.mapPane.style.zIndex = 150;
+                            };
+                            layerHack.onRemove = function () {
+                                this.div_.parentNode.removeChild(this.div_);
+                                this.div_ = null;
+                            };
+                            layerHack.draw = function () {
+                            };
+                            if (view.gmap.mapBase) {
+                                layerHack.setMap(view.gmap.mapBase);
+                                view.gmap.mapLabels = new google.maps.StyledMapType(view.config.gmap.styles.mapLabels);
+                                view.gmap.mapBase.overlayMapTypes.insertAt(0, view.gmap.mapLabels);
+                                view.gmap.mapLabels.layerHack = layerHack;
                                 callback(view);
                             } else {
                                 callback(false);
                             }
-                        });
-                    } else {
-                        console.log('Sorry, unable to located the view\'s config.gmap.div element.');
+                        } else {
+                            callback(false);
+                        }
+                        return view;
                     }
-                }
-                    return view;
-            }
-    }]);
-socioscapes.fn.extend([
-    {   path: 'viewGmapView',
-        alias: 'gview',
-        silent: true,
-        extension:
-            function viewGmap(that, view) {
-                var isValidObject = viewGmap.prototype.isValidObject,
-                    newCallback = viewGmap.prototype.newCallback;
-                //
-                var callback = newCallback(arguments),
-                    gmap = viewGmap.prototype.viewGmapMap,
-                    glabel = viewGmap.prototype.viewGmapLabels,
-                    gsymbology = viewGmap.prototype.viewGmapSymbology;
-                view = view || that;
-                if (isValidObject(view)) {
-                    if (!view.gmap.mapBase) {
-                        gmap(view, function(mapResult) {
-                            if (mapResult) {
-                                glabel(view, function(labelResult) {
-                                    if (labelResult) {
-                                        gsymbology(view, function(symbologyResult) {
-                                            if (symbologyResult) {
-                                                view.gmap.mapSymbology.init(function(initResult) {
-                                                    if (initResult) {
-                                                        view.gmap.mapSymbology.on();
-                                                        callback(view);
-                                                    }
-                                                });
+            }]);
+        socioscapes.fn.extender([
+            {
+                "path": 'viewGmapMap',
+                "alias": 'gmap',
+                "silent": true,
+                extension:
+                    function viewGmapMap(view) {
+                        var isValidObject = viewGmapMap.prototype.isValidObject,
+                            fetchGoogleGeocode = viewGmapMap.prototype.fetchGoogleGeocode,
+                            newCallback = viewGmapMap.prototype.newCallback;
+                        var callback = newCallback(arguments),
+                            myDiv;
+                        if (isValidObject(view)) {
+                            view.gmap = view.gmap || {};
+                            view.config.address = view.config.address || 'Toronto, Canada';
+                            view.config.gmap = view.config.gmap || {};
+                            view.config.gmap.div = view.config.gmap.div || 'map-canvas';
+                            view.config.gmap.styles = view.config.gmap.styles || {};
+                            view.config.gmap.styles.map = view.config.gmap.styles.map || [
+                                    {
+                                        "featureType": "all",
+                                        "elementType": "labels.text",
+                                        "stylers": [
+                                            {
+                                                "visibility": "off"
                                             }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "landscape",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "visibility": "on"
+                                            },
+                                            {
+                                                "saturation": -100
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "poi",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "visibility": "on"
+                                            },
+                                            {
+                                                "color": "#dadada"
+                                            },
+                                            {
+                                                "saturation": -100
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "poi",
+                                        "elementType": "labels.icon",
+                                        "stylers": [
+                                            {
+                                                "visibility": "off"
+                                            },
+                                            {
+                                                "saturation": -100
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "transit.line",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "color": "#ffffff"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "transit.line",
+                                        "elementType": "geometry.stroke",
+                                        "stylers": [
+                                            {
+                                                "color": "#dbdbdb"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.highway",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "color": "#ffffff"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.highway",
+                                        "elementType": "geometry.stroke",
+                                        "stylers": [
+                                            {
+                                                "color": "#dbdbdb"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.arterial",
+                                        "elementType": "geometry.stroke",
+                                        "stylers": [
+                                            {
+                                                "color": "#d7d7d7"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.local",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "color": "#ffffff"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "road.local",
+                                        "elementType": "geometry.stroke",
+                                        "stylers": [
+                                            {
+                                                "color": "#d7d7d7"
+                                            },
+                                            {
+                                                "saturation": -100
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "transit.station",
+                                        "elementType": "labels.icon",
+                                        "stylers": [
+                                            {
+                                                "hue": "#5e5791"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "featureType": "water",
+                                        "elementType": "geometry.fill",
+                                        "stylers": [
+                                            {
+                                                "hue": "#0032ff"
+                                            },
+                                            {
+                                                "gamma": "0.45"
+                                            }
+                                        ]
+                                    }
+                                ];
+                            myDiv = document.getElementById(view.config.gmap.div);
+                            if (myDiv) {
+                                fetchGoogleGeocode(view.config.address, function(geocodeResult) {
+                                    if (geocodeResult) {
+                                        view.config.gmap.geocode = geocodeResult;
+                                        view.config.gmap.options = view.config.gmap.options || {
+                                                "zoom": 13,
+                                                "center": geocodeResult,
+                                                "mapTypeId": google.maps.MapTypeId.ROADMAP,
+                                                "mapTypeControl": true,
+                                                "mapTypeControlOptions": {
+                                                    "mapTypeIds": [
+                                                        google.maps.MapTypeId.ROADMAP,
+                                                        google.maps.MapTypeId.SATELLITE,
+                                                        google.maps.MapTypeId.TERRAIN,
+                                                        google.maps.MapTypeId.HYBRID
+                                                    ],
+                                                    "style": google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                                                    "position":google.maps.ControlPosition.TOP_RIGHT
+                                                },
+                                                disableDefaultUI: true,
+                                                addressControlOptions: {
+                                                    position: google.maps.ControlPosition.BOTTOM_CENTER
+                                                },
+                                                "overviewMapControl": true,
+                                                "overviewMapControlOptions": {
+                                                    "position": google.maps.ControlPosition.BOTTOM_LEFT
+                                                },
+                                                "zoomControl": true,
+                                                "zoomControlOptions": {
+                                                    "position": google.maps.ControlPosition.LEFT_CENTER,
+                                                    "style": google.maps.ZoomControlStyle.LARGE
+                                                },
+                                                "streetViewControl": true,
+                                                "streetViewControlOptions": {
+                                                    "position": google.maps.ControlPosition.LEFT_CENTER
+                                                },
+                                                "panControl": false,
+                                                "panControlOptions": {
+                                                    "position": google.maps.ControlPosition.RIGHT_CENTER
+                                                },
+                                                "scaleControl": true,
+                                                "scaleControlOptions": {
+                                                    "position": google.maps.ControlPosition.BOTTOM_CENTER
+                                                }
+                                            };
+                                        view.config.gmap.options.styles = view.config.gmap.styles.map;
+                                        view.gmap.mapBase = new google.maps.Map(myDiv, view.config.gmap.options);
+                                        google.maps.event.addListenerOnce(view.gmap.mapBase, 'idle', function() { // one time listener to make sure we don't trigger callback before map is ready
+                                            view.gmap.mapBase.setTilt(45);
+                                            callback(view);
                                         });
+                                    } else {
+                                        callback(false);
                                     }
                                 });
+                            } else {
+                                console.log('Sorry, unable to located the view\'s config.gmap.div element.');
+                                callback(false);
                             }
-                        });
-                    } else {
-                        if (!view.gmap.mapLabels) {
-                            glabel(view, function(labelResult) {
-                                if (labelResult) {
+                        }
+                        return view;
+                    }
+            }]);
+        socioscapes.fn.extender([
+            {   path: 'viewGmapView',
+                alias: 'gview',
+                silent: true,
+                extension:
+                    function viewGmap(context, config) {
+                        var isValidObject = viewGmap.prototype.isValidObject,
+                            newCallback = viewGmap.prototype.newCallback;
+                        //
+                        var callback = newCallback(arguments),
+                            gmap = viewGmap.prototype.viewGmapMap,
+                            glabel = viewGmap.prototype.viewGmapLabels,
+                            gsymbology = viewGmap.prototype.viewGmapSymbology,
+                            view = context;
+                        if (isValidObject(view)) {
+                            if (!view.gmap) {
+                                gmap(view, function(mapResult) {
+                                    if (mapResult) {
+                                        glabel(view, function(labelResult) {
+                                            if (labelResult) {
+                                                gsymbology(view, function(symbologyResult) {
+                                                    if (symbologyResult) {
+                                                        view.gmap.mapSymbology.init(function(initResult) {
+                                                            if (initResult) {
+                                                                view.gmap.mapSymbology.on();
+                                                                callback(view);
+                                                            } else {
+                                                                callback(false);
+                                                            }
+                                                        });
+                                                    } else {
+                                                        callback(false);
+                                                    }
+                                                });
+                                            } else {
+                                                callback(false);
+                                            }
+                                        });
+                                    } else {
+                                        callback(false);
+                                    }
+                                });
+                            } else {
+                                if (!view.gmap.mapLabels) {
+                                    glabel(view, function(labelResult) {
+                                        if (labelResult) {
+                                            gsymbology(view, function(symbologyResult) {
+                                                if (symbologyResult) {
+                                                    view.gmap.mapSymbology.init(function(initResult) {
+                                                        if (initResult) {
+                                                            view.gmap.mapSymbology.on();
+                                                            callback(view);
+                                                        } else {
+                                                            callback(false);
+                                                        }
+                                                    });
+                                                } else {
+                                                    callback(false);
+                                                }
+                                            });
+                                        }  else {
+                                            callback(false);
+                                        }
+                                    });
+                                } else {
                                     gsymbology(view, function(symbologyResult) {
                                         if (symbologyResult) {
                                             view.gmap.mapSymbology.init(function(initResult) {
                                                 if (initResult) {
                                                     view.gmap.mapSymbology.on();
                                                     callback(view);
+                                                } else {
+                                                    callback(false);
                                                 }
                                             });
+                                        } else {
+                                            callback(false);
                                         }
                                     });
                                 }
-                            });
+                            }
                         } else {
-                            gsymbology(view, function(symbologyResult) {
-                                if (symbologyResult) {
-                                    view.gmap.mapSymbology.init(function(initResult) {
-                                        if (initResult) {
-                                            view.gmap.mapSymbology.on();
-                                            callback(view);
-                                        }
-                                    });
-                                }
-                            });
+                            callback(false);
                         }
+                        return view;
                     }
-                }
-                return that;
-            }
-    }]);
-},{"./../core/core.js":11}],15:[function(require,module,exports){
+            }]);
+    }
+}
+module.exports = viewGmaps;
+},{}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4113,7 +4107,6 @@ module.exports = fetchGoogleBq;
 /*jslint node: true */
 /*global module, require, google, geocode, maps, GeocoderStatus*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js');
 /**
  * This method executes a Google Geocoder query for 'address' and returns the results in an object.
  *
@@ -4125,6 +4118,8 @@ var newCallback = require('./../construct/newCallback.js');
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
 function fetchGoogleGeocode(address) {
+    var newCallback = fetchGoogleGeocode.prototype.newCallback;
+    //
     var callback = newCallback(arguments),
         geocoder = new google.maps.Geocoder(),
         geocode = {};
@@ -4140,7 +4135,7 @@ function fetchGoogleGeocode(address) {
     });
 }
 module.exports = fetchGoogleGeocode;
-},{"./../construct/newCallback.js":5}],20:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
@@ -4249,6 +4244,9 @@ else{var b=[],c=this.min(),d=this.max(),d=Math.log(d)/Math.LN10,c=Math.log(c)/Ma
 /*jslint node: true */
 /*global module, require, document, window, google, gapi*/
 'use strict';
+var socioscapes = require('./core/core.js'),
+    viewGmaps = require('./extension/viewGmaps.js');
+
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
@@ -4257,62 +4255,86 @@ else{var b=[],c=this.min(),d=this.max(),d=Math.log(d)/Math.LN10,c=Math.log(c)/Ma
  *    Source code...................... http://github.com/moismailzai/socioscapes
  *    Reference implementation......... http://app.socioscapes.com
  *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................ © 2015 Misaqe Ismailzai
+ *    Copyright........................ © 2016 Misaqe Ismailzai
  *
- * This software was written as partial fulfilment of the degree requirements for the Masters of Arts in Sociology at
- * the University of Toronto.
+ * This software was originally conceived as partial fulfilment of the degree requirements for the Masters of Arts in
+ * Sociology at the University of Toronto.
  */
-var core = require('./core/core.js'), gmap;
-    gmap = require('./extension/gmaps.js');
-module.exports = core;
-},{"./core/core.js":11,"./extension/gmaps.js":14}],25:[function(require,module,exports){
+
+// to extend socioscapes, simply call the extension with the socioscapes object as argument
+viewGmaps(socioscapes);
+
+module.exports = socioscapes;
+},{"./core/core.js":12,"./extension/viewGmaps.js":14}],25:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
-function menuClass(context, name) {
+/**
+ * This method returns a ScapeObject object for schema entries where menu === 'menuClass'.
+ *
+ * @function menuClass
+ * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
+ * for our context).
+ * @param {string} [name] - Not implemented.
+ * @param {Object} [config] - Not implemented.
+ * @return {Object} - A socioscapes ScapeObject object.
+ */
+function menuClass(context, name, config) {
     var fetchFromScape = menuClass.prototype.fetchFromScape;
     //
-    return fetchFromScape(name || context.schema.name, 'name', context.schema.container);
+    name = (typeof name === 'string') ? name : context.schema.name;
+    return fetchFromScape(name, 'name', context.object);
 }
 module.exports = menuClass;
 },{}],26:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, this*/
 'use strict';
+/**
+ * This method returns a ScapeObject object for schema entries where menu === 'menuConfig'.
+ *
+ * @function menuConfig
+ * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
+ * for our context).
+ * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
+ * @param {Object} [config] - A configuration object for the corresponding command function.
+ * @return {Object} - A socioscapes ScapeObject object.
+ */
 function menuConfig(context, command, config) {
     var newCallback = menuConfig.prototype.newCallback,
         newEvent = menuConfig.prototype.newEvent;
     //
     var callback = newCallback(arguments),
-        myResult = context.that,
-        myEvent,
-        myCommand = socioscapes.fn[command] ||  // if command matches a full command name
-            socioscapes.fn.schema.alias[command] || // or an alias
+        myCommand = menuConfig.prototype[command] ||  // if command matches a full command name
+            menuConfig.prototype.schema.alias[command] || // or an alias
             ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
-        config = (typeof config === 'object') ? config: { "name": config || command }; // if a string was provided as the config argument, use it as a name
     if (myCommand) {
-        context.that.dispatcher.dispatch({
-                myFunction: myCommand,
-                myArguments: [context.that, config],
-                myThis: context.that
-            },
-            function (result) {
-                if (result) {
-                    console.log('The results of your "' + command + '" are ready.');
-                    myResult = result;
-                    myEvent = newEvent('socioscapes.ready.' + myCommand.name, context);
-                    document.dispatchEvent(myEvent);
-                }
-            });
+        myCommand(context.that, config, function (result) {
+            console.log('The results of your "' + command + '" are ready.');
+            newEvent('socioscapes.ready.' + myCommand.name, context);
+            callback(result);
+        });
+    } else {
+        console.log('Sorry, "' + command + '" is not a valid function.');
+        callback(false);
     }
-    callback(myResult);
-    return myResult;
+    return context.that;
 }
 module.exports = menuConfig;
 },{}],27:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
+/**
+ * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
+ *
+ * @function menuRequire
+ * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
+ * for our context).
+ * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
+ * @param {Object} [config] - A configuration object for the corresponding command function.
+ * @return {Object} - A socioscapes ScapeObject object.
+ */
 function menuRequire(context, command, config) {
     var newCallback = menuRequire.prototype.newCallback;
     //
@@ -4325,39 +4347,43 @@ module.exports = menuRequire;
 /*jslint node: true */
 /*global module, require, socioscapes, this*/
 'use strict';
+/**
+ * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
+ *
+ * @function menuStore
+ * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
+ * for our context).
+ * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
+ * @param {Object} [config] - A configuration object for the corresponding command function.
+ * @return {Object} - A socioscapes ScapeObject object.
+ */
 function menuStore(context, command, config) {
     var newCallback = menuStore.prototype.newCallback,
         newEvent = menuStore.prototype.newEvent;
     //
     var callback = newCallback(arguments),
-        myResult = context.that,
-        myEvent,
-        myCommand = socioscapes.fn[command] || socioscapes.fn.schema.alias[command] || ((typeof command === 'function') ? command:false);
+        myCommand = menuStore.prototype[command] ||  // if command matches a full command name
+            menuStore.prototype.schema.alias[command] || // or an alias
+            ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
     if (myCommand) {
-        context.that.dispatcher.dispatch({
-                myFunction: myCommand,
-                myArguments: [context.that, config]
-            },
-            function (result) {
-                if (result) {
-                    for (var prop in result) {
-                        if (result.hasOwnProperty(prop)) {
-                            delete context.object[prop];
-                            context.object[prop] = result[prop];
-                        }
+        myCommand(context.that, config, function (result) {
+            if (result) {
+                for (var prop in result) {
+                    if (result.hasOwnProperty(prop)) {
+                        delete context.object[prop];
+                        context.object[prop] = result[prop];
                     }
-                    console.log('The results of your "' + command + '" query are ready.');
-                    myResult = result;
-                    myEvent = newEvent('socioscapes.ready.' + myCommand.name, context);
-                    document.dispatchEvent(myEvent);
                 }
-
-            });
+            }
+            console.log('The results of your "' + command + '" query are ready.');
+            newEvent('socioscapes.ready.' + myCommand.name, context);
+            callback(result);
+        });
     } else {
         console.log('Sorry, "' + command + '" is not a valid function.');
+        callback(false);
     }
-    callback(myResult);
-    return myResult;
+    return context.that;
 }
 module.exports = menuStore;
 },{}]},{},[24])(24)

@@ -7,7 +7,6 @@ var newCallback = require('./../construct/newCallback.js');
  * "protocol://my.valid.url/my.file" and supports the http, https, ftp, and ftps protocols.
  *
  * @function isValidUrl
- * @memberof! socioscapes
  * @param {string} url - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}

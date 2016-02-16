@@ -1,199 +1,74 @@
 /*jslint node: true */
 /*global module, require, document, window, google, gapi*/
 'use strict';
-var version = '0.6.1',
-    chroma = require('chroma-js'),
-    extend = require('./../core/extend'),
-    newCallback = require('./../construct/newCallback.js'),
-    newDispatcher = require('./../construct/newDispatcher.js'),
-    newEvent = require('./../construct/newEvent.js'),
-    fetchFromScape = require('./../fetch/fetchFromScape.js'),
-    fetchGlobal = require('./../fetch/fetchGlobal.js'),
-    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
-    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScape = require('./../fetch/fetchScape.js'),
-    fetchWfs = require('./../fetch/fetchWfs.js'),
-    geostats = require('./../lib/geostats.min.js'),
-    isValidObject = require('./../bool/isValidObject.js'),
-    isValidName = require('./../bool/isValidName.js'),
-    isValidUrl = require('./../bool/isValidUrl.js'),
-    menuClass = require('./../menu/menuClass.js'),
-    menuConfig = require('./../menu/menuConfig.js'),
-    menuStore = require('./../menu/menuStore.js'),
-    menuRequire = require('./../menu/menuRequire.js'),
-    newGlobal = require('./../construct/newGlobal.js'),
-    socioscapes;
+var version = '0.6.5-0',
+    externalDependencies = ['chroma','geostats'];
+
 /**
- * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.extend' and provide an array of entries that are composed of an object with
- * '.path' (a string), and '.extension' (a value) members. The '.path' tells the API where to store your extension. The
- * path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such
- * that existing elements can access it. For instance, if you have created a new module that retrieves data from a
- * MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql'). This convention not only allows for a clean
- * ecosystem, under the hood socioscapes will ensure that your module is integrated with all other modules which accept
- * data fetchers.
- * */
-socioscapes = function(name) {
-    return socioscapes.fn.init(name);
-};
+ * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
+ * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
+ * sandboxed environment.
+ *
+ *    Source code...................... http://github.com/moismailzai/socioscapes
+ *    Reference implementation......... http://app.socioscapes.com
+ *    License.......................... MIT license (free as in beer & speech)
+ *    Copyright........................ © 2016 Misaqe Ismailzai
+ *
+ * This software was originally conceived as partial fulfilment of the degree requirements for the Masters of Arts in
+ * Sociology at the University of Toronto.
+ * @global
+ * @namespace
+ * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
+ * creates 'scape0'
+ * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
+ */
+function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
+    var myScape = socioscapes.fn.fetchScape(scapeName || 'scape0') || socioscapes.fn.newScapeObject('scape0', null, 'scape');
+    return socioscapes.fn.newScapeMenu(myScape);
+}
+
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, (use
+// socioscapes.fn as an alias)
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
-    chroma: chroma,
-    extend: extend,
-    version: version,
-    geostats: geostats
+    chroma: require('chroma-js'),
+    geostats: require('./../lib/geostats.min.js'),
+    extender: require('./../core/extender'),
+    fetchFromScape: require('./../fetch/fetchFromScape.js'),
+    fetchGlobal: require('./../fetch/fetchGlobal.js'),
+    fetchGoogleAuth: require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleBq: require('./../fetch/fetchGoogleBq.js'),
+    fetchGoogleGeocode: require('./../fetch/fetchGoogleGeocode.js'),
+    fetchScape: require('./../fetch/fetchScape.js'),
+    fetchScapeSchema: require('./../fetch/fetchScapeSchema.js'),
+    fetchWfs: require('./../fetch/fetchWfs.js'),
+    isValidName: require('./../bool/isValidName.js'),
+    isValidObject: require('./../bool/isValidObject.js'),
+    isValidUrl: require('./../bool/isValidUrl.js'),
+    menuClass: require('./../menu/menuClass.js'),
+    menuConfig: require('./../menu/menuConfig.js'),
+    menuRequire: require('./../menu/menuRequire.js'),
+    menuStore: require('./../menu/menuStore.js'),
+    newCallback: require('./../construct/newCallback.js'),
+    newDispatcher: require('./../construct/newDispatcher.js'),
+    newEvent: require('./../construct/newEvent.js'),
+    newGlobal: require('./../construct/newGlobal.js'),
+    newScapeMenu: require('./../construct/newScapeMenu.js'),
+    newScapeObject: require('./../construct/newScapeObject.js'),
+    newSchema: require('./../construct/newSchema.js'),
+    version: version
 };
-socioscapes.fn.extend.prototype = socioscapes.fn;
-socioscapes.fn.newCallback = newCallback;
-socioscapes.fn.newCallback.prototype = socioscapes.fn;
-socioscapes.fn.newEvent = newEvent;
-socioscapes.fn.newEvent.prototype = socioscapes.fn;
-socioscapes.fn.newDispatcher = newDispatcher;
-socioscapes.fn.newDispatcher.prototype = socioscapes.fn;
-socioscapes.fn.menuStore = menuStore;
-socioscapes.fn.menuStore.prototype = socioscapes.fn;
-socioscapes.fn.newGlobal= newGlobal;
-socioscapes.fn.newGlobal.prototype = socioscapes.fn;
-socioscapes.fn.menuRequire = menuRequire;
-socioscapes.fn.menuRequire.prototype = socioscapes.fn;
-socioscapes.fn.menuStore = menuStore;
-socioscapes.fn.menuStore.prototype = socioscapes.fn;
-socioscapes.fn.menuConfig = menuConfig;
-socioscapes.fn.menuConfig.prototype = socioscapes.fn;
-socioscapes.fn.menuClass = menuClass;
-socioscapes.fn.menuClass.prototype = socioscapes.fn;
-socioscapes.fn.isValidUrl = isValidUrl;
-socioscapes.fn.isValidUrl = socioscapes.fn;
-socioscapes.fn.isValidName = isValidName;
-socioscapes.fn.isValidName.prototype = socioscapes.fn;
-socioscapes.fn.isValidObject = isValidObject;
-socioscapes.fn.isValidObject.prototype = socioscapes.fn;
-socioscapes.fn.fetchWfs = fetchWfs;
-socioscapes.fn.fetchWfs.prototype = socioscapes.fn;
-socioscapes.fn.fetchScape = fetchScape;
-socioscapes.fn.fetchScape.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleGeocode = fetchGoogleGeocode;
-socioscapes.fn.fetchGoogleGeocode.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleBq = fetchGoogleBq;
-socioscapes.fn.fetchGoogleBq.prototype = socioscapes.fn;
-socioscapes.fn.fetchGoogleAuth = fetchGoogleAuth;
-socioscapes.fn.fetchGoogleAuth.prototype = socioscapes.fn;
-socioscapes.fn.fetchGlobal = fetchGlobal;
-socioscapes.fn.fetchGlobal.prototype = socioscapes.fn;
-socioscapes.fn.fetchFromScape = fetchFromScape;
-socioscapes.fn.fetchFromScape.prototype = socioscapes.fn;
-socioscapes.fn.schema = {
-    structure: {
-        "scape": {
-            "children": [
-                {
-                    "class": "[state]"
-                }
-            ],
-                "class": "scape",
-                "menu": menuClass,
-                "name": "scape0",
-                "state": [
-                {
-                    "class": "state",
-                    "children": [
-                        {
-                            "class": "[layer]"
-                        },
-                        {
-                            "class": "[view]"
-                        }
-                    ],
-                    "layer": [
-                        {
-                            "children": [
-                                {
-                                    "class": "data"
-                                },
-                                {
-                                    "class": "geom"
-                                }
-                            ],
-                            "class": "layer",
-                            "data": {
-                                "menu": menuStore,
-                                "value": {}
-                            },
-                            "geom": {
-                                "menu": menuStore,
-                                "value": {}
-                            },
-                            "menu": menuClass,
-                            "name": "layer0",
-                            "parent": "state",
-                            "type": "layer.state.scape.sociJson"
-                        }
-                    ],
-                    "menu": menuClass,
-                    "name": "state0",
-                    "parent": "scape",
-                    "type": "state.scape.sociJson",
-                    "view": [
-                        {
-                            "config": {
-                                "menu": menuConfig,
-                                "value": {
-                                    "breaks": 5, // number of groups the data should be classified into
-                                    "classification": "jenks", // the classification formula to use for geostats
-                                    "classes": [], // class cut-off values based on the classifictaion formula and number of breaks
-                                    "colourScale": "YlOrRd", // the colorbrew colorscale to use for chroma
-                                    "featureIdProperty": "dauid", // the feature's unique id, used to match geometery features with corresponding data values
-                                    "layer": 0, // the name or array id to fetch data and geometry from
-                                    "type": "", // the type of view
-                                    "valueIdProperty": "total", // the primary property to use when visualizing data
-                                    "version": socioscapes.fn.version
-                                }
-                            },
-                            "children": [
-                                {
-                                    "class": "config"
-                                },
-                                {
-                                    "class": "require"
-                                }
-                            ],
-                            "class": "view",
-                            "menu": menuClass,
-                            "name": "view0",
-                            "parent": "state",
-                            "require": {
-                                "menu": menuRequire,
-                                "value": {
-                                    "layers": {}, // a list of layer's in the state's layer array that store values for this view
-                                    "modules": {} // a list of modules required for this view
-                                }
-                            },
-                            "type": "view.state.scape.sociJson"
-                        }
-                    ]
-                }
-            ],
-                "type": "scape.sociJson"
-        }
+
+// lets give all our methods (except external dependencies) access to the method repository by setting their prototypes
+// to the socioscapes prototype. this way, we can avoid circular dependency nightmares and facilitate extensions loading
+// through prototype alteration (which is what the extender method does).
+for (var myMethod in socioscapes.fn) {
+    if (socioscapes.fn.hasOwnProperty(myMethod) && typeof socioscapes.fn[myMethod] === 'function' && externalDependencies.indexOf(myMethod) === -1) {
+        socioscapes.fn[myMethod].prototype = socioscapes.fn;
     }
-};
-socioscapes.fn.schema.alias = {
-    "bq": socioscapes.fn.fetchGoogleBq,
-    "wfs": socioscapes.fn.fetchWfs
-};
-socioscapes.fn.schema.index = {
-    "scape": { "class": "scape", "type": "scape.sociJson", "schema": socioscapes.fn.schema.structure.scape},
-    "state": { "class": "state", "type": "state.scape.sociJson", "schema": socioscapes.fn.schema.structure.scape.state[0]},
-    "layer": { "class": "layer", "type": "layer.state.scape.sociJson" , "schema": socioscapes.fn.schema.structure.scape.state[0].layer[0]},
-    "view": { "class": "view", "type": "view.state.scape.sociJson", "schema": socioscapes.fn.schema.structure.scape.state[0].view[0]}
-};
-socioscapes.fn.fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
-socioscapes.fn.fetchScapeSchema.prototype = socioscapes.fn;
-socioscapes.fn.newScapeObject = require('./../construct/newScapeObject.js');
-socioscapes.fn.newScapeObject.prototype = socioscapes.fn;
-socioscapes.fn.newScapeMenu = require('./../construct/newScapeMenu.js');
-socioscapes.fn.newScapeMenu.prototype = socioscapes.fn;
-socioscapes.fn.init = require('./../core/init.js');
-socioscapes.fn.init.prototype = socioscapes.fn;
+}
+
+// finally lets initialize the base schema tree
+socioscapes.fn.schema = socioscapes.fn.newSchema();
+
 module.exports = socioscapes;

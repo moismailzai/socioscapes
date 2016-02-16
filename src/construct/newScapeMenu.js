@@ -1,106 +1,88 @@
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+/**
+ * This method creates ScapeMenu objects, which are the api interfaces that developers interact with.
+ *
+ * @function newScapeMenu
+ * @param {Object} scapeObject - A valid @ScapeObject.
+ * @return {Object} - A socioscapes ScapeMenu object.
+ */
 var newScapeMenu = function newScapeMenu(scapeObject) {
     var isValidObject = newScapeMenu.prototype.isValidObject,
         newScapeObject = newScapeMenu.prototype.newScapeObject,
         newEvent = newScapeMenu.prototype.newEvent,
-        newChildMenu = function(myChild, mySchema, myObject, that) {
-            var myChildClass = myChild.class, // child item class
-                myChildIsArray,
-                myChildSchema, // child item datastructure schema
-                myChildContext; // context object to be prepended to all menu item calls
-            if (myChildClass.match(/\[(.*?)]/g)) {
-                myChildClass = /\[(.*?)]/g.exec(myChildClass)[1];
-                myChildIsArray = true;
-            }
-            myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass];
-            myChildContext = {
-                "object": myObject[myChildClass], // this is the actual child object
-                "schema": myChildSchema, // this is the prototype of the child object
-                "that": myObject // this is the actual parent object that contains the actual object
-            };
-            if (myChildSchema.menu) {
-                // if the schema definition includes a .menu member, it is used as an API interface for that
-                // item. for example, if the 'geom' class had the following '.menu' entry:
-                //                                               function(foo) { console.log(foo, 'bar!'); };
-                // then 'socioscapes().state().layer().geom('foo')' would result in a console printout of 'foobar!'
-                // child items without a .menu member are ignored.
-                Object.defineProperty(that, myChildClass, {
-                    value: function () {
-                        var myArgs = [],
-                            myNewObject,
-                            myResult;
-                        myArgs.push(myChildContext);
-                        for (var i = 0; i < arguments.length; i++) {
-                            myArgs.push(arguments[i]);
-                        }
-                        if (myChildSchema.menu.name === 'menuClass') {
-                            myNewObject = myChildSchema.menu.apply(myObject, myArgs);
-                            myResult = newScapeMenu(myNewObject);
-                        } else {
-                            myObject.dispatcher.dispatch({
-                                    myFunction: myChildSchema.menu,
-                                    myArguments: myArgs,
-                                    myThis: myObject
+        //
+        newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
+            var myChildIsArray = myChild.class.match(/\[(.*?)]/g) ? true : false,
+                myChildClass = myChildIsArray ? /\[(.*?)]/g.exec(myChild.class)[1] : myChild.class,
+                myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass]; // child item datastructure
+            if (myChildSchema.menu) { // if the datastructure defines a menu stub
+                Object.defineProperty(thisMenu, myChildClass, { // "myChildClass" evaluates to a classname string (eg. 'state' or 'view' or 'config')
+                    value: function (command, config, callback) {
+                            var myArguments = [],
+                                myCallback = ((typeof command === 'function') && !config && !callback) ? command // test to see if the first argument is the only one provided and a function. if it is, assume it's a callback
+                                    : ((typeof config === 'function') && !callback) ? config // otherwise, if the second argument is a function and there's no third argument, assume it's a callback
+                                    : ((typeof callback === 'function') ? callback : function() { }), // otherwise, if the third argument is a function, assume it's a callback or create an empty one
+                                myContext = { // this object points to several important references
+                                    "object": myObject[myChildClass], // this is the object that the menu calls will manipulate
+                                    "schema": myChildSchema, // this is the datastructure of the above object
+                                    "that": myObject // this is the parent object of the above object (to be used as the "this" return object to facilitate method chaining)
                                 },
-                                function (result) {
-                                    if (result) {
-                                        myResult = result;
-                                    }
-                                });
-                            myResult = that;
+                                myFunction = myChildSchema.menu,
+                                myReturn = thisMenu; // default return value (to facilitate method chaining in the api)
+                        if (myChildSchema.menu.name === 'menuClass') { // if the object we need to create is of class 'menuClass' (which means it will be an api menu object)
+                            myObject = myChildSchema.menu(myContext, command, config); // just generate it on the fly since it's not async
+                            myReturn = newScapeMenu(myObject); // trigger the callback (so that method chaining works even for synchronous api calls)
+                            myCallback(myReturn); // and set the return value to be the new api menu object
+                        } else { // otherwise, it might produce an asynchronous call so queue to the dispatcher so it can be evaluated sequentially
+                            if (command) { // setup the myArguments array for the dispatcher
+                                myArguments.push(command); // if a command arg was provided, push it to the myArguments array
+                                if (typeof config !== 'function') { // do the same for config
+                                    myArguments.push(config);
+                                }
+                            }
+                            myObject.dispatch({
+                                "myArguments": myArguments,
+                                "myCallback": myCallback,
+                                "myContext": myContext,
+                                "myFunction": myFunction
+                            });
                         }
-                        return myResult;
+                        return myReturn;
                     }
                 });
             }
-        };
-    //
-    var ScapeMenu = function(myObject) {
-        var that = this,
-            mySchema = myObject.schema,
-            myClass = mySchema.class,
-            myParent = mySchema.parent,
-            myType = mySchema.type,
-            myEvent;
-        Object.defineProperty(this, 'schema', {
-            value: myObject.schema
-        });
-        Object.defineProperty(this, 'this', {
-            value: myObject
-        });
-        Object.defineProperty(this, 'meta', {
-            value: myObject.meta
-        });
-        Object.defineProperty(this, 'new', {
-            value: function (name) {
-                var myNew,
-                    myResult = this;
-                name = name || mySchema.name + myClass.length;
-                myNew = newScapeObject(name, myParent, myType);
-                myResult = myNew ? new ScapeMenu(myNew):myResult;
-                return myResult;
-            }
-        });
-        Object.defineProperty(this, 'ping', {
-            value: function(pong, callback) {
-                var myEvent;
-                myEvent = newEvent(pong, 'pong!');
-                document.dispatchEvent(myEvent);
-                if (typeof callback === 'function') {
-                    callback();
+        },
+        ScapeMenu = function(myObject) {
+            var mySchema = myObject.schema,
+                myClass = mySchema.class,
+                myParent = mySchema.parent,
+                myType = mySchema.type,
+                thisMenu = this;
+            Object.defineProperty(this, 'schema', {
+                value: myObject.schema
+            });
+            Object.defineProperty(this, 'this', {
+                value: myObject
+            });
+            Object.defineProperty(this, 'meta', {
+                value: myObject.meta
+            });
+            Object.defineProperty(this, 'new', {
+                value: function (name) {
+                    var myNew;
+                    name = name || mySchema.name + myClass.length;
+                    myNew = newScapeObject(name, myParent, myType);
+                    return myNew ? new ScapeMenu(myNew) : thisMenu;
                 }
-                return that;
+            });
+            for (var i = 0; i < mySchema.children.length; i++) {
+                newChildMenu(this, myObject, mySchema, mySchema.children[i]);
             }
-        });
-        for (var i = 0; i < mySchema.children.length; i++) {
-            newChildMenu(mySchema.children[i], mySchema, myObject, this);
-        }
-        myEvent = newEvent('socioscapes.active', myObject.meta);
-        document.dispatchEvent(myEvent);
-        return this;
-    };
+            newEvent('socioscapes.active', myObject.meta);
+            return this;
+        };
     if (isValidObject(scapeObject)) {
         return new ScapeMenu(scapeObject);
     }

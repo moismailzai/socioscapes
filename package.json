@@ -1,11 +1,12 @@
 {
-  "value": "socioscapes",
-  "version": "0.6.1-0",
+  "name": "socioscapes",
+  "version": "0.6.5-0",
   "description": "Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.",
   "main": "src/main.js",
   "directories": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm install && gulp js",
+    "test": "browserify tests/browser/main.js -o tests/browser/tests.js && echo && echo To see browser tests, please navigate to tests/browser/index.html in your browser."
   },
   "repository": {
     "type": "git",
@@ -26,10 +27,10 @@
   "bugs": {
     "url": "https://github.com/moismailzai/socioscapes/issues"
   },
-  "homepage": "https://github.com/moismailzai/socioscapes#readme",
+  "homepage": "http://app.socioscapes.com",
   "dependencies": {
     "chroma-js": "^1.1.1",
-    "geostats": "^1.1.0"
+    "geostats": "^1.5.0"
   },
   "devDependencies": {
     "browserify": "^11.0.1",
@@ -40,7 +41,9 @@
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.4.0",
     "gulp-util": "^3.0.5",
+    "jsdoc": "^3.4.0",
     "lodash.assign": "^3.2.0",
+    "mocha": "^2.4.5",
     "rename": "^1.0.3",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",

@@ -6,7 +6,6 @@
  * restrictions.
  *
  * @function isValidName
- * @memberof! socioscapes
  * @param {string} name - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
