@@ -1,6 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
+
 /**
  * This internal method tests if an object adheres to the scape.sociJson standard.
  *
@@ -9,8 +11,6 @@
  * @returns {Boolean}
  */
 function isValidObject(object) {
-    var newCallback = isValidObject.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false;
     if (object && object.meta && object.meta.type && object.meta.type.indexOf('scape.sociJson') > -1) {

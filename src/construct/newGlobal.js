@@ -1,6 +1,9 @@
 /*jslint node: true */
 /*global global, module, require, window*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js');
+
 /**
  * This internal method creates a new global object. *gasp*
  *
@@ -11,9 +14,6 @@
  * @return {Object} myGlobal - The newly-created global object.
  */
 function newGlobal(name, object, overwrite) {
-    var fetchGlobal = newGlobal.prototype.fetchGlobal,
-        newCallback = newGlobal.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         myGlobal;
     if (fetchGlobal(name)) {

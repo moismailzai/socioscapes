@@ -1,6 +1,8 @@
 /*jslint node: true */
 /*global module, require, socioscapes, this*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuConfig'.
  *
@@ -12,16 +14,11 @@
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuConfig(context, command, config) {
-    var newCallback = menuConfig.prototype.newCallback,
-        newEvent = menuConfig.prototype.newEvent;
-    //
     var callback = newCallback(arguments),
-        myCommand = menuConfig.prototype[command] ||  // if command matches a full command name
-            menuConfig.prototype.schema.alias[command] || // or an alias
-            ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
+        myCommand = (typeof command === 'function') ? command: false;
     if (myCommand) {
         myCommand(context.that, config, function (result) {
-            console.log('The results of your "' + command + '" are ready.');
+            console.log('The results of your "' + myCommand.name + '" are ready.');
             newEvent('socioscapes.ready.' + myCommand.name, context);
             callback(result);
         });

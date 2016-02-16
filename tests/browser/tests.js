@@ -3545,6 +3545,7 @@ function hasOwnProperty(obj, prop) {
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
  * restrictions.
@@ -3555,8 +3556,6 @@ function hasOwnProperty(obj, prop) {
  * @returns {Boolean}
  */
 function isValidName(name) {
-    var newCallback = isValidName.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false,
         isReserved = [
@@ -3659,10 +3658,12 @@ function isValidName(name) {
     return isValid;
 }
 module.exports = isValidName;
-},{}],8:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],8:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
+
 /**
  * This internal method tests if an object adheres to the scape.sociJson standard.
  *
@@ -3671,8 +3672,6 @@ module.exports = isValidName;
  * @returns {Boolean}
  */
 function isValidObject(object) {
-    var newCallback = isValidObject.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false;
     if (object && object.meta && object.meta.type && object.meta.type.indexOf('scape.sociJson') > -1) {
@@ -3682,7 +3681,7 @@ function isValidObject(object) {
     return isValid;
 }
 module.exports = isValidObject;
-},{}],9:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],9:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -3697,8 +3696,6 @@ var newCallback = require('./../construct/newCallback.js');
  * @returns {Boolean}
  */
 function isValidUrl(url) {
-    newCallback = isValidUrl.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false;
     if (url) {
@@ -3738,6 +3735,7 @@ module.exports = newCallback;
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var newEvent = require('./../construct/newEvent.js');
 /**
  * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
@@ -3756,8 +3754,6 @@ module.exports = newCallback;
  * @return {Function}
  * */
 function newDispatcher() {
-    var newEvent = newDispatcher.prototype.newEvent;
-    //
     var Dispatcher = function() {
         var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
             dispatcherQueue = [],
@@ -3803,7 +3799,7 @@ function newDispatcher() {
     return new Dispatcher();
 }
 module.exports = newDispatcher;
-},{}],12:[function(require,module,exports){
+},{"./../construct/newEvent.js":12}],12:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, document, window*/
 'use strict';
@@ -3838,6 +3834,9 @@ module.exports = newEvent;
 /*jslint node: true */
 /*global global, module, require, window*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js');
+
 /**
  * This internal method creates a new global object. *gasp*
  *
@@ -3848,9 +3847,6 @@ module.exports = newEvent;
  * @return {Object} myGlobal - The newly-created global object.
  */
 function newGlobal(name, object, overwrite) {
-    var fetchGlobal = newGlobal.prototype.fetchGlobal,
-        newCallback = newGlobal.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         myGlobal;
     if (fetchGlobal(name)) {
@@ -3877,10 +3873,13 @@ function newGlobal(name, object, overwrite) {
 }
 module.exports = newGlobal;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],14:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../fetch/fetchGlobal.js":21}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var newEvent = require('./../construct/newEvent.js'),
+    isValidObject = require('./../bool/isValidObject.js'),
+    newScapeObject = require('./../construct/newScapeObject.js');
 /**
  * This method creates ScapeMenu objects, which are the api interfaces that developers interact with.
  *
@@ -3888,12 +3887,8 @@ module.exports = newGlobal;
  * @param {Object} scapeObject - A valid @ScapeObject.
  * @return {Object} - A socioscapes ScapeMenu object.
  */
-var newScapeMenu = function newScapeMenu(scapeObject) {
-    var isValidObject = newScapeMenu.prototype.isValidObject,
-        newScapeObject = newScapeMenu.prototype.newScapeObject,
-        newEvent = newScapeMenu.prototype.newEvent,
-        //
-        newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
+var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
+    var newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
             var myChildIsArray = myChild.class.match(/\[(.*?)]/g) ? true : false,
                 myChildClass = myChildIsArray ? /\[(.*?)]/g.exec(myChild.class)[1] : myChild.class,
                 myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass]; // child item datastructure
@@ -3909,15 +3904,19 @@ var newScapeMenu = function newScapeMenu(scapeObject) {
                                     "schema": myChildSchema, // this is the datastructure of the above object
                                     "that": myObject // this is the parent object of the above object (to be used as the "this" return object to facilitate method chaining)
                                 },
+                                myCommand,
                                 myFunction = myChildSchema.menu,
                                 myReturn = thisMenu; // default return value (to facilitate method chaining in the api)
                         if (myChildSchema.menu.name === 'menuClass') { // if the object we need to create is of class 'menuClass' (which means it will be an api menu object)
                             myObject = myChildSchema.menu(myContext, command, config); // just generate it on the fly since it's not async
-                            myReturn = newScapeMenu(myObject); // trigger the callback (so that method chaining works even for synchronous api calls)
+                            myReturn = newScapeMenu(myObject, socioscapesPrototype); // trigger the callback (so that method chaining works even for synchronous api calls)
                             myCallback(myReturn); // and set the return value to be the new api menu object
                         } else { // otherwise, it might produce an asynchronous call so queue to the dispatcher so it can be evaluated sequentially
                             if (command) { // setup the myArguments array for the dispatcher
-                                myArguments.push(command); // if a command arg was provided, push it to the myArguments array
+                                myCommand = socioscapesPrototype[command] ||  // if command matches a full command name
+                                    socioscapesPrototype.schema.alias[command] || // or an alias
+                                    ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
+                                myArguments.push(myCommand); // if a command arg was provided, push it to the myArguments array
                                 if (typeof config !== 'function') { // do the same for config
                                     myArguments.push(config);
                                 }
@@ -3968,10 +3967,18 @@ var newScapeMenu = function newScapeMenu(scapeObject) {
     }
 };
 module.exports = newScapeMenu;
-},{}],15:[function(require,module,exports){
+},{"./../bool/isValidObject.js":8,"./../construct/newEvent.js":12,"./../construct/newScapeObject.js":15}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
+    fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
 /**
  * This method creates socioscape ScapeObject objects.
  *
@@ -3982,16 +3989,6 @@ module.exports = newScapeMenu;
  * @return {Object} - A socioscapes ScapeObject object.
  */
 var newScapeObject = function newScapeObject(name, parent, type) {
-    var fetchFromScape = newScapeObject.prototype.fetchFromScape,
-        fetchGlobal = newScapeObject.prototype.fetchGlobal,
-        fetchScapeObject = newScapeObject.prototype.fetchScape,
-        newCallback = newScapeObject.prototype.newCallback,
-        newDispatcher = newScapeObject.prototype.newDispatcher,
-        newScapeMenu = newScapeObject.prototype.newScapeMenu,
-        newEvent = newScapeObject.prototype.newEvent,
-        newGlobal = newScapeObject.prototype.newGlobal,
-        fetchScapeSchema = newScapeObject.prototype.fetchScapeSchema;
-    //
     var callback = newCallback(arguments),
         schema = fetchScapeSchema(type),
         myObject = false,
@@ -4075,7 +4072,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
             newEvent('socioscapes.new.' + this.meta.type, this);
             return this;
         };
-    parent = fetchScapeObject(parent);
+    parent = fetchScape(parent);
     if (name) {
         if (parent) {
             if (schema) {
@@ -4089,9 +4086,9 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                 }
             }
         } else {
-            if (fetchScapeObject(name)) {
+            if (fetchScape(name)) {
                 console.log('Fetching exisisting scape "' + name + '".');
-                myObject = fetchScapeObject(name);
+                myObject = fetchScape(name);
             } else {
                 if (!fetchGlobal(name)) {
                     console.log('Creating a new scape called "' + name + '".');
@@ -4106,224 +4103,88 @@ var newScapeObject = function newScapeObject(name, parent, type) {
 };
 module.exports = newScapeObject;
 
-},{}],16:[function(require,module,exports){
-/*jslint node: true */
-/*global module, require, this*/
-'use strict';
-/**
- * This method creates socioscape ScapeSchema objects.
- *
- * @function newSchema
- * @return {Object} - A socioscapes ScapeSchema object.
- */
-function newSchema() {
-    var fetchGoogleBq = newSchema.prototype.fetchGoogleBq,
-        fetchWfs = newSchema.prototype.fetchWfs,
-        menuClass = newSchema.prototype.menuClass,
-        menuRequire = newSchema.prototype.menuRequire,
-        menuStore = newSchema.prototype.menuStore,
-        menuConfig = newSchema.prototype.menuConfig,
-        myVersion = newSchema.prototype.version;
-    //
-    var ScapeSchema = function() {
-        this.structure = {
-            "scape": {
-                "children": [
-                    {
-                        "class": "[state]"
-                    }
-                ],
-                "class": "scape",
-                "menu": menuClass,
-                "name": "scape0",
-                "state": [
-                    {
-                        "class": "state",
-                        "children": [
-                            {
-                                "class": "[layer]"
-                            },
-                            {
-                                "class": "[view]"
-                            }
-                        ],
-                        "layer": [
-                            {
-                                "children": [
-                                    {
-                                        "class": "data"
-                                    },
-                                    {
-                                        "class": "geom"
-                                    }
-                                ],
-                                "class": "layer",
-                                "data": {
-                                    "menu": menuStore,
-                                    "value": {}
-                                },
-                                "geom": {
-                                    "menu": menuStore,
-                                    "value": {}
-                                },
-                                "menu": menuClass,
-                                "name": "layer0",
-                                "parent": "state",
-                                "type": "layer.state.scape.sociJson"
-                            }
-                        ],
-                        "menu": menuClass,
-                        "name": "state0",
-                        "parent": "scape",
-                        "type": "state.scape.sociJson",
-                        "view": [
-                            {
-                                "config": {
-                                    "menu": menuConfig,
-                                    "value": {
-                                        "breaks": 5, // number of groups the data should be classified into
-                                        "classification": "jenks", // the classification formula to use for geostats
-                                        "classes": [], // class cut-off values based on the classifictaion formula and number of breaks
-                                        "colourScale": "YlOrRd", // the colorbrew colorscale to use for chroma
-                                        "featureIdProperty": "dauid", // the feature's unique id, used to match geometery features with corresponding data values
-                                        "layer": 0, // the name or array id to fetch data and geometry from
-                                        "type": "", // the type of view
-                                        "valueIdProperty": "total", // the primary property to use when visualizing data
-                                        "version": myVersion
-                                    }
-                                },
-                                "children": [
-                                    {
-                                        "class": "config"
-                                    },
-                                    {
-                                        "class": "require"
-                                    }
-                                ],
-                                "class": "view",
-                                "menu": menuClass,
-                                "name": "view0",
-                                "parent": "state",
-                                "require": {
-                                    "menu": menuRequire,
-                                    "value": {
-                                        "layers": {}, // a list of layer's in the state's layer array that store values for this view
-                                        "modules": {} // a list of modules required for this view
-                                    }
-                                },
-                                "type": "view.state.scape.sociJson"
-                            }
-                        ]
-                    }
-                ],
-                "type": "scape.sociJson"
-            }
-        };
-        this.alias = {
-            "bq": fetchGoogleBq,
-            "wfs": fetchWfs
-        };
-        this.index = {
-            "scape": {
-                "class": "scape", "type": "scape.sociJson", "schema": this.structure.scape
-            },
-            "state": {
-                "class": "state", "type": "state.scape.sociJson", "schema": this.structure.scape.state[0]
-            },
-            "layer": {
-                "class": "layer", "type": "layer.state.scape.sociJson" , "schema": this.structure.scape.state[0].layer[0]
-            },
-            "view": {
-                "class": "view", "type": "view.state.scape.sociJson", "schema": this.structure.scape.state[0].view[0]
-            }
-        };
-    };
-    return new ScapeSchema();
-}
-module.exports = newSchema;
-},{}],17:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../construct/newDispatcher.js":11,"./../construct/newEvent.js":12,"./../construct/newGlobal.js":13,"./../fetch/fetchFromScape.js":20,"./../fetch/fetchGlobal.js":21,"./../fetch/fetchScape.js":25,"./../fetch/fetchScapeSchema.js":26}],16:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, document, window, google, gapi*/
 'use strict';
-var version = '0.6.5-0',
-    externalDependencies = ['chroma','geostats'];
-
+var version = '0.7.0-0',
+    chroma = require('chroma-js'),
+    geostats = require('./../lib/geostats.min.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    isValidObject = require('./../bool/isValidObject.js'),
+    isValidName = require('./../bool/isValidName.js'),
+    isValidUrl = require('./../bool/isValidUrl.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js'),
+    menuClass = require('./../menu/menuClass.js'),
+    menuConfig = require('./../menu/menuConfig.js'),
+    menuRequire = require('./../menu/menuRequire.js'),
+    menuStore = require('./../menu/menuStore.js'),
+    schema = require('./../core/schema.js'),
+    fetchScapeSchema = require('./../fetch/fetchScapeSchema.js'),
+    newScapeObject = require('./../construct/newScapeObject.js'),
+    newScapeMenu = require('./../construct/newScapeMenu.js'),
+    extender = require('./../core/extender');
 /**
- * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
- * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
- * sandboxed environment.
- *
- *    Source code...................... http://github.com/moismailzai/socioscapes
- *    Reference implementation......... http://app.socioscapes.com
- *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................ © 2016 Misaqe Ismailzai
- *
- * This software was originally conceived as partial fulfilment of the degree requirements for the Masters of Arts in
- * Sociology at the University of Toronto.
  * @global
- * @namespace
+ * @namespace socioscapes
  * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
  * creates 'scape0'
  * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
  */
 function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
-    var myScape = socioscapes.fn.fetchScape(scapeName || 'scape0') || socioscapes.fn.newScapeObject('scape0', null, 'scape');
-    return socioscapes.fn.newScapeMenu(myScape);
+    var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
+    return newScapeMenu(myScape, socioscapes.prototype);
 }
 
-// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, (use
-// socioscapes.fn as an alias)
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this
+// way external socioscapes extensions will have access to internal socioscapes methods via the prototype
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
-    chroma: require('chroma-js'),
-    geostats: require('./../lib/geostats.min.js'),
-    extender: require('./../core/extender'),
-    fetchFromScape: require('./../fetch/fetchFromScape.js'),
-    fetchGlobal: require('./../fetch/fetchGlobal.js'),
-    fetchGoogleAuth: require('./../fetch/fetchGoogleAuth.js'),
-    fetchGoogleBq: require('./../fetch/fetchGoogleBq.js'),
-    fetchGoogleGeocode: require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScape: require('./../fetch/fetchScape.js'),
-    fetchScapeSchema: require('./../fetch/fetchScapeSchema.js'),
-    fetchWfs: require('./../fetch/fetchWfs.js'),
-    isValidName: require('./../bool/isValidName.js'),
-    isValidObject: require('./../bool/isValidObject.js'),
-    isValidUrl: require('./../bool/isValidUrl.js'),
-    menuClass: require('./../menu/menuClass.js'),
-    menuConfig: require('./../menu/menuConfig.js'),
-    menuRequire: require('./../menu/menuRequire.js'),
-    menuStore: require('./../menu/menuStore.js'),
-    newCallback: require('./../construct/newCallback.js'),
-    newDispatcher: require('./../construct/newDispatcher.js'),
-    newEvent: require('./../construct/newEvent.js'),
-    newGlobal: require('./../construct/newGlobal.js'),
-    newScapeMenu: require('./../construct/newScapeMenu.js'),
-    newScapeObject: require('./../construct/newScapeObject.js'),
-    newSchema: require('./../construct/newSchema.js'),
+    chroma: chroma,
+    geostats: geostats,
+    extender: extender,
+    fetchFromScape: fetchFromScape,
+    fetchGlobal: fetchGlobal,
+    fetchGoogleAuth: fetchGoogleAuth,
+    fetchGoogleBq: fetchGoogleBq,
+    fetchGoogleGeocode: fetchGoogleGeocode,
+    fetchScape: fetchScape,
+    fetchScapeSchema: fetchScapeSchema,
+    fetchWfs: fetchWfs,
+    isValidName: isValidName,
+    isValidObject: isValidObject,
+    isValidUrl: isValidUrl,
+    menuClass: menuClass,
+    menuConfig: menuConfig,
+    menuRequire: menuRequire,
+    menuStore: menuStore,
+    newCallback: newCallback,
+    newDispatcher: newDispatcher,
+    newEvent: newEvent,
+    newGlobal: newGlobal,
+    newScapeMenu: newScapeMenu,
+    newScapeObject: newScapeObject,
+    schema: schema,
     version: version
 };
-
-// lets give all our methods (except external dependencies) access to the method repository by setting their prototypes
-// to the socioscapes prototype. this way, we can avoid circular dependency nightmares and facilitate extensions loading
-// through prototype alteration (which is what the extender method does).
-for (var myMethod in socioscapes.fn) {
-    if (socioscapes.fn.hasOwnProperty(myMethod) && typeof socioscapes.fn[myMethod] === 'function' && externalDependencies.indexOf(myMethod) === -1) {
-        socioscapes.fn[myMethod].prototype = socioscapes.fn;
-    }
-}
-
-// finally lets initialize the base schema tree
-socioscapes.fn.schema = socioscapes.fn.newSchema();
-
 module.exports = socioscapes;
-},{"./../bool/isValidName.js":7,"./../bool/isValidObject.js":8,"./../bool/isValidUrl.js":9,"./../construct/newCallback.js":10,"./../construct/newDispatcher.js":11,"./../construct/newEvent.js":12,"./../construct/newGlobal.js":13,"./../construct/newScapeMenu.js":14,"./../construct/newScapeObject.js":15,"./../construct/newSchema.js":16,"./../core/extender":18,"./../fetch/fetchFromScape.js":20,"./../fetch/fetchGlobal.js":21,"./../fetch/fetchGoogleAuth.js":22,"./../fetch/fetchGoogleBq.js":23,"./../fetch/fetchGoogleGeocode.js":24,"./../fetch/fetchScape.js":25,"./../fetch/fetchScapeSchema.js":26,"./../fetch/fetchWfs.js":27,"./../lib/geostats.min.js":28,"./../menu/menuClass.js":30,"./../menu/menuConfig.js":31,"./../menu/menuRequire.js":32,"./../menu/menuStore.js":33,"chroma-js":2}],18:[function(require,module,exports){
+},{"./../bool/isValidName.js":7,"./../bool/isValidObject.js":8,"./../bool/isValidUrl.js":9,"./../construct/newCallback.js":10,"./../construct/newDispatcher.js":11,"./../construct/newEvent.js":12,"./../construct/newGlobal.js":13,"./../construct/newScapeMenu.js":14,"./../construct/newScapeObject.js":15,"./../core/extender":17,"./../core/schema.js":18,"./../fetch/fetchFromScape.js":20,"./../fetch/fetchGlobal.js":21,"./../fetch/fetchGoogleAuth.js":22,"./../fetch/fetchGoogleBq.js":23,"./../fetch/fetchGoogleGeocode.js":24,"./../fetch/fetchScape.js":25,"./../fetch/fetchScapeSchema.js":26,"./../fetch/fetchWfs.js":27,"./../lib/geostats.min.js":28,"./../menu/menuClass.js":30,"./../menu/menuConfig.js":31,"./../menu/menuRequire.js":32,"./../menu/menuStore.js":33,"chroma-js":2}],17:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
 /**
  * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
  * simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with
- * '.path' (a string), and '.extension' (a value) members. The '.path'
+ * '.path' (a string), and '.extension' (a value) members.
  *
  * @function extender
  * @param {Object[]} config - A valid socioscapes extension configuration.
@@ -4331,13 +4192,14 @@ module.exports = socioscapes;
  * root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access
  * it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the
  * 'fetch' prefix (eg. 'fetchMysql').
+ * @param {Function} socioscapes - The socioscapes global object.
  * @param {string} config[].alias - A shorter alias that doesn't follow the above naming standards.
  * @param {Boolean} config[].silent - If true, supresses console.log messages.
  * @param {Object} config[].extension - Your extension.
  * */
-function extender(config) {
+function extender(socioscapes, config) {
     var myExtension, myName, myPath, i, ii,
-        myTarget = extender.prototype;
+        myTarget = socioscapes.prototype;
     for (i = 0; i < config.length; i++) {
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
@@ -4353,7 +4215,7 @@ function extender(config) {
             }
             if (myTarget) {
                 myTarget[myName] = myExtension;
-                myTarget[myName].prototype = extender.prototype;
+                myTarget[myName].prototype = socioscapes.prototype;
                 if (config[i].alias) {
                     myTarget.schema.alias[config[i].alias] = myTarget[myName];
                 }
@@ -4367,13 +4229,145 @@ function extender(config) {
     }
 }
 module.exports = extender;
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+/*jslint node: true */
+/*global module, require, this*/
+'use strict';
+var myVersion = '0.1',
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js'),
+    menuClass = require('./../menu/menuClass.js'),
+    menuConfig = require('./../menu/menuConfig.js'),
+    menuRequire = require('./../menu/menuRequire.js'),
+    menuStore = require('./../menu/menuStore.js'),
+    myScapeSchema = {
+        "scape": {
+        "children": [
+            {
+                "class": "[state]"
+            }
+        ],
+        "class": "scape",
+        "menu": menuClass,
+        "name": "scape0",
+        "state": [
+            {
+                "class": "state",
+                "children": [
+                    {
+                        "class": "[layer]"
+                    },
+                    {
+                        "class": "[view]"
+                    }
+                ],
+                "layer": [
+                    {
+                        "children": [
+                            {
+                                "class": "data"
+                            },
+                            {
+                                "class": "geom"
+                            }
+                        ],
+                        "class": "layer",
+                        "data": {
+                            "menu": menuStore,
+                            "value": {}
+                        },
+                        "geom": {
+                            "menu": menuStore,
+                            "value": {}
+                        },
+                        "menu": menuClass,
+                        "name": "layer0",
+                        "parent": "state",
+                        "type": "layer.state.scape.sociJson"
+                    }
+                ],
+                "menu": menuClass,
+                "name": "state0",
+                "parent": "scape",
+                "type": "state.scape.sociJson",
+                "view": [
+                    {
+                        "config": {
+                            "menu": menuConfig,
+                            "value": {
+                                "breaks": 5, // number of groups the data should be classified into
+                                "classification": "jenks", // the classification formula to use for geostats
+                                "classes": [], // class cut-off values based on the classifictaion formula and number of breaks
+                                "colourScale": "YlOrRd", // the colorbrew colorscale to use for chroma
+                                "featureIdProperty": "dauid", // the feature's unique id, used to match geometery features with corresponding data values
+                                "layer": 0, // the name or array id to fetch data and geometry from
+                                "type": "", // the type of view
+                                "valueIdProperty": "total", // the primary property to use when visualizing data
+                                "version": myVersion
+                            }
+                        },
+                        "children": [
+                            {
+                                "class": "config"
+                            },
+                            {
+                                "class": "require"
+                            }
+                        ],
+                        "class": "view",
+                        "menu": menuClass,
+                        "name": "view0",
+                        "parent": "state",
+                        "require": {
+                            "menu": menuRequire,
+                            "value": {
+                                "layers": {}, // a list of layer's in the state's layer array that store values for this view
+                                "modules": {} // a list of modules required for this view
+                            }
+                        },
+                        "type": "view.state.scape.sociJson"
+                    }
+                ]
+            }
+        ],
+        "type": "scape.sociJson"
+    }
+    };
+/**
+ * This method creates socioscape ScapeSchema objects.
+ *
+ * @function schema
+ * @return {Object} - A socioscapes ScapeSchema object.
+ */
+var schema = {
+    "structure": myScapeSchema,
+    "alias" : {
+        "bq": fetchGoogleBq,
+        "wfs": fetchWfs
+    },
+    "index" : {
+        "scape": {
+            "class": "scape", "type": "scape.sociJson", "schema": myScapeSchema.scape
+        },
+        "state": {
+            "class": "state", "type": "state.scape.sociJson", "schema": myScapeSchema.scape.state[0]
+        },
+        "layer": {
+            "class": "layer", "type": "layer.state.scape.sociJson" , "schema": myScapeSchema.scape.state[0].layer[0]
+        },
+        "view": {
+            "class": "view", "type": "view.state.scape.sociJson", "schema": myScapeSchema.scape.state[0].view[0]
+        }
+    }
+};
+module.exports = schema;
+},{"./../fetch/fetchGoogleBq.js":23,"./../fetch/fetchWfs.js":27,"./../menu/menuClass.js":30,"./../menu/menuConfig.js":31,"./../menu/menuRequire.js":32,"./../menu/menuStore.js":33}],19:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, event, feature, gapi*/
 'use strict';
 function viewGmaps(socioscapes) {
     if (socioscapes && socioscapes.fn && socioscapes.fn.extender) {
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {   path: 'viewGmapSymbology',
                 alias: 'gsymbology',
                 silent: true,
@@ -4604,7 +4598,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {
                 path: 'viewGmapLabels',
                 alias: 'glabel',
@@ -4680,7 +4674,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {
                 "path": 'viewGmapMap',
                 "alias": 'gmap',
@@ -4899,7 +4893,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {   path: 'viewGmapView',
                 alias: 'gview',
                 silent: true,
@@ -4993,9 +4987,9 @@ module.exports = viewGmaps;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    isValidName = require('./../bool/isValidName.js');
 function fetchFromScape(key, metaProperty, array) {
-    var isValidName = fetchFromScape.prototype.isValidName,
-        newCallback = fetchFromScape.prototype.newCallback;
     Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     };
@@ -5017,14 +5011,13 @@ function fetchFromScape(key, metaProperty, array) {
     return myKey;
 }
 module.exports = fetchFromScape;
-},{}],21:[function(require,module,exports){
+},{"./../bool/isValidName.js":7,"./../construct/newCallback.js":10}],21:[function(require,module,exports){
 (function (global){
 /*jslint node: true */
 /*global global, module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 function fetchGlobal(name) {
-    var newCallback = fetchGlobal.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         myGlobal;
     if (window) {
@@ -5037,10 +5030,11 @@ function fetchGlobal(name) {
 }
 module.exports = fetchGlobal;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],22:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],22:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, gapi, auth, authorize, access_token*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This function requests authorization to use a Google API, and if received, loads that API client. For more information
  * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
@@ -5054,8 +5048,6 @@ module.exports = fetchGlobal;
  * @return this {Object}
  */
 function fetchGoogleAuth(config) {
-    var newCallback = fetchGoogleAuth.prototype.newCallback;
-    //
     var callback = newCallback(arguments);
     gapi.auth.authorize(config.auth, function (token) {
         if (token && token.access_token) {
@@ -5067,16 +5059,14 @@ function fetchGoogleAuth(config) {
     });
 }
 module.exports = fetchGoogleAuth;
-},{}],23:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],23:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, gapi, socioscapes, this, execute, gapi, bigquery*/
 'use strict';
-
+var newCallback = require('./../construct/newCallback.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    geostats = require('./../lib/geostats.min.js');
 function fetchGoogleBq(that, config) {
-    var newCallback = fetchGoogleBq.prototype.newCallback,
-        fetchGoogleAuth = fetchGoogleBq.prototype.fetchGoogleAuth,
-        geostats = fetchGoogleBq.prototype.geostats;
-    //
     config = config || {};
     var callback = newCallback(arguments),
         authClientId = config.clientId || false,
@@ -5177,10 +5167,11 @@ function fetchGoogleBq(that, config) {
     return that;
 }
 module.exports = fetchGoogleBq;
-},{}],24:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../fetch/fetchGoogleAuth.js":22,"./../lib/geostats.min.js":28}],24:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, geocode, maps, GeocoderStatus*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This method executes a Google Geocoder query for 'address' and returns the results in an object.
  *
@@ -5192,8 +5183,6 @@ module.exports = fetchGoogleBq;
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
 function fetchGoogleGeocode(address) {
-    var newCallback = fetchGoogleGeocode.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         geocoder = new google.maps.Geocoder(),
         geocode = {};
@@ -5209,15 +5198,14 @@ function fetchGoogleGeocode(address) {
     });
 }
 module.exports = fetchGoogleGeocode;
-},{}],25:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],25:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    isValidObject = require('./../bool/isValidObject.js');
 function fetchScape(object) {
-    var fetchGlobal = fetchScape.prototype.fetchGlobal,
-        isValidObject = fetchScape.prototype.isValidObject,
-        newCallback = fetchScape.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         myObject;
     if (typeof object === 'string') {
@@ -5235,15 +5223,16 @@ function fetchScape(object) {
     return myObject;
 }
 module.exports = fetchScape;
-},{}],26:[function(require,module,exports){
+},{"./../bool/isValidObject.js":8,"./../construct/newCallback.js":10,"./../fetch/fetchGlobal.js":21}],26:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    schema = require('./../core/schema.js');
 var fetchScapeSchema = function fetchScapeSchema(type) {
-    var newCallback = fetchScapeSchema.prototype.newCallback;
     var callback = newCallback(arguments),
         myObject,
-        index = fetchScapeSchema.prototype.schema.index;
+        index = schema.index;
     type = (type.indexOf('.') > -1) ? type.split('.')[0] : type;
     if (type) {
         myObject = index[type].schema;
@@ -5252,10 +5241,11 @@ var fetchScapeSchema = function fetchScapeSchema(type) {
     return myObject;
 };
 module.exports = fetchScapeSchema;
-},{}],27:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../core/schema.js":18}],27:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
  * queried url, the id parameter, and the fetched features.
@@ -5265,8 +5255,6 @@ module.exports = fetchScapeSchema;
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
 function fetchWfs(that, url) {
-    var newCallback = fetchWfs.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;
@@ -5289,7 +5277,7 @@ function fetchWfs(that, url) {
     return that;
 }
 module.exports = fetchWfs;
-},{}],28:[function(require,module,exports){
+},{"./../construct/newCallback.js":10}],28:[function(require,module,exports){
 (function(l){"object"===typeof exports?module.exports=l():"function"===typeof define&&define.amd?define(l):geostats=l()})(function(){var l=function(f){return"number"===typeof f&&parseFloat(f)==parseInt(f,10)&&!isNaN(f)};Array.prototype.indexOf||(Array.prototype.indexOf=function(f,a){if(void 0===this||null===this)throw new TypeError('"this" is null or not defined');var b=this.length>>>0;a=+a||0;Infinity===Math.abs(a)&&(a=0);0>a&&(a+=b,0>a&&(a=0));for(;a<b;a++)if(this[a]===f)return a;return-1});return function(f){this.objectID=
     "";this.legendSeparator=this.separator=" - ";this.method="";this.precision=0;this.precisionflag="auto";this.roundlength=2;this.silent=this.debug=this.is_uniqueValues=!1;this.bounds=[];this.ranges=[];this.inner_ranges=null;this.colors=[];this.counter=[];this.stat_cov=this.stat_stddev=this.stat_variance=this.stat_pop=this.stat_min=this.stat_max=this.stat_sum=this.stat_median=this.stat_mean=this.stat_sorted=null;this.log=function(a,b){1!=this.debug&&null==b||console.log(this.objectID+"(object id) :: "+
     a)};this.setBounds=function(a){this.log("Setting bounds ("+a.length+") : "+a.join());this.bounds=[];this.bounds=a};this.setSerie=function(a){this.log("Setting serie ("+a.length+") : "+a.join());this.serie=[];this.serie=a;this.setPrecision()};this.setColors=function(a){this.log("Setting color ramp ("+a.length+") : "+a.join());this.colors=a};this.doCount=function(){if(!this._nodata()){var a=this.sorted();this.counter=[];for(i=0;i<this.bounds.length-1;i++)this.counter[i]=0;for(j=0;j<a.length;j++){var b=
@@ -5320,7 +5308,6 @@ else{var b=[],c=this.min(),d=this.max(),d=Math.log(d)/Math.LN10,c=Math.log(c)/Ma
 'use strict';
 var socioscapes = require('./core/core.js'),
     viewGmaps = require('./extension/viewGmaps.js');
-
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
@@ -5339,10 +5326,11 @@ var socioscapes = require('./core/core.js'),
 viewGmaps(socioscapes);
 
 module.exports = socioscapes;
-},{"./core/core.js":17,"./extension/viewGmaps.js":19}],30:[function(require,module,exports){
+},{"./core/core.js":16,"./extension/viewGmaps.js":19}],30:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
+var fetchFromScape = require('./../fetch/fetchFromScape.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuClass'.
  *
@@ -5354,16 +5342,16 @@ module.exports = socioscapes;
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuClass(context, name, config) {
-    var fetchFromScape = menuClass.prototype.fetchFromScape;
-    //
     name = (typeof name === 'string') ? name : context.schema.name;
     return fetchFromScape(name, 'name', context.object);
 }
 module.exports = menuClass;
-},{}],31:[function(require,module,exports){
+},{"./../fetch/fetchFromScape.js":20}],31:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, this*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuConfig'.
  *
@@ -5375,16 +5363,11 @@ module.exports = menuClass;
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuConfig(context, command, config) {
-    var newCallback = menuConfig.prototype.newCallback,
-        newEvent = menuConfig.prototype.newEvent;
-    //
     var callback = newCallback(arguments),
-        myCommand = menuConfig.prototype[command] ||  // if command matches a full command name
-            menuConfig.prototype.schema.alias[command] || // or an alias
-            ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
+        myCommand = (typeof command === 'function') ? command: false;
     if (myCommand) {
         myCommand(context.that, config, function (result) {
-            console.log('The results of your "' + command + '" are ready.');
+            console.log('The results of your "' + myCommand.name + '" are ready.');
             newEvent('socioscapes.ready.' + myCommand.name, context);
             callback(result);
         });
@@ -5395,10 +5378,12 @@ function menuConfig(context, command, config) {
     return context.that;
 }
 module.exports = menuConfig;
-},{}],32:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../construct/newEvent.js":12}],32:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
  *
@@ -5410,17 +5395,17 @@ module.exports = menuConfig;
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuRequire(context, command, config) {
-    var newCallback = menuRequire.prototype.newCallback;
-    //
     var callback = newCallback(arguments);
     callback(context.that);
     return context.that;
 }
 module.exports = menuRequire;
-},{}],33:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../construct/newEvent.js":12}],33:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, this*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
  *
@@ -5432,13 +5417,8 @@ module.exports = menuRequire;
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuStore(context, command, config) {
-    var newCallback = menuStore.prototype.newCallback,
-        newEvent = menuStore.prototype.newEvent;
-    //
     var callback = newCallback(arguments),
-        myCommand = menuStore.prototype[command] ||  // if command matches a full command name
-            menuStore.prototype.schema.alias[command] || // or an alias
-            ((typeof command === 'function') ? command: false); // or if it's a function, then let it be equal to itself; otherwise, false
+        myCommand = (typeof command === 'function') ? command: false;
     if (myCommand) {
         myCommand(context.that, config, function (result) {
             if (result) {
@@ -5449,7 +5429,7 @@ function menuStore(context, command, config) {
                     }
                 }
             }
-            console.log('The results of your "' + command + '" query are ready.');
+            console.log('The results of your "' + myCommand.name + '" query are ready.');
             newEvent('socioscapes.ready.' + myCommand.name, context);
             callback(result);
         });
@@ -5460,7 +5440,7 @@ function menuStore(context, command, config) {
     return context.that;
 }
 module.exports = menuStore;
-},{}],34:[function(require,module,exports){
+},{"./../construct/newCallback.js":10,"./../construct/newEvent.js":12}],34:[function(require,module,exports){
 var assert = require('assert');
 var socioscapes = require('../../src/main.js');
 describe('socioscapes', function() {

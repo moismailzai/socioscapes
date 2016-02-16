@@ -1,6 +1,7 @@
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
+var fetchFromScape = require('./../fetch/fetchFromScape.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuClass'.
  *
@@ -12,8 +13,6 @@
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuClass(context, name, config) {
-    var fetchFromScape = menuClass.prototype.fetchFromScape;
-    //
     name = (typeof name === 'string') ? name : context.schema.name;
     return fetchFromScape(name, 'name', context.object);
 }

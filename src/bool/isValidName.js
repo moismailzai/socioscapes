@@ -1,6 +1,7 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
  * restrictions.
@@ -11,8 +12,6 @@
  * @returns {Boolean}
  */
 function isValidName(name) {
-    var newCallback = isValidName.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false,
         isReserved = [

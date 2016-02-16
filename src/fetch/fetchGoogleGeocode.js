@@ -1,6 +1,7 @@
 /*jslint node: true */
 /*global module, require, google, geocode, maps, GeocoderStatus*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This method executes a Google Geocoder query for 'address' and returns the results in an object.
  *
@@ -12,8 +13,6 @@
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
 function fetchGoogleGeocode(address) {
-    var newCallback = fetchGoogleGeocode.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         geocoder = new google.maps.Geocoder(),
         geocode = {};

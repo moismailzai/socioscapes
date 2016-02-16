@@ -1,6 +1,14 @@
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
+    fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
 /**
  * This method creates socioscape ScapeObject objects.
  *
@@ -11,16 +19,6 @@
  * @return {Object} - A socioscapes ScapeObject object.
  */
 var newScapeObject = function newScapeObject(name, parent, type) {
-    var fetchFromScape = newScapeObject.prototype.fetchFromScape,
-        fetchGlobal = newScapeObject.prototype.fetchGlobal,
-        fetchScapeObject = newScapeObject.prototype.fetchScape,
-        newCallback = newScapeObject.prototype.newCallback,
-        newDispatcher = newScapeObject.prototype.newDispatcher,
-        newScapeMenu = newScapeObject.prototype.newScapeMenu,
-        newEvent = newScapeObject.prototype.newEvent,
-        newGlobal = newScapeObject.prototype.newGlobal,
-        fetchScapeSchema = newScapeObject.prototype.fetchScapeSchema;
-    //
     var callback = newCallback(arguments),
         schema = fetchScapeSchema(type),
         myObject = false,
@@ -104,7 +102,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
             newEvent('socioscapes.new.' + this.meta.type, this);
             return this;
         };
-    parent = fetchScapeObject(parent);
+    parent = fetchScape(parent);
     if (name) {
         if (parent) {
             if (schema) {
@@ -118,9 +116,9 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                 }
             }
         } else {
-            if (fetchScapeObject(name)) {
+            if (fetchScape(name)) {
                 console.log('Fetching exisisting scape "' + name + '".');
-                myObject = fetchScapeObject(name);
+                myObject = fetchScape(name);
             } else {
                 if (!fetchGlobal(name)) {
                     console.log('Creating a new scape called "' + name + '".');

@@ -3,7 +3,6 @@
 'use strict';
 var socioscapes = require('./core/core.js'),
     viewGmaps = require('./extension/viewGmaps.js');
-
 /**
  * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
  * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and

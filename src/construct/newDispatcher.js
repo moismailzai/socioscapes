@@ -1,6 +1,7 @@
 /*jslint node: true */
 /*global module, require, socioscapes*/
 'use strict';
+var newEvent = require('./../construct/newEvent.js');
 /**
  * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
@@ -19,8 +20,6 @@
  * @return {Function}
  * */
 function newDispatcher() {
-    var newEvent = newDispatcher.prototype.newEvent;
-    //
     var Dispatcher = function() {
         var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
             dispatcherQueue = [],

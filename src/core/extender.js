@@ -12,13 +12,14 @@
  * root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access
  * it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the
  * 'fetch' prefix (eg. 'fetchMysql').
+ * @param {Function} socioscapes - The socioscapes global object.
  * @param {string} config[].alias - A shorter alias that doesn't follow the above naming standards.
  * @param {Boolean} config[].silent - If true, supresses console.log messages.
  * @param {Object} config[].extension - Your extension.
  * */
-function extender(config) {
+function extender(socioscapes, config) {
     var myExtension, myName, myPath, i, ii,
-        myTarget = extender.prototype;
+        myTarget = socioscapes.prototype;
     for (i = 0; i < config.length; i++) {
         myPath = (typeof config[i].path === 'string') ? config[i].path:false;
         myExtension = config[i].extension || false;
@@ -34,7 +35,7 @@ function extender(config) {
             }
             if (myTarget) {
                 myTarget[myName] = myExtension;
-                myTarget[myName].prototype = extender.prototype;
+                myTarget[myName].prototype = socioscapes.prototype;
                 if (config[i].alias) {
                     myTarget.schema.alias[config[i].alias] = myTarget[myName];
                 }

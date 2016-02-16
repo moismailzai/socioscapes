@@ -1,6 +1,8 @@
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js');
 /**
  * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
  *
@@ -12,8 +14,6 @@
  * @return {Object} - A socioscapes ScapeObject object.
  */
 function menuRequire(context, command, config) {
-    var newCallback = menuRequire.prototype.newCallback;
-    //
     var callback = newCallback(arguments);
     callback(context.that);
     return context.that;

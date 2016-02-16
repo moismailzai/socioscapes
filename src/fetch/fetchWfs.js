@@ -1,6 +1,7 @@
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
+var newCallback = require('./../construct/newCallback.js');
 /**
  * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
  * queried url, the id parameter, and the fetched features.
@@ -10,8 +11,6 @@
  * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
  */
 function fetchWfs(that, url) {
-    var newCallback = fetchWfs.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;

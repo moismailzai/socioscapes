@@ -1,12 +1,10 @@
 /*jslint node: true */
 /*global module, require, google, gapi, socioscapes, this, execute, gapi, bigquery*/
 'use strict';
-
+var newCallback = require('./../construct/newCallback.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    geostats = require('./../lib/geostats.min.js');
 function fetchGoogleBq(that, config) {
-    var newCallback = fetchGoogleBq.prototype.newCallback,
-        fetchGoogleAuth = fetchGoogleBq.prototype.fetchGoogleAuth,
-        geostats = fetchGoogleBq.prototype.geostats;
-    //
     config = config || {};
     var callback = newCallback(arguments),
         authClientId = config.clientId || false,

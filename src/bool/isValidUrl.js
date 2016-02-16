@@ -12,8 +12,6 @@ var newCallback = require('./../construct/newCallback.js');
  * @returns {Boolean}
  */
 function isValidUrl(url) {
-    newCallback = isValidUrl.prototype.newCallback;
-    //
     var callback = newCallback(arguments),
         isValid = false;
     if (url) {

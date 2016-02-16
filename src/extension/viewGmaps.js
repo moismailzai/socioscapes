@@ -3,7 +3,7 @@
 'use strict';
 function viewGmaps(socioscapes) {
     if (socioscapes && socioscapes.fn && socioscapes.fn.extender) {
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {   path: 'viewGmapSymbology',
                 alias: 'gsymbology',
                 silent: true,
@@ -234,7 +234,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {
                 path: 'viewGmapLabels',
                 alias: 'glabel',
@@ -310,7 +310,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {
                 "path": 'viewGmapMap',
                 "alias": 'gmap',
@@ -529,7 +529,7 @@ function viewGmaps(socioscapes) {
                         return view;
                     }
             }]);
-        socioscapes.fn.extender([
+        socioscapes.fn.extender(socioscapes, [
             {   path: 'viewGmapView',
                 alias: 'gview',
                 silent: true,

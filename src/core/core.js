@@ -1,74 +1,73 @@
 /*jslint node: true */
 /*global module, require, document, window, google, gapi*/
 'use strict';
-var version = '0.6.5-0',
-    externalDependencies = ['chroma','geostats'];
-
+var version = '0.7.0-0',
+    chroma = require('chroma-js'),
+    geostats = require('./../lib/geostats.min.js'),
+    newCallback = require('./../construct/newCallback.js'),
+    newEvent = require('./../construct/newEvent.js'),
+    newDispatcher = require('./../construct/newDispatcher.js'),
+    fetchGlobal = require('./../fetch/fetchGlobal.js'),
+    newGlobal = require('./../construct/newGlobal.js'),
+    isValidObject = require('./../bool/isValidObject.js'),
+    isValidName = require('./../bool/isValidName.js'),
+    isValidUrl = require('./../bool/isValidUrl.js'),
+    fetchFromScape = require('./../fetch/fetchFromScape.js'),
+    fetchScape = require('./../fetch/fetchScape.js'),
+    fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
+    fetchGoogleGeocode = require('./../fetch/fetchGoogleGeocode.js'),
+    fetchGoogleBq = require('./../fetch/fetchGoogleBq.js'),
+    fetchWfs = require('./../fetch/fetchWfs.js'),
+    menuClass = require('./../menu/menuClass.js'),
+    menuConfig = require('./../menu/menuConfig.js'),
+    menuRequire = require('./../menu/menuRequire.js'),
+    menuStore = require('./../menu/menuStore.js'),
+    schema = require('./../core/schema.js'),
+    fetchScapeSchema = require('./../fetch/fetchScapeSchema.js'),
+    newScapeObject = require('./../construct/newScapeObject.js'),
+    newScapeMenu = require('./../construct/newScapeMenu.js'),
+    extender = require('./../core/extender');
 /**
- * Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization
- * platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and
- * sandboxed environment.
- *
- *    Source code...................... http://github.com/moismailzai/socioscapes
- *    Reference implementation......... http://app.socioscapes.com
- *    License.......................... MIT license (free as in beer & speech)
- *    Copyright........................ © 2016 Misaqe Ismailzai
- *
- * This software was originally conceived as partial fulfilment of the degree requirements for the Masters of Arts in
- * Sociology at the University of Toronto.
  * @global
- * @namespace
+ * @namespace socioscapes
  * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
  * creates 'scape0'
  * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
  */
 function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
-    var myScape = socioscapes.fn.fetchScape(scapeName || 'scape0') || socioscapes.fn.newScapeObject('scape0', null, 'scape');
-    return socioscapes.fn.newScapeMenu(myScape);
+    var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
+    return newScapeMenu(myScape, socioscapes.prototype);
 }
 
-// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, (use
-// socioscapes.fn as an alias)
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this
+// way external socioscapes extensions will have access to internal socioscapes methods via the prototype
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
-    chroma: require('chroma-js'),
-    geostats: require('./../lib/geostats.min.js'),
-    extender: require('./../core/extender'),
-    fetchFromScape: require('./../fetch/fetchFromScape.js'),
-    fetchGlobal: require('./../fetch/fetchGlobal.js'),
-    fetchGoogleAuth: require('./../fetch/fetchGoogleAuth.js'),
-    fetchGoogleBq: require('./../fetch/fetchGoogleBq.js'),
-    fetchGoogleGeocode: require('./../fetch/fetchGoogleGeocode.js'),
-    fetchScape: require('./../fetch/fetchScape.js'),
-    fetchScapeSchema: require('./../fetch/fetchScapeSchema.js'),
-    fetchWfs: require('./../fetch/fetchWfs.js'),
-    isValidName: require('./../bool/isValidName.js'),
-    isValidObject: require('./../bool/isValidObject.js'),
-    isValidUrl: require('./../bool/isValidUrl.js'),
-    menuClass: require('./../menu/menuClass.js'),
-    menuConfig: require('./../menu/menuConfig.js'),
-    menuRequire: require('./../menu/menuRequire.js'),
-    menuStore: require('./../menu/menuStore.js'),
-    newCallback: require('./../construct/newCallback.js'),
-    newDispatcher: require('./../construct/newDispatcher.js'),
-    newEvent: require('./../construct/newEvent.js'),
-    newGlobal: require('./../construct/newGlobal.js'),
-    newScapeMenu: require('./../construct/newScapeMenu.js'),
-    newScapeObject: require('./../construct/newScapeObject.js'),
-    newSchema: require('./../construct/newSchema.js'),
+    chroma: chroma,
+    geostats: geostats,
+    extender: extender,
+    fetchFromScape: fetchFromScape,
+    fetchGlobal: fetchGlobal,
+    fetchGoogleAuth: fetchGoogleAuth,
+    fetchGoogleBq: fetchGoogleBq,
+    fetchGoogleGeocode: fetchGoogleGeocode,
+    fetchScape: fetchScape,
+    fetchScapeSchema: fetchScapeSchema,
+    fetchWfs: fetchWfs,
+    isValidName: isValidName,
+    isValidObject: isValidObject,
+    isValidUrl: isValidUrl,
+    menuClass: menuClass,
+    menuConfig: menuConfig,
+    menuRequire: menuRequire,
+    menuStore: menuStore,
+    newCallback: newCallback,
+    newDispatcher: newDispatcher,
+    newEvent: newEvent,
+    newGlobal: newGlobal,
+    newScapeMenu: newScapeMenu,
+    newScapeObject: newScapeObject,
+    schema: schema,
     version: version
 };
-
-// lets give all our methods (except external dependencies) access to the method repository by setting their prototypes
-// to the socioscapes prototype. this way, we can avoid circular dependency nightmares and facilitate extensions loading
-// through prototype alteration (which is what the extender method does).
-for (var myMethod in socioscapes.fn) {
-    if (socioscapes.fn.hasOwnProperty(myMethod) && typeof socioscapes.fn[myMethod] === 'function' && externalDependencies.indexOf(myMethod) === -1) {
-        socioscapes.fn[myMethod].prototype = socioscapes.fn;
-    }
-}
-
-// finally lets initialize the base schema tree
-socioscapes.fn.schema = socioscapes.fn.newSchema();
-
 module.exports = socioscapes;

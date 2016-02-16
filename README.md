@@ -5,7 +5,7 @@
 
 ## Details
  
-**Current version**: 0.6.5-0  
+**Current version**: 0.7.0-0  
 *(expect breaking changes prior to version 1.0)* 
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
@@ -59,7 +59,7 @@ Now suppose that besides a map, the user also wishes to include some charts, gra
 
 **using the api**   
 
-// create a new scape object to store our work in. let's call it 'tdot'. if you don't specify a new scape, the api uses the default one ('scape0')*  
+// create a new scape object to store our work in. let's call it 'tdot'. if you don't specify a new scape, the api uses the default one ('scape0')  
 
     socioscapes().new('tdot')
 
