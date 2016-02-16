@@ -101,11 +101,12 @@ socioscapes('tdot').state('census2011')
 
 // too verbose? the api is setup that way so you can add callbacks at every link. but you can create navigation shortcuts if you prefer
 
+```js
     l = socioscapes('tdot').state('census2011').layer()
     v = socioscapes('tdot').state('census2011').view()
     l.geom('wfs', wfs).data('bq', bq);
     v.config('gview')
-
+```
 // putting it all together: using the data we downloaded above, the code snippet below will create a new scape object called tdot, create a state called census2011, fetch and parse wfs geometry, fetch related google bigquery data, create a new google map, organize the data based on default values and render it to the view if there is a "map-canvas" div present.
 
 ```js
