@@ -19,14 +19,10 @@
 
 ## Installation  
  
-**Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js), [minified] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.min.js)
+**Standalone**: [regular] (https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js)
 
 ```js
 <script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.js">
-```
-
-```js
-<script src="https://cdn.rawgit.com/moismailzai/socioscapes/master/socioscapes.min.js">
 ```
 
 **NodeJS**: [npm](https://www.npmjs.com/package/socioscapes)
@@ -40,13 +36,13 @@
 
 ## Dependancies 
 
-**geostats:** Simon Georget's [geostats](https://github.com/simogeo/geostats) library for classifications and basic statistics.
+**geostats:** Simon Georget's [geostats](https://github.com/simogeo/geostats) library for classifications and basic statistics.  
 **chroma:** Gregor Aisch's [chroma](https://github.com/gka/chroma.js) library for all-things-colour.
 
 
 ## What Does It Do?
 
-For developers, socioscapes provides an extendable asynchronous API that standardizes interaction with various open-source tools and standards. For the end user, socioscapes allows simple and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary format. Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you choose to work with. A .scape file is [just a JSON object] (https://github.com/moismailzai/socioscapes/blob/master/src/core/schema.js) with the following structure:
+For developers, socioscapes provides an extendable asynchronous API that standardizes interaction with various open-source tools and standards. For the end user, socioscapes allows simple and easy file management: you should be able to save, edit, and share your work in an intuitive, non-proprietary format. Rather than reinvent the wheel, socioscape '.scape' files are simply containers that transparently organize the data you choose to work with. A .scape file is [just a JSON object] (https://github.com/moismailzai/socioscapes/blob/master/src/construct/newSchema.js) with the following structure:
 
 ![Image of the Soscioscapes Schema]
 (https://raw.githubusercontent.com/moismailzai/socioscapes/master/assets/schema-small.png)
