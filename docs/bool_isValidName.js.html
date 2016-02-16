@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: bool/isValidName.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: bool/isValidName.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*jslint node: true */
+/*global module, require*/
+'use strict';
+/**
+ * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
+ * restrictions.
+ *
+ * @function isValidName
+ * @param {string} name - This should be a valid http, https, ftp, or ftps URL and follow the
+ * "protocol://my.valid.url/my.file" pattern.
+ * @returns {Boolean}
+ */
+function isValidName(name) {
+    var newCallback = isValidName.prototype.newCallback;
+    //
+    var callback = newCallback(arguments),
+        isValid = false,
+        isReserved = [
+            'help',
+            // below are reserved JS words and properties
+            'abstract',
+            'arguments',
+            'Array',
+            'boolean',
+            'break',
+            'byte',
+            'case',
+            'catch',
+            'char',
+            'class',
+            'const',
+            'continue',
+            'debugger',
+            'Date',
+            'default',
+            'delete',
+            'do',
+            'double',
+            'else',
+            'enum',
+            'eval',
+            'export',
+            'extends',
+            'false',
+            'final',
+            'finally',
+            'float',
+            'for',
+            'function',
+            'goto',
+            'hasOwnProperty',
+            'if',
+            'implements',
+            'import',
+            'in',
+            'instanceof',
+            'int',
+            'interface',
+            'isFinite',
+            'isNaN',
+            'isPrototypeOf',
+            'Infinity',
+            'length',
+            'let',
+            'long',
+            'native',
+            'Math',
+            'name',
+            'new',
+            'NaN',
+            'Number',
+            'null',
+            'Object',
+            'package',
+            'private',
+            'protected',
+            'prototype',
+            'public',
+            'return',
+            'short',
+            'static',
+            'super',
+            'switch',
+            'synchronized',
+            'String',
+            'this',
+            'throw',
+            'throws',
+            'toString',
+            'transient',
+            'true',
+            'try',
+            'typeof',
+            'undefined',
+            'valueOf',
+            'var',
+            'void',
+            'volatile',
+            'while',
+            'with',
+            'yield'
+        ];
+    if (name &amp;&amp; typeof name === 'string') {
+        if (/^[-A-Z0-9]+$/i.test(name)) {
+            if (isReserved.indexOf(name) === -1) {
+                isValid = true;
+            } else {
+                console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+            }
+        } else {
+            console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
+        }
+    }
+    callback(isValid);
+    return isValid;
+}
+module.exports = isValidName;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="socioscapes.html">socioscapes</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extender">extender</a></li><li><a href="global.html#isValidName">isValidName</a></li><li><a href="global.html#isValidObject">isValidObject</a></li><li><a href="global.html#isValidUrl">isValidUrl</a></li><li><a href="global.html#menuClass">menuClass</a></li><li><a href="global.html#menuConfig">menuConfig</a></li><li><a href="global.html#menuRequire">menuRequire</a></li><li><a href="global.html#menuStore">menuStore</a></li><li><a href="global.html#newCallback">newCallback</a></li><li><a href="global.html#newDispatcher">newDispatcher</a></li><li><a href="global.html#newEvent">newEvent</a></li><li><a href="global.html#newGlobal">newGlobal</a></li><li><a href="global.html#newScapeMenu">newScapeMenu</a></li><li><a href="global.html#newScapeObject">newScapeObject</a></li><li><a href="global.html#newSchema">newSchema</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 15 2016 17:00:09 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

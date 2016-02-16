@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: construct/newDispatcher.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: construct/newDispatcher.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*jslint node: true */
+/*global module, require, socioscapes*/
+'use strict';
+/**
+ * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
+ * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
+ * queued and synchronously resolved on a per-scape basis by attaching a unique dispatcher instance to every scape. The
+ * api itself remains asynchronous. Calls to the dispatcher are expeted to provide an arguments array, myArguments, and
+ * a function, myFunction. The first argument in myArguments should always be the object that myFunction modifes and/or
+ * returns. myFunction is evaluated for the number of expected arguments (myFunction.length) and the dispatcher appends
+ * null values for expected arguments that are missing. This is done so that a callback function can be appended to the
+ * array and all functions that are executed through the dispatcher can safely assume that the element at index
+ * myArguments.length is the dispatcher callback. Finally, a queue item consisting of the myFunction and myArguments
+ * members is pushed into the dispatcher's queue array. The dispatcher works through each item in its queue by executing
+ * myFunction(myArguments) and waiting for the callback function to fire an event that signals that the function has
+ * returned a value and the dispatcher can safely move on to the next item its queue.
+ *
+ * @function newDispatcher
+ * @return {Function}
+ * */
+function newDispatcher() {
+    var newEvent = newDispatcher.prototype.newEvent;
+    //
+    var Dispatcher = function() {
+        var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
+            dispatcherQueue = [],
+            dispatcherReady = true,
+            queueItem,
+            that = this;
+        // add a unique event listener persistent to this dispatcher instance
+        document.addEventListener("socioscapes.dispatched." + dispatcherId, function(event) {
+            dispatcherReady = true;
+            that.dispatch();
+        });
+        Object.defineProperty(this, 'dispatch', {
+            value: function (config) {
+                if (config) {
+                    config.myArguments.unshift(config.myContext);
+                    for (; config.myFunction.length > config.myArguments.length; ) {
+                        config.myArguments.push(null);
+                    } // pack arguments array with null values if there are missing params so that the last param is always the dispatcher callback
+                    config.myArguments.push(function(result) { // append the dispatcher callback to the arguments array
+                        config.myCallback(result);
+                        newEvent("socioscapes.dispatched." + dispatcherId, result);
+                    }); // this event executes the callback and triggers the next item in the queue to be processed
+                    dispatcherQueue.push({ // push the function and argument array to the dispatcher queue
+                        "myArguments": config.myArguments,
+                        "myFunction": config.myFunction
+                    });
+                }
+                if (dispatcherReady &amp;&amp; dispatcherQueue.length > 0) {
+                    dispatcherReady = false;
+                    queueItem = dispatcherQueue.shift();
+                    queueItem.myFunction.apply(that, queueItem.myArguments);
+                }
+                return this;
+            }
+        });
+        Object.defineProperty(this, 'id', {
+            value: function() {
+                return dispatcherId;
+            }
+        });
+        return this;
+    };
+    return new Dispatcher();
+}
+module.exports = newDispatcher;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="socioscapes.html">socioscapes</a></li></ul><h3>Global</h3><ul><li><a href="global.html#extender">extender</a></li><li><a href="global.html#isValidName">isValidName</a></li><li><a href="global.html#isValidObject">isValidObject</a></li><li><a href="global.html#isValidUrl">isValidUrl</a></li><li><a href="global.html#menuClass">menuClass</a></li><li><a href="global.html#menuConfig">menuConfig</a></li><li><a href="global.html#menuRequire">menuRequire</a></li><li><a href="global.html#menuStore">menuStore</a></li><li><a href="global.html#newCallback">newCallback</a></li><li><a href="global.html#newDispatcher">newDispatcher</a></li><li><a href="global.html#newEvent">newEvent</a></li><li><a href="global.html#newGlobal">newGlobal</a></li><li><a href="global.html#newScapeMenu">newScapeMenu</a></li><li><a href="global.html#newScapeObject">newScapeObject</a></li><li><a href="global.html#newSchema">newSchema</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Feb 15 2016 17:00:09 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
