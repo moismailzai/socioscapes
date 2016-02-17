@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google, gapi, socioscapes, this, execute, gapi, bigquery*/
+/*global module, require, google, gapi*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),

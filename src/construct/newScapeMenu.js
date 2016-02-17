@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var newEvent = require('./../construct/newEvent.js'),
     isValidObject = require('./../bool/isValidObject.js'),
@@ -9,6 +9,7 @@ var newEvent = require('./../construct/newEvent.js'),
  *
  * @function newScapeMenu
  * @param {Object} scapeObject - A valid @ScapeObject.
+ * @param {Object} socioscapesPrototype - The socioscapes api prototype.
  * @return {Object} - A socioscapes ScapeMenu object.
  */
 var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {

@@ -20,7 +20,6 @@
     CustomEvent.prototype = window.Event.prototype;
     window.CustomEvent = CustomEvent;
 })();
-// TODO proper documentation of events
 function newEvent(name, message) {
     var myEvent;
     myEvent = new CustomEvent(name, {"detail": message });

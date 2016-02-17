@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google, geocode, maps, GeocoderStatus*/
+/*global module, require, google*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**

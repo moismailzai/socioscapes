@@ -3,7 +3,6 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js');
-
 /**
  * This internal method creates a new global object. *gasp*
  *

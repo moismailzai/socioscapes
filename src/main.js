@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, document, window, google, gapi*/
+/*global module, require*/
 'use strict';
 var socioscapes = require('./core/core.js'),
     viewGmaps = require('./extension/viewGmaps.js');

@@ -31,7 +31,7 @@ var version = '0.7.0-0',
  * @global
  * @namespace socioscapes
  * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
- * creates 'scape0'
+ * creates 'scape0'.
  * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
  */
 function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
@@ -39,8 +39,7 @@ function socioscapes(scapeName) { // when socioscapes is called, fetch the scape
     return newScapeMenu(myScape, socioscapes.prototype);
 }
 
-// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this
-// way external socioscapes extensions will have access to internal socioscapes methods via the prototype
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this way external socioscapes extensions will have access to internal socioscapes methods via the prototype
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
     chroma: chroma,

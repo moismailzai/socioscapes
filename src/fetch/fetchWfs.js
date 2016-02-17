@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**

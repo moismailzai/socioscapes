@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newCallback = require('./../construct/newCallback.js'),

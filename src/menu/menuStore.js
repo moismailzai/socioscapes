@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, socioscapes, this*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js');
