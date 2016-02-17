@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, document, window, google, gapi*/
+/*global module, require*/
 'use strict';
 var version = '0.7.0-0',
     chroma = require('chroma-js'),
