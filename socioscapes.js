@@ -2471,10 +2471,11 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
+ * This internal method tests if a name used for a {@link socioscapes} scape, state, layer, or extensions adheres to naming
  * restrictions.
  *
  * @function isValidName
+ * @memberof socioscapes
  * @param {string} name - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
@@ -2592,6 +2593,7 @@ var newCallback = require('./../construct/newCallback.js');
  * This internal method tests if an object adheres to the scape.sociJson standard.
  *
  * @function isValidObject
+ * @memberof socioscapes
  * @param {Object} object - An object whose .meta.type === 'scape.sociJson'.
  * @returns {Boolean}
  */
@@ -2615,6 +2617,7 @@ var newCallback = require('./../construct/newCallback.js');
  * "protocol://my.valid.url/my.file" and supports the http, https, ftp, and ftps protocols.
  *
  * @function isValidUrl
+ * @memberof socioscapes
  * @param {string} url - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
@@ -2640,6 +2643,7 @@ module.exports = isValidUrl;
  * function, else return an empty function.
  *
  * @function newCallback
+ * @memberof socioscapes
  * @param {Object[]} argumentsArray - The arguments array of a function.
  * @return {Function} myCallback - Any function.
  */
@@ -2657,11 +2661,11 @@ function newCallback(argumentsArray) {
 module.exports = newCallback;
 },{}],6:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var newEvent = require('./../construct/newEvent.js');
 /**
- * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
+ * The {@link socioscapes} {@link Dispatcher} class helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
  * queued and synchronously resolved on a per-scape basis by attaching a unique dispatcher instance to every scape. The
  * api itself remains asynchronous. Calls to the dispatcher are expeted to provide an arguments array, myArguments, and
@@ -2675,9 +2679,15 @@ var newEvent = require('./../construct/newEvent.js');
  * returned a value and the dispatcher can safely move on to the next item its queue.
  *
  * @function newDispatcher
+ * @memberof socioscapes
  * @return {Function}
  * */
 function newDispatcher() {
+    /**
+     * Represents a {@link ScapeObject} dispatcher.
+     * @namespace Dispatcher
+     * @constructor
+     */
     var Dispatcher = function() {
         var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
             dispatcherQueue = [],
@@ -2689,6 +2699,19 @@ function newDispatcher() {
             dispatcherReady = true;
             that.dispatch();
         });
+        /**
+         * Calls to the dispatcher are expeted to provide an arguments array, myArguments, and a function, myFunction.
+         * The first argument in myArguments should always be the object that myFunction modifes and/or returns.
+         * myFunction is evaluated for the number of expected arguments (myFunction.length) and the dispatcher appends
+         * null values for expected arguments that are missing. This is done so that a callback function can be appended
+         * to the array and all functions that are executed through the dispatcher can safely assume that the element at
+         * index myArguments.length is the dispatcher callback. Finally, a queue item consisting of the myFunction and
+         * myArguments members is pushed into the dispatcher's queue array.
+         *
+         * @memberof Dispatcher#
+         * @function dispatch
+         * @param {object} [config]
+         * */
         Object.defineProperty(this, 'dispatch', {
             value: function (config) {
                 if (config) {
@@ -2713,6 +2736,13 @@ function newDispatcher() {
                 return this;
             }
         });
+        /**
+         * Returns the id specific to this {@link Dispatcher} instance. Useful if you want to setup external listeners for
+         * dispatcher events (which fire in the "socioscapes.dispatched.id" pattern).
+         *
+         * @memberof Dispatcher#
+         * @function id
+         * */
         Object.defineProperty(this, 'id', {
             value: function() {
                 return dispatcherId;
@@ -2732,6 +2762,7 @@ module.exports = newDispatcher;
  * updates. For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
  *
  * @function newEvent
+ * @memberof socioscapes
  * @param {String} name - The name of the new event (this is what your event handler will listen for).
  * @param {Object} message - The content of the event.detail.
  */
@@ -2746,7 +2777,6 @@ module.exports = newDispatcher;
     CustomEvent.prototype = window.Event.prototype;
     window.CustomEvent = CustomEvent;
 })();
-// TODO proper documentation of events
 function newEvent(name, message) {
     var myEvent;
     myEvent = new CustomEvent(name, {"detail": message });
@@ -2760,11 +2790,11 @@ module.exports = newEvent;
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGlobal = require('./../fetch/fetchGlobal.js');
-
 /**
  * This internal method creates a new global object. *gasp*
  *
  * @function newGlobal
+ * @memberof socioscapes
  * @param {string} name - A valid name JavaScript object name.
  * @param {Object} object - The global object, either window or global.
  * @param {Boolean} overwrite - If true, overwrite existing objects.
@@ -2800,17 +2830,19 @@ module.exports = newGlobal;
 
 },{"./../construct/newCallback.js":5,"./../fetch/fetchGlobal.js":16}],9:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var newEvent = require('./../construct/newEvent.js'),
     isValidObject = require('./../bool/isValidObject.js'),
     newScapeObject = require('./../construct/newScapeObject.js');
 /**
- * This method creates ScapeMenu objects, which are the api interfaces that developers interact with.
+ * This method creates {@link ScapeMenu} objects, which are the api interfaces that developers interact with.
  *
  * @function newScapeMenu
- * @param {Object} scapeObject - A valid @ScapeObject.
- * @return {Object} - A socioscapes ScapeMenu object.
+ * @memberof socioscapes
+ * @param {Object} scapeObject - A valid {@link ScapeObject}.
+ * @param {Object} socioscapesPrototype - The {@link socioscapes} api prototype.
+ * @return {Object} - A {@link socioscapes} {@link ScapeMenu} object.
  */
 var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
     var newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
@@ -2858,21 +2890,51 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
                 });
             }
         },
+        /**
+         * Represents a {@link ScapeMenu} (the actual api menu interface that users interact with).
+         * @namespace ScapeMenu
+         * @constructor
+         * @param {Object} myObject - An object of type {@link ScapeObject}.
+         */
         ScapeMenu = function(myObject) {
             var mySchema = myObject.schema,
                 myClass = mySchema.class,
                 myParent = mySchema.parent,
                 myType = mySchema.type,
                 thisMenu = this;
+            /**
+             * The schema definition of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} schema
+             * */
             Object.defineProperty(this, 'schema', {
                 value: myObject.schema
             });
+            /**
+             * The {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} this
+             * */
             Object.defineProperty(this, 'this', {
                 value: myObject
             });
+            /**
+             * The metadata of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} meta
+             * */
             Object.defineProperty(this, 'meta', {
                 value: myObject.meta
             });
+            /**
+             * Creates and returns a new object of this type (which is stored in the parent container).
+             *
+             * @memberof ScapeMenu#
+             * @function new
+             * */
             Object.defineProperty(this, 'new', {
                 value: function (name) {
                     var myNew;
@@ -2894,7 +2956,7 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
 module.exports = newScapeMenu;
 },{"./../bool/isValidObject.js":3,"./../construct/newEvent.js":7,"./../construct/newScapeObject.js":10}],10:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newCallback = require('./../construct/newCallback.js'),
@@ -2905,37 +2967,73 @@ var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchScape = require('./../fetch/fetchScape.js'),
     fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
 /**
- * This method creates socioscape ScapeObject objects.
+ * This method creates socioscape {@link ScapeObject} objects.
  *
  * @function newScapeObject
+ * @memberof socioscapes
  * @param {string} name - A valid JavaScript name.
- * @param {Object} parent - A valid ScapeObject or null.
+ * @param {Object} parent - A valid {@link ScapeObject} or null.
  * @param {string} type - A valid scape.sociJson scape class.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} - A socioscapes {@link ScapeObject} object.
  */
 var newScapeObject = function newScapeObject(name, parent, type) {
     var callback = newCallback(arguments),
         schema = fetchScapeSchema(type),
         myObject = false,
+        /**
+         * Represents a {@link ScapeObject} (a json container for arbitrary geospatial data).
+         * @namespace ScapeObject
+         * @constructor
+         * @param {string} myName - A valid name.
+         * @param {?Object} myParent - The containing parent item or null if this is a top level {@link ScapeObject} (a scape).
+         * @param {Object} mySchema - The {@link socioscapes} schema branch that describes this {@link ScapeObject}.
+         */
         ScapeObject = function(myName, myParent, mySchema) {
             var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
-            Object.defineProperty(this, 'dispatcher', {
-                value: myDispatcher
-            });
+            /**
+             * Accesses {@link Dispatcher#dispatch}.
+             *
+             * @memberof ScapeObject#
+             * @function dispatch
+             * */
             Object.defineProperty(this, 'dispatch', {
                 value: myDispatcher.dispatch
             });
+            /**
+             * The schema definition corressponding to this {@link ScapeObject}.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} schema
+             * */
             Object.defineProperty(this, 'schema', {
                 value: mySchema
             });
+            /**
+             * The parent {@link ScapeObject} item.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} parent
+             * */
             Object.defineProperty(this.schema, 'parent', {
                 value: myParent || false
             });
+            /**
+             * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} container
+             * */
             if (!this.schema.container) {
                 Object.defineProperty(this.schema, 'container', {
                     value: myParent ? myParent[mySchema.class]:false
                 });
             }
+            /**
+             * The metadata corresponding to this {@link ScapeObject}.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} meta
+             * */
             Object.defineProperty(this, 'meta', {
                 value: {},
                 writeable: true,
@@ -2961,15 +3059,15 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     enumerable: true
                 });
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // scape objects are defined in the 'socioscapes.prototype.schema' member and follow a json format. each
-            // level of a scape object can have an arbitrary number of child elements and socioscapes will produce the
+            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json format. each
+            // level of a scape object can have an arbitrary number of child elements and {@link socioscapes} will produce the
             // necessary data structure and corresponding menu items. the following loop creates a member for each item
             // in the current schema's '.children' array. the children array is simply a list of names which correspond
-            // to members in the schema's data structure. this means that extending socioscapes can simply be a matter
+            // to members in the schema's data structure. this means that extending {@link socioscapes} can simply be a matter
             // of altering the '.schema' member and allowing the API to do the rest. child entries in [brackets] denote
             // arrays and are populated by instances of the corresponding class. for example, if 'mySchema.children[i].class'
             // is '[state]', then 'mySchema.state[0]' will be created  as the datastructure prototype for all entries in
-            // 'this.state'. all such prototypes and schema definitions are stored in the socioscapes.prototype.schema.
+            // 'this.state'. all such prototypes and schema definitions are stored in the {@link socioscapes}.prototype.schema.
             for (var i = 0; i < mySchema.children.length; i++) {
                 var myChildClass = mySchema.children[i].class, // child item class
                     myChildIsArray,
@@ -3030,7 +3128,7 @@ module.exports = newScapeObject;
 
 },{"./../construct/newCallback.js":5,"./../construct/newDispatcher.js":6,"./../construct/newEvent.js":7,"./../construct/newGlobal.js":8,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchScape.js":20,"./../fetch/fetchScapeSchema.js":21}],11:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, document, window, google, gapi*/
+/*global module, require*/
 'use strict';
 var version = '0.7.0-0',
     chroma = require('chroma-js'),
@@ -3060,18 +3158,16 @@ var version = '0.7.0-0',
     extender = require('./../core/extender');
 /**
  * @global
- * @namespace socioscapes
- * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
- * creates 'scape0'
- * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
+ * @namespace
+ * @param {string} [scapeName=scape0] - The name of an existing ScapeObject to load.
+ * @return {Object} The {@link socioscapes} api interface, which is a {@link ScapeMenu} object.
  */
-function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
+function socioscapes(scapeName) { // when socioscapes is called, fetch the {@link ScapeObject} specified (or fetch / create a default {@link ScapeObject}) and return an api ({@link ScapeMenu}) for it
     var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
     return newScapeMenu(myScape, socioscapes.prototype);
 }
 
-// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this
-// way external socioscapes extensions will have access to internal socioscapes methods via the prototype
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this way external socioscapes extensions will have access to internal socioscapes methods via the prototype
 socioscapes.fn = socioscapes.prototype = {
     constructor: socioscapes,
     chroma: chroma,
@@ -3107,17 +3203,18 @@ module.exports = socioscapes;
 /*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
 /**
- * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with
+ * The {@link socioscapes} structure is inspired by the jQuery team's module management system. To extend {@link socioscapes}, you
+ * simply need to call {@link socioscapes}.extender and provide an array of entries that are composed of an object with
  * '.path' (a string), and '.extension' (a value) members.
  *
  * @function extender
- * @param {Object[]} config - A valid socioscapes extension configuration.
+ * @memberof socioscapes
+ * @param {Object[]} config - A valid {@link socioscapes} extension configuration.
  * @param {string} config[].path - Tells the API where to store your extension. The path for most modules will be the
- * root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access
+ * root path, which is {@link socioscapes}.fn. The name of your module should be prefixed such that existing elements can access
  * it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the
  * 'fetch' prefix (eg. 'fetchMysql').
- * @param {Function} socioscapes - The socioscapes global object.
+ * @param {Function} socioscapes - The {@link socioscapes} api global object.
  * @param {string} config[].alias - A shorter alias that doesn't follow the above naming standards.
  * @param {Boolean} config[].silent - If true, supresses console.log messages.
  * @param {Object} config[].extension - Your extension.
@@ -3257,20 +3354,12 @@ var myVersion = '0.1',
         ],
         "type": "scape.sociJson"
     }
-    };
-/**
- * This method creates socioscape ScapeSchema objects.
- *
- * @function schema
- * @return {Object} - A socioscapes ScapeSchema object.
- */
-var schema = {
-    "structure": myScapeSchema,
-    "alias" : {
+    },
+    myScapeSchemaAlias = {
         "bq": fetchGoogleBq,
         "wfs": fetchWfs
     },
-    "index" : {
+    myScapeSchemaIndex = {
         "scape": {
             "class": "scape", "type": "scape.sociJson", "schema": myScapeSchema.scape
         },
@@ -3283,9 +3372,21 @@ var schema = {
         "view": {
             "class": "view", "type": "view.state.scape.sociJson", "schema": myScapeSchema.scape.state[0].view[0]
         }
-    }
-};
-module.exports = schema;
+    };
+/**
+ * This method creates socioscape schema objects.
+ *
+ * @memberof socioscapes
+ * @return {Object} - A {@link socioscapes} schema object.
+ */
+function schema() {
+    return {
+        "structure": myScapeSchema,
+        "alias" : myScapeSchemaAlias,
+        "index" : myScapeSchemaIndex
+    };
+}
+module.exports = schema();
 },{"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchWfs.js":22,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, event, feature, gapi*/
@@ -3910,15 +4011,25 @@ function viewGmaps(socioscapes) {
 module.exports = viewGmaps;
 },{}],15:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require*/
+/*global module, require, Number*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     isValidName = require('./../bool/isValidName.js');
-function fetchFromScape(key, metaProperty, array) {
-    Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
         return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
     };
-    //
+/**
+ * This internal method is used to extract a specific state, view, or layer from within a {@link ScapeObject} 'array' based on a
+ * 'key' and 'metaProperty' pairing.
+ *
+ * @function fetchFromScape
+ * @memberof socioscapes
+ * @param {Number} key - An integer value that corresponds to an entry in the 'array' argument.
+ * @param {Object} metaProperty - The property in the '.meta' member that we are trying to match to (usually 'name').
+ * @param {Object} array - The {@link ScapeObject} array that contains the state, view, or layer we are looking for.
+ * @return this {Object}
+ */
+function fetchFromScape(key, metaProperty, array) {
     var callback = newCallback(arguments),
         myKey = false;
     if (array) {
@@ -3942,6 +4053,14 @@ module.exports = fetchFromScape;
 /*global global, module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
+/**
+ * This internal method is used to retrieve a variable from the global object.
+ *
+ * @function fetchGlobal
+ * @memberof socioscapes
+ * @param {string} name - A string that corresponds to a variable in the global object.
+ * @return {Object} myGlobal - Returns the corresponding {@link ScapeObject} or undefined.
+ */
 function fetchGlobal(name) {
     var callback = newCallback(arguments),
         myGlobal;
@@ -3966,7 +4085,7 @@ var newCallback = require('./../construct/newCallback.js');
  * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
  *
  * @function fetchGoogleAuth
- * @memberof! socioscapes
+ * @memberof socioscapes
  * @param {Object} config - An object with configuration options for Google APIs.
  * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
  * @param {Object} config.client.name - The name of the Google API client to load.
@@ -3987,12 +4106,25 @@ function fetchGoogleAuth(config) {
 module.exports = fetchGoogleAuth;
 },{"./../construct/newCallback.js":5}],18:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google, gapi, socioscapes, this, execute, gapi, bigquery*/
+/*global module, require, gapi*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
     geostats = require('./../lib/geostats.min.js');
-function fetchGoogleBq(that, config) {
+/**
+ * This internal method fetches data from Google BigQuery. If necessary, it also requests a gapi authorization token and
+ * loads the gapi BigQuery client.
+ *
+ * If successful, callsback with fetch results.
+ *
+ * @function fetchGoogleBq
+ * @memberof socioscapes
+ * @param {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ * @param {Object} [config] - A configuration object for the gapi.auth and gapi.config api. If missing, defaults will
+ * be used (see the 'gapiConfig' variable).
+ * @return {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ */
+function fetchGoogleBq(scapeObject, config) {
     config = config || {};
     var callback = newCallback(arguments),
         authClientId = config.clientId || false,
@@ -4030,7 +4162,7 @@ function fetchGoogleBq(that, config) {
             gapi.auth.setToken({
                 access_token: authToken.access_token
             });
-            gapi.client.load('bigquery', 'v2', function() {
+            gapi.client.load(gapiConfig.client.name, gapiConfig.client.version, function() {
                 queryFetcher(authToken);
             });
         } else {
@@ -4090,21 +4222,20 @@ function fetchGoogleBq(that, config) {
                 callback(queryResult);
             });
         };
-    return that;
+    return scapeObject;
 }
 module.exports = fetchGoogleBq;
 },{"./../construct/newCallback.js":5,"./../fetch/fetchGoogleAuth.js":17,"./../lib/geostats.min.js":23}],19:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google, geocode, maps, GeocoderStatus*/
+/*global module, require, google*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This method executes a Google Geocoder query for 'address' and returns the results in an object.
- *
- * Make sure you obtain Google auth and load the GAPI client first.
+ * This internal method executes a Google Geocoder query for 'address' and returns the results in an object. Make sure
+ * you obtain Google auth and load the GAPI client first.
  *
  * @function fetchGoogleGeocode
- * @memberof! socioscapes
+ * @memberof socioscapes
  * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */
@@ -4126,23 +4257,32 @@ function fetchGoogleGeocode(address) {
 module.exports = fetchGoogleGeocode;
 },{"./../construct/newCallback.js":5}],20:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     newCallback = require('./../construct/newCallback.js'),
     isValidObject = require('./../bool/isValidObject.js');
-function fetchScape(object) {
+/**
+ * This internal method is used to access a {@link ScapeObjec}. Currently limited to simply checking the global object but
+ * future versions may allow loading from urls or local storage.
+ *
+ * @function fetchScape
+ * @memberof socioscapes
+ * @param {Object} scapeObject - A {@link ScapeObject} or a string that corresponds to a {@link ScapeObject} in the global object.
+ * @return myObject {Object} - Returns the corresponding {@link ScapeObject} or undefined.
+ */
+function fetchScape(scapeObject) {
     var callback = newCallback(arguments),
         myObject;
-    if (typeof object === 'string') {
-        if (fetchGlobal(object)) {
-          if (isValidObject(fetchGlobal(object))) {
-              myObject = fetchGlobal(object);
+    if (typeof scapeObject === 'string') {
+        if (fetchGlobal(scapeObject)) {
+          if (isValidObject(fetchGlobal(scapeObject))) {
+              myObject = fetchGlobal(scapeObject);
           }
         }
     } else {
-        if (isValidObject(object)) {
-            myObject = object;
+        if (isValidObject(scapeObject)) {
+            myObject = scapeObject;
         }
     }
     callback(myObject);
@@ -4151,10 +4291,18 @@ function fetchScape(object) {
 module.exports = fetchScape;
 },{"./../bool/isValidObject.js":3,"./../construct/newCallback.js":5,"./../fetch/fetchGlobal.js":16}],21:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     schema = require('./../core/schema.js');
+/**
+ * This internal method returns the .schema entry that corresponds to 'type'.
+ *
+ * @function fetchScapeSchema
+ * @memberof socioscapes
+ * @param {string} type - The type of schema definition to fetch.
+ * @return myObject {Object} - Returns the corresponding schema entry or undefined.
+ */
 var fetchScapeSchema = function fetchScapeSchema(type) {
     var callback = newCallback(arguments),
         myObject,
@@ -4169,18 +4317,22 @@ var fetchScapeSchema = function fetchScapeSchema(type) {
 module.exports = fetchScapeSchema;
 },{"./../construct/newCallback.js":5,"./../core/schema.js":13}],22:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, google*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
- * queried url, the id parameter, and the fetched features.
+ * This internal method asynchronously fetches geometry from a Web Feature Service server. It expects geoJson and
+ * returns the queried url, the id parameter, and the fetched features.
+ *
+ * If successful, callsback with fetch results.
  *
  * @function fetchWfs
- * @memberof! socioscapes
- * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
+ * @memberof socioscapes
+ * @param {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ * @param {string} url - A valid wfs url that returns geoJson FeatureCollection.
+ * @return {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
  */
-function fetchWfs(that, url) {
+function fetchWfs(scapeObject, url) {
     var callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;
@@ -4200,7 +4352,7 @@ function fetchWfs(that, url) {
         }
     };
     xobj.send(null);
-    return that;
+    return scapeObject;
 }
 module.exports = fetchWfs;
 },{"./../construct/newCallback.js":5}],23:[function(require,module,exports){
@@ -4230,7 +4382,7 @@ else{var b=[],c=this.min(),d=this.max(),d=Math.log(d)/Math.LN10,c=Math.log(c)/Ma
     "undefined"!==typeof f&&0<f.length?(this.serie=f,this.setPrecision(),this.log("Setting serie ("+f.length+") : "+f.join())):this.serie=[];this.getJenks=this.getClassJenks;this.getGeometricProgression=this.getClassGeometricProgression;this.getEqInterval=this.getClassEqInterval;this.getQuantile=this.getClassQuantile;this.getStdDeviation=this.getClassStdDeviation;this.getUniqueValues=this.getClassUniqueValues;this.getArithmeticProgression=this.getClassArithmeticProgression}});
 },{}],24:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, document, window, google, gapi*/
+/*global module, require*/
 'use strict';
 var socioscapes = require('./core/core.js'),
     viewGmaps = require('./extension/viewGmaps.js');
@@ -4254,39 +4406,40 @@ viewGmaps(socioscapes);
 module.exports = socioscapes;
 },{"./core/core.js":11,"./extension/viewGmaps.js":14}],25:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, this*/
+/*global module, require*/
 'use strict';
 var fetchFromScape = require('./../fetch/fetchFromScape.js');
 /**
- * This method returns a ScapeObject object for schema entries where menu === 'menuClass'.
+ * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuClass'.
  *
  * @function menuClass
- * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
- * for our context).
+ * @memberof socioscapes
+ * @param {Object} context - A context object sent by the a {@link ScapeMenu} call (this allows us to use the correct
+ * {@link ScapeObject} for our context).
  * @param {string} [name] - Not implemented.
- * @param {Object} [config] - Not implemented.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} - A {@link socioscapes} {@link ScapeObject} object.
  */
-function menuClass(context, name, config) {
+function menuClass(context, name) {
     name = (typeof name === 'string') ? name : context.schema.name;
     return fetchFromScape(name, 'name', context.object);
 }
 module.exports = menuClass;
 },{"./../fetch/fetchFromScape.js":15}],26:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes, this*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js');
 /**
- * This method returns a ScapeObject object for schema entries where menu === 'menuConfig'.
+ * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuConfig'.
  *
  * @function menuConfig
- * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
- * for our context).
+ * @memberof socioscapes
+ * @param {Object} context - A context object sent by the a {@link ScapeMenu} call (this allows us to use the correct
+ * {@link ScapeObject} for our context).
  * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
  * @param {Object} [config] - A configuration object for the corresponding command function.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
 function menuConfig(context, command, config) {
     var callback = newCallback(arguments),
@@ -4306,19 +4459,20 @@ function menuConfig(context, command, config) {
 module.exports = menuConfig;
 },{"./../construct/newCallback.js":5,"./../construct/newEvent.js":7}],27:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, this*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js');
 /**
- * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
+ * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuRequire'.
  *
  * @function menuRequire
- * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
- * for our context).
+ * @memberof socioscapes
+ * @param {Object} context - A context object sent by the a {@link ScapeMenu} call (this allows us to use the correct
+ * {@link ScapeObject} for our context).
  * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
  * @param {Object} [config] - A configuration object for the corresponding command function.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
 function menuRequire(context, command, config) {
     var callback = newCallback(arguments);
@@ -4328,19 +4482,20 @@ function menuRequire(context, command, config) {
 module.exports = menuRequire;
 },{"./../construct/newCallback.js":5,"./../construct/newEvent.js":7}],28:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, socioscapes, this*/
+/*global module, require*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js');
 /**
- * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
+ * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuRequire'.
  *
  * @function menuStore
- * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
- * for our context).
+ * @memberof socioscapes
+ * @param {Object} context - A context object sent by the a {@link ScapeMenu} call (this allows us to use the correct
+ * {@link ScapeObject} for our context).
  * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
  * @param {Object} [config] - A configuration object for the corresponding command function.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
 function menuStore(context, command, config) {
     var callback = newCallback(arguments),
