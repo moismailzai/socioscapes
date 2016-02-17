@@ -7,6 +7,7 @@ var newCallback = require('./../construct/newCallback.js'),
  * This internal method creates a new global object. *gasp*
  *
  * @function newGlobal
+ * @memberof socioscapes
  * @param {string} name - A valid name JavaScript object name.
  * @param {Object} object - The global object, either window or global.
  * @param {Boolean} overwrite - If true, overwrite existing objects.

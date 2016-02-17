@@ -5,12 +5,13 @@ var newEvent = require('./../construct/newEvent.js'),
     isValidObject = require('./../bool/isValidObject.js'),
     newScapeObject = require('./../construct/newScapeObject.js');
 /**
- * This method creates ScapeMenu objects, which are the api interfaces that developers interact with.
+ * This method creates {@link ScapeMenu} objects, which are the api interfaces that developers interact with.
  *
  * @function newScapeMenu
- * @param {Object} scapeObject - A valid @ScapeObject.
- * @param {Object} socioscapesPrototype - The socioscapes api prototype.
- * @return {Object} - A socioscapes ScapeMenu object.
+ * @memberof socioscapes
+ * @param {Object} scapeObject - A valid {@link ScapeObject}.
+ * @param {Object} socioscapesPrototype - The {@link socioscapes} api prototype.
+ * @return {Object} - A {@link socioscapes} {@link ScapeMenu} object.
  */
 var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
     var newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
@@ -58,21 +59,51 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
                 });
             }
         },
+        /**
+         * Represents a {@link ScapeMenu} (the actual api menu interface that users interact with).
+         * @namespace ScapeMenu
+         * @constructor
+         * @param {Object} myObject - An object of type {@link ScapeObject}.
+         */
         ScapeMenu = function(myObject) {
             var mySchema = myObject.schema,
                 myClass = mySchema.class,
                 myParent = mySchema.parent,
                 myType = mySchema.type,
                 thisMenu = this;
+            /**
+             * The schema definition of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} schema
+             * */
             Object.defineProperty(this, 'schema', {
                 value: myObject.schema
             });
+            /**
+             * The {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} this
+             * */
             Object.defineProperty(this, 'this', {
                 value: myObject
             });
+            /**
+             * The metadata of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
+             *
+             * @memberof ScapeMenu#
+             * @member {Object} meta
+             * */
             Object.defineProperty(this, 'meta', {
                 value: myObject.meta
             });
+            /**
+             * Creates and returns a new object of this type (which is stored in the parent container).
+             *
+             * @memberof ScapeMenu#
+             * @function new
+             * */
             Object.defineProperty(this, 'new', {
                 value: function (name) {
                     var myNew;

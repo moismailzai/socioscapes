@@ -1,10 +1,23 @@
 /*jslint node: true */
-/*global module, require, google, gapi*/
+/*global module, require, gapi*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
     geostats = require('./../lib/geostats.min.js');
-function fetchGoogleBq(that, config) {
+/**
+ * This internal method fetches data from Google BigQuery. If necessary, it also requests a gapi authorization token and
+ * loads the gapi BigQuery client.
+ *
+ * If successful, callsback with fetch results.
+ *
+ * @function fetchGoogleBq
+ * @memberof socioscapes
+ * @param {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ * @param {Object} [config] - A configuration object for the gapi.auth and gapi.config api. If missing, defaults will
+ * be used (see the 'gapiConfig' variable).
+ * @return {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ */
+function fetchGoogleBq(scapeObject, config) {
     config = config || {};
     var callback = newCallback(arguments),
         authClientId = config.clientId || false,
@@ -42,7 +55,7 @@ function fetchGoogleBq(that, config) {
             gapi.auth.setToken({
                 access_token: authToken.access_token
             });
-            gapi.client.load('bigquery', 'v2', function() {
+            gapi.client.load(gapiConfig.client.name, gapiConfig.client.version, function() {
                 queryFetcher(authToken);
             });
         } else {
@@ -102,6 +115,6 @@ function fetchGoogleBq(that, config) {
                 callback(queryResult);
             });
         };
-    return that;
+    return scapeObject;
 }
 module.exports = fetchGoogleBq;

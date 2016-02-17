@@ -10,37 +10,73 @@ var fetchGlobal = require('./../fetch/fetchGlobal.js'),
     fetchScape = require('./../fetch/fetchScape.js'),
     fetchScapeSchema = require('./../fetch/fetchScapeSchema.js');
 /**
- * This method creates socioscape ScapeObject objects.
+ * This method creates socioscape {@link ScapeObject} objects.
  *
  * @function newScapeObject
+ * @memberof socioscapes
  * @param {string} name - A valid JavaScript name.
- * @param {Object} parent - A valid ScapeObject or null.
+ * @param {Object} parent - A valid {@link ScapeObject} or null.
  * @param {string} type - A valid scape.sociJson scape class.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} - A socioscapes {@link ScapeObject} object.
  */
 var newScapeObject = function newScapeObject(name, parent, type) {
     var callback = newCallback(arguments),
         schema = fetchScapeSchema(type),
         myObject = false,
+        /**
+         * Represents a {@link ScapeObject} (a json container for arbitrary geospatial data).
+         * @namespace ScapeObject
+         * @constructor
+         * @param {string} myName - A valid name.
+         * @param {?Object} myParent - The containing parent item or null if this is a top level {@link ScapeObject} (a scape).
+         * @param {Object} mySchema - The {@link socioscapes} schema branch that describes this {@link ScapeObject}.
+         */
         ScapeObject = function(myName, myParent, mySchema) {
             var myDispatcher = (myParent) ? myParent.dispatcher:newDispatcher();
-            Object.defineProperty(this, 'dispatcher', {
-                value: myDispatcher
-            });
+            /**
+             * Accesses {@link Dispatcher#dispatch}.
+             *
+             * @memberof ScapeObject#
+             * @function dispatch
+             * */
             Object.defineProperty(this, 'dispatch', {
                 value: myDispatcher.dispatch
             });
+            /**
+             * The schema definition corressponding to this {@link ScapeObject}.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} schema
+             * */
             Object.defineProperty(this, 'schema', {
                 value: mySchema
             });
+            /**
+             * The parent {@link ScapeObject} item.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} parent
+             * */
             Object.defineProperty(this.schema, 'parent', {
                 value: myParent || false
             });
+            /**
+             * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} container
+             * */
             if (!this.schema.container) {
                 Object.defineProperty(this.schema, 'container', {
                     value: myParent ? myParent[mySchema.class]:false
                 });
             }
+            /**
+             * The metadata corresponding to this {@link ScapeObject}.
+             *
+             * @memberof ScapeObject#
+             * @member {Object} meta
+             * */
             Object.defineProperty(this, 'meta', {
                 value: {},
                 writeable: true,
@@ -66,15 +102,15 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     enumerable: true
                 });
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // scape objects are defined in the 'socioscapes.prototype.schema' member and follow a json format. each
-            // level of a scape object can have an arbitrary number of child elements and socioscapes will produce the
+            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json format. each
+            // level of a scape object can have an arbitrary number of child elements and {@link socioscapes} will produce the
             // necessary data structure and corresponding menu items. the following loop creates a member for each item
             // in the current schema's '.children' array. the children array is simply a list of names which correspond
-            // to members in the schema's data structure. this means that extending socioscapes can simply be a matter
+            // to members in the schema's data structure. this means that extending {@link socioscapes} can simply be a matter
             // of altering the '.schema' member and allowing the API to do the rest. child entries in [brackets] denote
             // arrays and are populated by instances of the corresponding class. for example, if 'mySchema.children[i].class'
             // is '[state]', then 'mySchema.state[0]' will be created  as the datastructure prototype for all entries in
-            // 'this.state'. all such prototypes and schema definitions are stored in the socioscapes.prototype.schema.
+            // 'this.state'. all such prototypes and schema definitions are stored in the {@link socioscapes}.prototype.schema.
             for (var i = 0; i < mySchema.children.length; i++) {
                 var myChildClass = mySchema.children[i].class, // child item class
                     myChildIsArray,

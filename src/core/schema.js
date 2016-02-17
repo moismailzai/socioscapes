@@ -100,20 +100,12 @@ var myVersion = '0.1',
         ],
         "type": "scape.sociJson"
     }
-    };
-/**
- * This method creates socioscape ScapeSchema objects.
- *
- * @function schema
- * @return {Object} - A socioscapes ScapeSchema object.
- */
-var schema = {
-    "structure": myScapeSchema,
-    "alias" : {
+    },
+    myScapeSchemaAlias = {
         "bq": fetchGoogleBq,
         "wfs": fetchWfs
     },
-    "index" : {
+    myScapeSchemaIndex = {
         "scape": {
             "class": "scape", "type": "scape.sociJson", "schema": myScapeSchema.scape
         },
@@ -126,6 +118,18 @@ var schema = {
         "view": {
             "class": "view", "type": "view.state.scape.sociJson", "schema": myScapeSchema.scape.state[0].view[0]
         }
-    }
-};
-module.exports = schema;
+    };
+/**
+ * This method creates socioscape schema objects.
+ *
+ * @memberof socioscapes
+ * @return {Object} - A {@link socioscapes} schema object.
+ */
+function schema() {
+    return {
+        "structure": myScapeSchema,
+        "alias" : myScapeSchemaAlias,
+        "index" : myScapeSchemaIndex
+    };
+}
+module.exports = schema();

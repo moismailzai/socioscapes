@@ -3,12 +3,11 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This method executes a Google Geocoder query for 'address' and returns the results in an object.
- *
- * Make sure you obtain Google auth and load the GAPI client first.
+ * This internal method executes a Google Geocoder query for 'address' and returns the results in an object. Make sure
+ * you obtain Google auth and load the GAPI client first.
  *
  * @function fetchGoogleGeocode
- * @memberof! socioscapes
+ * @memberof socioscapes
  * @param {String} address - The address around which the map around (eg. 'Toronto, Canada').
  * @return {Object} geocode - An object with latitude and longitude coordinates.
  */

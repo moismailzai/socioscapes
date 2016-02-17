@@ -6,6 +6,7 @@
  * function, else return an empty function.
  *
  * @function newCallback
+ * @memberof socioscapes
  * @param {Object[]} argumentsArray - The arguments array of a function.
  * @return {Function} myCallback - Any function.
  */

@@ -3,14 +3,18 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This method asynchronously fetches geometry from a Web Feature Service server. It expects GeoJson and returns the
- * queried url, the id parameter, and the fetched features.
+ * This internal method asynchronously fetches geometry from a Web Feature Service server. It expects geoJson and
+ * returns the queried url, the id parameter, and the fetched features.
+ *
+ * If successful, callsback with fetch results.
  *
  * @function fetchWfs
- * @memberof! socioscapes
- * @return {Object} geom - An object with .features, .url, and .id members. This can be used to populate myLayer.geom.
+ * @memberof socioscapes
+ * @param {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
+ * @param {string} url - A valid wfs url that returns geoJson FeatureCollection.
+ * @return {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
  */
-function fetchWfs(that, url) {
+function fetchWfs(scapeObject, url) {
     var callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;
@@ -30,6 +34,6 @@ function fetchWfs(that, url) {
         }
     };
     xobj.send(null);
-    return that;
+    return scapeObject;
 }
 module.exports = fetchWfs;

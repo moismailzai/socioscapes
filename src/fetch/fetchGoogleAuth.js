@@ -7,7 +7,7 @@ var newCallback = require('./../construct/newCallback.js');
  * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
  *
  * @function fetchGoogleAuth
- * @memberof! socioscapes
+ * @memberof socioscapes
  * @param {Object} config - An object with configuration options for Google APIs.
  * @param {Object} config.auth - Configuration options for the auth request (eg. .client_id, .scope, .immediate)
  * @param {Object} config.client.name - The name of the Google API client to load.

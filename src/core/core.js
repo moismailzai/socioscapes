@@ -29,12 +29,11 @@ var version = '0.7.0-0',
     extender = require('./../core/extender');
 /**
  * @global
- * @namespace socioscapes
- * @param {string} [scapeName=scape0] - The name of an existing scape object to load.
- * creates 'scape0'.
- * @return {Object} The socioscapes API interface, which is a @ScapeMenu object.
+ * @namespace
+ * @param {string} [scapeName=scape0] - The name of an existing ScapeObject to load.
+ * @return {Object} The {@link socioscapes} api interface, which is a {@link ScapeMenu} object.
  */
-function socioscapes(scapeName) { // when socioscapes is called, fetch the scape specified (or fetch / create a default scape) and return api menus for it
+function socioscapes(scapeName) { // when socioscapes is called, fetch the {@link ScapeObject} specified (or fetch / create a default {@link ScapeObject}) and return an api ({@link ScapeMenu}) for it
     var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
     return newScapeMenu(myScape, socioscapes.prototype);
 }

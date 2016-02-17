@@ -4,14 +4,15 @@
 var newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js');
 /**
- * This method returns a ScapeObject object for schema entries where menu === 'menuRequire'.
+ * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuRequire'.
  *
  * @function menuStore
- * @param {Object} context - A context object sent by the a ScapeMenu call (this allows us to use the correct ScapeObject
- * for our context).
+ * @memberof socioscapes
+ * @param {Object} context - A context object sent by the a {@link ScapeMenu} call (this allows us to use the correct
+ * {@link ScapeObject} for our context).
  * @param {string} command - Should correspond to a socioscapes.fn or soioscapes.fn.alias member name.
  * @param {Object} [config] - A configuration object for the corresponding command function.
- * @return {Object} - A socioscapes ScapeObject object.
+ * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
 function menuStore(context, command, config) {
     var callback = newCallback(arguments),

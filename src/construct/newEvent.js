@@ -6,6 +6,7 @@
  * updates. For more information on CustomEvent, see {@link https://developer.mozilla.org/en/docs/Web/API/CustomEvent}.
  *
  * @function newEvent
+ * @memberof socioscapes
  * @param {String} name - The name of the new event (this is what your event handler will listen for).
  * @param {Object} message - The content of the event.detail.
  */

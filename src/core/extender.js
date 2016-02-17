@@ -2,17 +2,18 @@
 /*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
 /**
- * The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you
- * simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with
+ * The {@link socioscapes} structure is inspired by the jQuery team's module management system. To extend {@link socioscapes}, you
+ * simply need to call {@link socioscapes}.extender and provide an array of entries that are composed of an object with
  * '.path' (a string), and '.extension' (a value) members.
  *
  * @function extender
- * @param {Object[]} config - A valid socioscapes extension configuration.
+ * @memberof socioscapes
+ * @param {Object[]} config - A valid {@link socioscapes} extension configuration.
  * @param {string} config[].path - Tells the API where to store your extension. The path for most modules will be the
- * root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access
+ * root path, which is {@link socioscapes}.fn. The name of your module should be prefixed such that existing elements can access
  * it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the
  * 'fetch' prefix (eg. 'fetchMysql').
- * @param {Function} socioscapes - The socioscapes global object.
+ * @param {Function} socioscapes - The {@link socioscapes} api global object.
  * @param {string} config[].alias - A shorter alias that doesn't follow the above naming standards.
  * @param {Boolean} config[].silent - If true, supresses console.log messages.
  * @param {Object} config[].extension - Your extension.

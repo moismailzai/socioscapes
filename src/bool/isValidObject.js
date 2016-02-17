@@ -7,6 +7,7 @@ var newCallback = require('./../construct/newCallback.js');
  * This internal method tests if an object adheres to the scape.sociJson standard.
  *
  * @function isValidObject
+ * @memberof socioscapes
  * @param {Object} object - An object whose .meta.type === 'scape.sociJson'.
  * @returns {Boolean}
  */

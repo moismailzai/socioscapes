@@ -3,10 +3,11 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js');
 /**
- * This internal method tests if a name used for a socioscapes scape, state, layer, or extensions adheres to naming
+ * This internal method tests if a name used for a {@link socioscapes} scape, state, layer, or extensions adheres to naming
  * restrictions.
  *
  * @function isValidName
+ * @memberof socioscapes
  * @param {string} name - This should be a valid http, https, ftp, or ftps URL and follow the
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}

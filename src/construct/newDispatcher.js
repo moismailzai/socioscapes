@@ -3,7 +3,7 @@
 'use strict';
 var newEvent = require('./../construct/newEvent.js');
 /**
- * The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes
+ * The {@link socioscapes} {@link Dispatcher} class helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
  * queued and synchronously resolved on a per-scape basis by attaching a unique dispatcher instance to every scape. The
  * api itself remains asynchronous. Calls to the dispatcher are expeted to provide an arguments array, myArguments, and
@@ -17,9 +17,15 @@ var newEvent = require('./../construct/newEvent.js');
  * returned a value and the dispatcher can safely move on to the next item its queue.
  *
  * @function newDispatcher
+ * @memberof socioscapes
  * @return {Function}
  * */
 function newDispatcher() {
+    /**
+     * Represents a {@link ScapeObject} dispatcher.
+     * @namespace Dispatcher
+     * @constructor
+     */
     var Dispatcher = function() {
         var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
             dispatcherQueue = [],
@@ -31,6 +37,19 @@ function newDispatcher() {
             dispatcherReady = true;
             that.dispatch();
         });
+        /**
+         * Calls to the dispatcher are expeted to provide an arguments array, myArguments, and a function, myFunction.
+         * The first argument in myArguments should always be the object that myFunction modifes and/or returns.
+         * myFunction is evaluated for the number of expected arguments (myFunction.length) and the dispatcher appends
+         * null values for expected arguments that are missing. This is done so that a callback function can be appended
+         * to the array and all functions that are executed through the dispatcher can safely assume that the element at
+         * index myArguments.length is the dispatcher callback. Finally, a queue item consisting of the myFunction and
+         * myArguments members is pushed into the dispatcher's queue array.
+         *
+         * @memberof Dispatcher#
+         * @function dispatch
+         * @param {object} [config]
+         * */
         Object.defineProperty(this, 'dispatch', {
             value: function (config) {
                 if (config) {
@@ -55,6 +74,13 @@ function newDispatcher() {
                 return this;
             }
         });
+        /**
+         * Returns the id specific to this {@link Dispatcher} instance. Useful if you want to setup external listeners for
+         * dispatcher events (which fire in the "socioscapes.dispatched.id" pattern).
+         *
+         * @memberof Dispatcher#
+         * @function id
+         * */
         Object.defineProperty(this, 'id', {
             value: function() {
                 return dispatcherId;
