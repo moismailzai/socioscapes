@@ -1,5 +1,5 @@
 /*jslint node: true */
-/*global module, require, document, window*/
+/*global module, require, document, window, event*/
 'use strict';
 /**
  * This internal method is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal
@@ -23,7 +23,7 @@
 })();
 function newEvent(name, message) {
     var myEvent;
-    myEvent = new CustomEvent(name, {"detail": message });
+    myEvent = new CustomEvent(name, {"detail": message});
     document.dispatchEvent(myEvent);
 }
 module.exports = newEvent;
