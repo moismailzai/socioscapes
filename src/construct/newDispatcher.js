@@ -18,7 +18,7 @@ var newEvent = require('./../construct/newEvent.js');
  *
  * @function newDispatcher
  * @memberof socioscapes
- * @return {Function}
+ * @return {Object}
  * */
 function newDispatcher() {
     /**
