@@ -2680,7 +2680,7 @@ var newEvent = require('./../construct/newEvent.js');
  *
  * @function newDispatcher
  * @memberof socioscapes
- * @return {Function}
+ * @return {Object}
  * */
 function newDispatcher() {
     /**
@@ -2755,7 +2755,7 @@ function newDispatcher() {
 module.exports = newDispatcher;
 },{"./../construct/newEvent.js":7}],7:[function(require,module,exports){
 /*jslint node: true */
-/*global module, require, document, window*/
+/*global module, require, document, window, event*/
 'use strict';
 /**
  * This internal method is a CustomEvent wrapper that fires an arbitrary event. Socioscapes methods use it to signal
@@ -2779,7 +2779,7 @@ module.exports = newDispatcher;
 })();
 function newEvent(name, message) {
     var myEvent;
-    myEvent = new CustomEvent(name, {"detail": message });
+    myEvent = new CustomEvent(name, {"detail": message});
     document.dispatchEvent(myEvent);
 }
 module.exports = newEvent;
@@ -2797,7 +2797,7 @@ var newCallback = require('./../construct/newCallback.js'),
  * @memberof socioscapes
  * @param {string} name - A valid name JavaScript object name.
  * @param {Object} object - The global object, either window or global.
- * @param {Boolean} overwrite - If true, overwrite existing objects.
+ * @param {Boolean} [overwrite] - If true, overwrite existing objects.
  * @return {Object} myGlobal - The newly-created global object.
  */
 function newGlobal(name, object, overwrite) {
@@ -2989,7 +2989,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
          * @param {Object} mySchema - The {@link socioscapes} schema branch that describes this {@link ScapeObject}.
          */
         ScapeObject = function(myName, myParent, mySchema) {
-            var myDispatch = (myParent && myParent.dispatcher) ? myParent.dispatcher.dispatch:newDispatcher().dispatch;
+            var myDispatch = (myParent && myParent.dispatch) ? myParent.dispatch:newDispatcher().dispatch;
             /**
              * Accesses {@link Dispatcher#dispatch}.
              *
@@ -3058,16 +3058,16 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     value: mySchema.type,
                     enumerable: true
                 });
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json format. each
-            // level of a scape object can have an arbitrary number of child elements and {@link socioscapes} will produce the
-            // necessary data structure and corresponding menu items. the following loop creates a member for each item
-            // in the current schema's '.children' array. the children array is simply a list of names which correspond
-            // to members in the schema's data structure. this means that extending {@link socioscapes} can simply be a matter
-            // of altering the '.schema' member and allowing the API to do the rest. child entries in [brackets] denote
-            // arrays and are populated by instances of the corresponding class. for example, if 'mySchema.children[i].class'
-            // is '[state]', then 'mySchema.state[0]' will be created  as the datastructure prototype for all entries in
-            // 'this.state'. all such prototypes and schema definitions are stored in the {@link socioscapes}.prototype.schema.
+            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json
+            // format. each level of a scape object can have an arbitrary number of child elements and
+            // {@link socioscapes} will produce the necessary data structure and corresponding menu items. the following
+            // loop creates a member for each item in the current schema's '.children' array. the children array is
+            // simply a list of names which correspond to members in the schema's data structure. this means that
+            // extending {@link socioscapes} can simply be a matter of altering the '.schema' member and allowing the
+            // api to do the rest. child entries in [brackets] denote arrays and are populated by instances of the
+            // corresponding class. for example, if 'mySchema.children[i].class' is '[state]', then 'mySchema.state[0]'
+            // will be created  as the datastructure prototype for all entries in 'this.state'. all such prototypes and
+            // schema definitions are stored in the {@link socioscapes}.prototype.schema.
             for (var i = 0; i < mySchema.children.length; i++) {
                 var myChildClass = mySchema.children[i].class, // child item class
                     myChildIsArray,
@@ -4015,20 +4015,21 @@ module.exports = viewGmaps;
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     isValidName = require('./../bool/isValidName.js');
-Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
-        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
-    };
 /**
  * This internal method is used to extract a specific state, view, or layer from within a {@link ScapeObject} 'array' based on a
  * 'key' and 'metaProperty' pairing.
  *
  * @function fetchFromScape
  * @memberof socioscapes
- * @param {Number} key - An integer value that corresponds to an entry in the 'array' argument.
+ * @param {(number|string)} key - An integer value that corresponds to an entry in the 'array' argument or a string that
+ * corresponds to a metaProperty value.
  * @param {Object} metaProperty - The property in the '.meta' member that we are trying to match to (usually 'name').
  * @param {Object} array - The {@link ScapeObject} array that contains the state, view, or layer we are looking for.
  * @return this {Object}
  */
+Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
+    };
 function fetchFromScape(key, metaProperty, array) {
     var callback = newCallback(arguments),
         myKey = false;
