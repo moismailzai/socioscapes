@@ -101,16 +101,16 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     value: mySchema.type,
                     enumerable: true
                 });
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json format. each
-            // level of a scape object can have an arbitrary number of child elements and {@link socioscapes} will produce the
-            // necessary data structure and corresponding menu items. the following loop creates a member for each item
-            // in the current schema's '.children' array. the children array is simply a list of names which correspond
-            // to members in the schema's data structure. this means that extending {@link socioscapes} can simply be a matter
-            // of altering the '.schema' member and allowing the API to do the rest. child entries in [brackets] denote
-            // arrays and are populated by instances of the corresponding class. for example, if 'mySchema.children[i].class'
-            // is '[state]', then 'mySchema.state[0]' will be created  as the datastructure prototype for all entries in
-            // 'this.state'. all such prototypes and schema definitions are stored in the {@link socioscapes}.prototype.schema.
+            // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json
+            // format. each level of a scape object can have an arbitrary number of child elements and
+            // {@link socioscapes} will produce the necessary data structure and corresponding menu items. the following
+            // loop creates a member for each item in the current schema's '.children' array. the children array is
+            // simply a list of names which correspond to members in the schema's data structure. this means that
+            // extending {@link socioscapes} can simply be a matter of altering the '.schema' member and allowing the
+            // api to do the rest. child entries in [brackets] denote arrays and are populated by instances of the
+            // corresponding class. for example, if 'mySchema.children[i].class' is '[state]', then 'mySchema.state[0]'
+            // will be created  as the datastructure prototype for all entries in 'this.state'. all such prototypes and
+            // schema definitions are stored in the {@link socioscapes}.prototype.schema.
             for (var i = 0; i < mySchema.children.length; i++) {
                 var myChildClass = mySchema.children[i].class, // child item class
                     myChildIsArray,
