@@ -5,7 +5,7 @@
 
 ## Details
  
-**Current version**: 0.7.0-3  
+**Current version**: 0.7.0-4  
 *(expect breaking changes prior to version 1.0)* 
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
@@ -83,10 +83,10 @@ Now suppose that besides a map, the user also wishes to include some charts, gra
     socioscapes('tdot').state().new('census2011')
 ```
 
-// okay, let's download some Vancouver data to work with. socioscapes has native support for WFS geometry in geoJSON format and can parse Google Bigquery results. let's set all that up.
+// okay, let's download some Toronto census data to work with. socioscapes has native support for WFS geometry in geoJSON format and can parse Google Bigquery results. let's set all that up (these variables, "bq" and "wfs", are preconfigured and publicly exposed on the reference implementation website).
 
 ```js
-var wfs = 'http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=csduid=5915022'
+var wfs = "http://app.socioscapes.com:8080/geoserver/socioscapes/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=socioscapes:2011-canada-census-da&outputFormat=json&cql_filter=csduid=3520005";
 ```
 
 ```js
@@ -96,7 +96,7 @@ var bq = {
         id: '2011_census_of_canada',
         featureIdProperty: 'dauid',
         projectId: '424138972496',
-        queryString:"SELECT dauid, SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0)) as characteristic, SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0)) as normalization, SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0))/SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0)) as total FROM [canada_census_2011.british_columbia] WHERE csduid CONTAINS '5915022' AND (REGEXP_MATCH(question, r'(^7$)') OR REGEXP_MATCH(question, r'(^7$)') )GROUP BY dauid;"
+        queryString: "SELECT dauid, SUM(IF(REGEXP_MATCH(question, r'(^1$)'),total,0)) as characteristic, SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0)) as normalization, SUM(IF(REGEXP_MATCH(question, r'(^1$)'),total,0))/SUM(IF(REGEXP_MATCH(question, r'(^7$)'),total,0)) as total FROM [canada_census_2011.ontario] WHERE csduid CONTAINS '3520005' AND (REGEXP_MATCH(question, r'(^1$)') OR REGEXP_MATCH(question, r'(^7$)') )GROUP BY dauid;"
 };
 ```
 
