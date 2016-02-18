@@ -10,7 +10,7 @@ var newCallback = require('./../construct/newCallback.js'),
  * @memberof socioscapes
  * @param {string} name - A valid name JavaScript object name.
  * @param {Object} object - The global object, either window or global.
- * @param {Boolean} overwrite - If true, overwrite existing objects.
+ * @param {Boolean} [overwrite] - If true, overwrite existing objects.
  * @return {Object} myGlobal - The newly-created global object.
  */
 function newGlobal(name, object, overwrite) {
