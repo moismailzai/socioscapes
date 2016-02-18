@@ -115,7 +115,7 @@ socioscapes('tdot').state('census2011')
     l.geom('wfs', wfs).data('bq', bq);
     v.config('gview')
 ```
-// putting it all together: using the data we downloaded above, the code snippet below will create a new scape object called tdot, create a state called census2011, fetch and parse wfs geometry, fetch related google bigquery data, create a new google map, organize the data based on default values and render it to the view if there is a "map-canvas" div present.
+// putting it all together: using the configuration objects we created above, the code snippet below will create a new scape object called tdot, create a state called census2011, fetch and parse wfs geometry, fetch related google bigquery data, create a new google map, organize the data based on default values and render it to the view if there is a "map-canvas" div present.
 
 ```js
 socioscapes().new('tdot').state().new('census2011').layer().data('bq',bq).geom('wfs',wfs, function(){
