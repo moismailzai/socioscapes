@@ -3921,9 +3921,9 @@ var newEvent = require('./../construct/newEvent.js'),
  */
 var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
     var newChildMenu = function newChildMenu(thisMenu, myObject, mySchema, myChild) {
-            var myChildIsArray = myChild.class.match(/\[(.*?)]/g) ? true : false,
-                myChildClass = myChildIsArray ? /\[(.*?)]/g.exec(myChild.class)[1] : myChild.class,
-                myChildSchema = myChildIsArray ? mySchema[myChildClass][0]:mySchema[myChildClass]; // child item datastructure
+            var myChildIsContainer = myChild.class.match(/\[(.*?)]/g) ? true : false, // is the child item an array that contains layers or views? [signified by schema classes in square brackets]
+                myChildClass = myChildIsContainer ? /\[(.*?)]/g.exec(myChild.class)[1] : myChild.class, // strip the [square brackets]
+                myChildSchema = myChildIsContainer ? mySchema[myChildClass][0]:mySchema[myChildClass]; // child item datastructure
             if (myChildSchema.menu) { // if the datastructure defines a menu stub
                 Object.defineProperty(thisMenu, myChildClass, { // "myChildClass" evaluates to a classname string (eg. 'state' or 'view' or 'config')
                     value: function (command, config, callback) {
@@ -4012,10 +4012,13 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
              * */
             Object.defineProperty(this, 'new', {
                 value: function (name) {
-                    var myNew;
-                    name = name || mySchema.name + myClass.length;
-                    myNew = newScapeObject(name, myParent, myType);
-                    return myNew ? new ScapeMenu(myNew) : thisMenu;
+                    var myMenu = thisMenu,
+                        myNew;
+                    if (name) {
+                        myNew = newScapeObject(name, myParent, myType);
+                        myMenu = myNew ? new ScapeMenu(myNew) : thisMenu;
+                    }
+                    return myMenu;
                 }
             });
             for (var i = 0; i < mySchema.children.length; i++) {
@@ -4205,7 +4208,7 @@ module.exports = newScapeObject;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.0-2',
+var version = '0.7.0-3',
     chroma = require('chroma-js'),
     geostats = require('./../lib/geostats.min.js'),
     newCallback = require('./../construct/newCallback.js'),
@@ -4238,8 +4241,7 @@ var version = '0.7.0-2',
  * @return {Object} The {@link socioscapes} api interface, which is a {@link ScapeMenu} object.
  */
 function socioscapes(scapeName) { // when socioscapes is called, fetch the {@link ScapeObject} specified (or fetch / create a default {@link ScapeObject}) and return an api ({@link ScapeMenu}) for it
-    var myScape = scapeName ? fetchScape(scapeName) || newScapeObject(scapeName, null, 'scape')
-                            : fetchScape('scape0') || newScapeObject('scape0', null, 'scape');
+    var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
     return newScapeMenu(myScape, socioscapes.prototype);
 }
 
