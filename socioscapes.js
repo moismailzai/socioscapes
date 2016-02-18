@@ -3130,7 +3130,7 @@ module.exports = newScapeObject;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.0-0',
+var version = '0.7.0-2',
     chroma = require('chroma-js'),
     geostats = require('./../lib/geostats.min.js'),
     newCallback = require('./../construct/newCallback.js'),
@@ -3163,7 +3163,8 @@ var version = '0.7.0-0',
  * @return {Object} The {@link socioscapes} api interface, which is a {@link ScapeMenu} object.
  */
 function socioscapes(scapeName) { // when socioscapes is called, fetch the {@link ScapeObject} specified (or fetch / create a default {@link ScapeObject}) and return an api ({@link ScapeMenu}) for it
-    var myScape = fetchScape(scapeName || 'scape0') || newScapeObject('scape0', null, 'scape');
+    var myScape = scapeName ? fetchScape(scapeName) || newScapeObject(scapeName, null, 'scape')
+                            : fetchScape('scape0') || newScapeObject('scape0', null, 'scape');
     return newScapeMenu(myScape, socioscapes.prototype);
 }
 
