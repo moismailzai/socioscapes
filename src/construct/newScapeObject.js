@@ -32,7 +32,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
          * @param {Object} mySchema - The {@link socioscapes} schema branch that describes this {@link ScapeObject}.
          */
         ScapeObject = function(myName, myParent, mySchema) {
-            var myDispatch = (myParent && myParent.dispatcher) ? myParent.dispatcher.dispatch:newDispatcher().dispatch;
+            var myDispatch = (myParent && myParent.dispatch) ? myParent.dispatch:newDispatcher().dispatch;
             /**
              * Accesses {@link Dispatcher#dispatch}.
              *
