@@ -66,29 +66,13 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
          * @param {Object} myObject - An object of type {@link ScapeObject}.
          */
         ScapeMenu = function(myObject) {
-            var mySchema = myObject.schema,
+            var mySchema = myObject.meta.schema,
                 myClass = mySchema.class,
                 myParent = mySchema.parent,
                 myType = mySchema.type,
                 thisMenu = this;
-            /**
-             * The schema definition of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
-             *
-             * @memberof ScapeMenu#
-             * @member {Object} schema
-             * */
-            Object.defineProperty(this, 'schema', {
-                value: myObject.schema
-            });
-            /**
-             * The {@link ScapeObject} that this {@link ScapeMenu} is linked to.
-             *
-             * @memberof ScapeMenu#
-             * @member {Object} this
-             * */
-            Object.defineProperty(this, 'this', {
-                value: myObject
-            });
+            myObject.meta.thisMenu = thisMenu;
+            myObject.meta.thisObject = myObject;
             /**
              * The metadata of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
              *
@@ -118,7 +102,7 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
             for (var i = 0; i < mySchema.children.length; i++) {
                 newChildMenu(this, myObject, mySchema, mySchema.children[i]);
             }
-            newEvent('socioscapes.active', myObject.meta);
+            newEvent('socioscapes.newScapeMenu', this);
             return this;
         };
     if (isValidObject(scapeObject)) {

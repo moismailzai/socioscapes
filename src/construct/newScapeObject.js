@@ -43,35 +43,6 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                 value: myDispatch
             });
             /**
-             * The schema definition corressponding to this {@link ScapeObject}.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} schema
-             * */
-            Object.defineProperty(this, 'schema', {
-                value: mySchema
-            });
-            /**
-             * The parent {@link ScapeObject} item.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} parent
-             * */
-            Object.defineProperty(this.schema, 'parent', {
-                value: myParent || false
-            });
-            /**
-             * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} container
-             * */
-            if (!this.schema.container) {
-                Object.defineProperty(this.schema, 'container', {
-                    value: myParent ? myParent[mySchema.class]:false
-                });
-            }
-            /**
              * The metadata corresponding to this {@link ScapeObject}.
              *
              * @memberof ScapeObject#
@@ -101,6 +72,35 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     value: mySchema.type,
                     enumerable: true
                 });
+                /**
+                 * The schema definition corressponding to this {@link ScapeObject}.
+                 *
+                 * @memberof ScapeObject#
+                 * @member {Object} schema
+                 * */
+                Object.defineProperty(this.meta, 'schema', {
+                    value: mySchema
+                });
+                    /**
+                     * The parent {@link ScapeObject} item.
+                     *
+                     * @memberof ScapeObject#
+                     * @member {Object} parent
+                     * */
+                    Object.defineProperty(this.meta.schema, 'parent', {
+                        value: myParent || false
+                    });
+                    /**
+                     * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
+                     *
+                     * @memberof ScapeObject#
+                     * @member {Object} container
+                     * */
+                    if (!this.meta.schema.container) {
+                        Object.defineProperty(this.meta.schema, 'container', {
+                            value: myParent ? myParent[mySchema.class]:false
+                        });
+                    }
             // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json
             // format. each level of a scape object can have an arbitrary number of child elements and
             // {@link socioscapes} will produce the necessary data structure and corresponding menu items. the following
@@ -135,7 +135,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                 }
             }
-            newEvent('socioscapes.new.' + this.meta.type, this);
+            newEvent('socioscapes.newScapeObject', this);
             return this;
         };
     parent = fetchScape(parent);
@@ -146,7 +146,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     console.log('Fetching existing scape object "' + name + '" of class "' + schema.class + '".');
                     myObject = fetchFromScape(name, 'name', parent[schema.class]);
                 } else {
-                    console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.schema.class + '.');
+                    console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.meta.schema.class + '.');
                     myObject = new ScapeObject(name, parent, schema);
                     parent[schema.class].push(myObject);
                 }

@@ -124,6 +124,15 @@ socioscapes().new('tdot').state().new('census2011').layer().data('bq',bq).geom('
 ```        
 
 
+## Socioscapes Events:   
+
+To aid with unidirectional data flow, the API fires the following events:
+ 
+**ScapeMenu is created:** fires 'socioscapes.newScapeMenu' with event.detail = scapeMenu;   
+**ScapeObject is created:** fires 'socioscapes.newScapeObject' with event.detail = scapeObject;   
+**viewGmapSymbology completed:** fires 'socioscapes.updateSymbology' with event.detail = socioscapesView;   
+
+
 ## Asynchronous:
 
 The socioscapes Dispatcher class helps to facilitate asynchronous method chaining and queues. Socioscapes associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be queued and synchronously resolved on a per-scape basis by attaching a unique dispatcher instance to every scape. The api itself remains asynchronous. Calls to the dispatcher are expeted to provide an arguments array, myArguments, and a function, myFunction. The first argument in myArguments should always be the object that myFunction modifes and/or returns. myFunction is evaluated for the number of expected arguments (myFunction.length) and the dispatcher appends null values for expected arguments that are missing. This is done so that a callback function can be appended to the array and all functions that are executed through the dispatcher can safely assume that the element at index myArguments.length is the dispatcher callback. Finally, a queue item consisting of the myFunction and myArguments members is pushed into the dispatcher's queue array. The dispatcher works through each item in its queue by executing myFunction(myArguments) and waiting for the callback function to fire an event that signals that the function has returned a value and the dispatcher can safely move on to the next item its queue.
@@ -131,6 +140,7 @@ The socioscapes Dispatcher class helps to facilitate asynchronous method chainin
 
 ## Extendable:
 
-The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with '.path' (a string), and '.extension' (a value) members. The '.path' Tells the API where to store your extension. The path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql').
+The socioscapes structure is inspired by the jQuery team's module management system. To extend socioscapes, you simply need to call 'socioscapes.extender' and provide an array of entries that are composed of an object with '.path' (a string), and '.extension' (a value) members. The '.path' Tells the API where to store your extension. The path for most modules will be the root path, which is socioscapes.fn. The name of your module should be prefixed such that existing elements can access it. For instance, if you have created a new module that retrieves data from a MySql server, you'd want to use the 'fetch' prefix (eg. 'fetchMysql').   
+
 
 *This software was originally written as partial fulfilment of the Masters Research Paper, a degree requirement for the Masters of Arts in Sociology at the University of Toronto.*

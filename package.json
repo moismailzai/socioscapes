@@ -1,6 +1,6 @@
 {
   "name": "socioscapes",
-  "version": "0.7.0-4",
+  "version": "0.7.1-1",
   "description": "Socioscapes is a javascript alternative to desktop geographic information systems and proprietary data visualization platforms. The modular API fuses various free-to-use and open-source GIS libraries into an organized, modular, and sandboxed environment.",
   "main": "src/main.js",
   "directories": {},

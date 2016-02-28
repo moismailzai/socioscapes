@@ -2897,29 +2897,13 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
          * @param {Object} myObject - An object of type {@link ScapeObject}.
          */
         ScapeMenu = function(myObject) {
-            var mySchema = myObject.schema,
+            var mySchema = myObject.meta.schema,
                 myClass = mySchema.class,
                 myParent = mySchema.parent,
                 myType = mySchema.type,
                 thisMenu = this;
-            /**
-             * The schema definition of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
-             *
-             * @memberof ScapeMenu#
-             * @member {Object} schema
-             * */
-            Object.defineProperty(this, 'schema', {
-                value: myObject.schema
-            });
-            /**
-             * The {@link ScapeObject} that this {@link ScapeMenu} is linked to.
-             *
-             * @memberof ScapeMenu#
-             * @member {Object} this
-             * */
-            Object.defineProperty(this, 'this', {
-                value: myObject
-            });
+            myObject.meta.thisMenu = thisMenu;
+            myObject.meta.thisObject = myObject;
             /**
              * The metadata of the {@link ScapeObject} that this {@link ScapeMenu} is linked to.
              *
@@ -2949,7 +2933,7 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
             for (var i = 0; i < mySchema.children.length; i++) {
                 newChildMenu(this, myObject, mySchema, mySchema.children[i]);
             }
-            newEvent('socioscapes.active', myObject.meta);
+            newEvent('socioscapes.newScapeMenu', this);
             return this;
         };
     if (isValidObject(scapeObject)) {
@@ -3003,35 +2987,6 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                 value: myDispatch
             });
             /**
-             * The schema definition corressponding to this {@link ScapeObject}.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} schema
-             * */
-            Object.defineProperty(this, 'schema', {
-                value: mySchema
-            });
-            /**
-             * The parent {@link ScapeObject} item.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} parent
-             * */
-            Object.defineProperty(this.schema, 'parent', {
-                value: myParent || false
-            });
-            /**
-             * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
-             *
-             * @memberof ScapeObject#
-             * @member {Object} container
-             * */
-            if (!this.schema.container) {
-                Object.defineProperty(this.schema, 'container', {
-                    value: myParent ? myParent[mySchema.class]:false
-                });
-            }
-            /**
              * The metadata corresponding to this {@link ScapeObject}.
              *
              * @memberof ScapeObject#
@@ -3061,6 +3016,35 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     value: mySchema.type,
                     enumerable: true
                 });
+                /**
+                 * The schema definition corressponding to this {@link ScapeObject}.
+                 *
+                 * @memberof ScapeObject#
+                 * @member {Object} schema
+                 * */
+                Object.defineProperty(this.meta, 'schema', {
+                    value: mySchema
+                });
+                    /**
+                     * The parent {@link ScapeObject} item.
+                     *
+                     * @memberof ScapeObject#
+                     * @member {Object} parent
+                     * */
+                    Object.defineProperty(this.meta.schema, 'parent', {
+                        value: myParent || false
+                    });
+                    /**
+                     * The array container within the parent {@link ScapeObject} item which stores other {@link ScapeObject}s of this type.
+                     *
+                     * @memberof ScapeObject#
+                     * @member {Object} container
+                     * */
+                    if (!this.meta.schema.container) {
+                        Object.defineProperty(this.meta.schema, 'container', {
+                            value: myParent ? myParent[mySchema.class]:false
+                        });
+                    }
             // {@link ScapeObjects} are defined in the {@link socioscapes}.prototype.schema member and follow a json
             // format. each level of a scape object can have an arbitrary number of child elements and
             // {@link socioscapes} will produce the necessary data structure and corresponding menu items. the following
@@ -3095,7 +3079,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     this[myChildClass].push(new ScapeObject(myChildName, this, myChildSchema));
                 }
             }
-            newEvent('socioscapes.new.' + this.meta.type, this);
+            newEvent('socioscapes.newScapeObject', this);
             return this;
         };
     parent = fetchScape(parent);
@@ -3106,7 +3090,7 @@ var newScapeObject = function newScapeObject(name, parent, type) {
                     console.log('Fetching existing scape object "' + name + '" of class "' + schema.class + '".');
                     myObject = fetchFromScape(name, 'name', parent[schema.class]);
                 } else {
-                    console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.schema.class + '.');
+                    console.log('Adding a new ' + schema.class + ' called "' + name + '" to the "' + parent.meta.name + '" ' +  parent.meta.schema.class + '.');
                     myObject = new ScapeObject(name, parent, schema);
                     parent[schema.class].push(myObject);
                 }
@@ -3133,7 +3117,7 @@ module.exports = newScapeObject;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.0-4',
+var version = '0.7.1-1',
     chroma = require('chroma-js'),
     geostats = require('./../lib/geostats.min.js'),
     newCallback = require('./../construct/newCallback.js'),
@@ -3457,7 +3441,7 @@ function viewGmaps(socioscapes) {
                                     Object.defineProperty(this, 'init', {
                                         value: function () {
                                             var callback = newCallback(arguments),
-                                                layer = fetchFromScape(view.config.layer, 'name', view.schema.parent.layer) || false,
+                                                layer = fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer) || false,
                                                 data = layer ? layer.data:false,
                                                 geom = layer ? layer.geom:false,
                                                 featureIdProperty = (typeof view.config.featureIdProperty === 'string') ? view.config.featureIdProperty.toLowerCase():'dauid',
@@ -3481,6 +3465,7 @@ function viewGmaps(socioscapes) {
                                                         that.style(function() {
                                                             that.onHover();
                                                             that.onClick(5);
+                                                            newEvent("socioscapes.updateSymbology", view);
                                                             callback(that);
                                                         });
                                                     });
@@ -3496,7 +3481,7 @@ function viewGmaps(socioscapes) {
                                     Object.defineProperty(this, 'classify', {
                                         value: function () {
                                             var callback = newCallback(arguments),
-                                                layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false,
+                                                layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer):false,
                                                 data = layer ? layer.data:false,
                                                 classification = 'getClass' + view.config.classification.charAt(0).toUpperCase() + view.config.classification.slice(1),
                                                 breaks = parseInt(view.config.breaks);
@@ -3563,7 +3548,7 @@ function viewGmaps(socioscapes) {
                                                 if (!event.feature.getProperty('selected')) {
                                                     event.feature.setProperty('hover', true);
                                                 }
-                                                newEvent('socioscapes.update.featureHover',
+                                                newEvent('socioscapes.updateFeatureHover',
                                                     {
                                                         id: event.feature.getProperty(view.config.featureIdProperty),
                                                         value: event.feature.getProperty(view.config.valueIdProperty)
@@ -3572,7 +3557,7 @@ function viewGmaps(socioscapes) {
                                             });
                                             listenerHoverReset = that.dataLayer.addListener('mouseout', function (event) {
                                                 event.feature.setProperty('hover', false);
-                                                newEvent('socioscapes.update.featureHover', { id: '', value: '' });
+                                                newEvent('socioscapes.updateFeatureHover', { id: '', value: '' });
                                                 callback(event.feature);
                                             });
                                             return that;
@@ -3617,7 +3602,7 @@ function viewGmaps(socioscapes) {
                             };
                         // check to see that this is a view and that the view.config options point to a valid layer
                         view = socioscapes.fn.isValidObject(view) ? view:(this || false);
-                        layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
+                        layer = (view && view.meta.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer):false;
                         if (layer) {
                             view.gmap.mapSymbology = new GmapLayer(view);
                             callback(view);

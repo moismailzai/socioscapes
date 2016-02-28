@@ -64,7 +64,7 @@ function viewGmaps(socioscapes) {
                                     Object.defineProperty(this, 'init', {
                                         value: function () {
                                             var callback = newCallback(arguments),
-                                                layer = fetchFromScape(view.config.layer, 'name', view.schema.parent.layer) || false,
+                                                layer = fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer) || false,
                                                 data = layer ? layer.data:false,
                                                 geom = layer ? layer.geom:false,
                                                 featureIdProperty = (typeof view.config.featureIdProperty === 'string') ? view.config.featureIdProperty.toLowerCase():'dauid',
@@ -88,6 +88,7 @@ function viewGmaps(socioscapes) {
                                                         that.style(function() {
                                                             that.onHover();
                                                             that.onClick(5);
+                                                            newEvent("socioscapes.updateSymbology", view);
                                                             callback(that);
                                                         });
                                                     });
@@ -103,7 +104,7 @@ function viewGmaps(socioscapes) {
                                     Object.defineProperty(this, 'classify', {
                                         value: function () {
                                             var callback = newCallback(arguments),
-                                                layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false,
+                                                layer = isValidObject(view) ? fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer):false,
                                                 data = layer ? layer.data:false,
                                                 classification = 'getClass' + view.config.classification.charAt(0).toUpperCase() + view.config.classification.slice(1),
                                                 breaks = parseInt(view.config.breaks);
@@ -170,7 +171,7 @@ function viewGmaps(socioscapes) {
                                                 if (!event.feature.getProperty('selected')) {
                                                     event.feature.setProperty('hover', true);
                                                 }
-                                                newEvent('socioscapes.update.featureHover',
+                                                newEvent('socioscapes.updateFeatureHover',
                                                     {
                                                         id: event.feature.getProperty(view.config.featureIdProperty),
                                                         value: event.feature.getProperty(view.config.valueIdProperty)
@@ -179,7 +180,7 @@ function viewGmaps(socioscapes) {
                                             });
                                             listenerHoverReset = that.dataLayer.addListener('mouseout', function (event) {
                                                 event.feature.setProperty('hover', false);
-                                                newEvent('socioscapes.update.featureHover', { id: '', value: '' });
+                                                newEvent('socioscapes.updateFeatureHover', { id: '', value: '' });
                                                 callback(event.feature);
                                             });
                                             return that;
@@ -224,7 +225,7 @@ function viewGmaps(socioscapes) {
                             };
                         // check to see that this is a view and that the view.config options point to a valid layer
                         view = socioscapes.fn.isValidObject(view) ? view:(this || false);
-                        layer = (view && view.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.schema.parent.layer):false;
+                        layer = (view && view.meta.schema && view.config) ? fetchFromScape(view.config.layer, 'name', view.meta.schema.parent.layer):false;
                         if (layer) {
                             view.gmap.mapSymbology = new GmapLayer(view);
                             callback(view);
