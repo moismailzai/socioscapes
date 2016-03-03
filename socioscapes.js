@@ -3117,7 +3117,7 @@ module.exports = newScapeObject;
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.1-1',
+var version = '0.7.2-0',
     chroma = require('chroma-js'),
     geostats = require('./../lib/geostats.min.js'),
     newCallback = require('./../construct/newCallback.js'),
