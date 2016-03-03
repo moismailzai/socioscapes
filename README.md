@@ -5,7 +5,7 @@
 
 ## Details
  
-**Current version**: 0.7.2-0  
+**Current version**: 0.7.2-1  
 *(expect breaking changes prior to version 1.0)* 
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
