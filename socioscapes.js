@@ -2466,6 +2466,33 @@
 }).call(this);
 
 },{}],2:[function(require,module,exports){
+(function(l){"object"===typeof exports?module.exports=l():"function"===typeof define&&define.amd?define(l):geostats=l()})(function(){var l=function(f){return"number"===typeof f&&parseFloat(f)==parseInt(f,10)&&!isNaN(f)};Array.prototype.indexOf||(Array.prototype.indexOf=function(f,a){if(void 0===this||null===this)throw new TypeError('"this" is null or not defined');var b=this.length>>>0;a=+a||0;Infinity===Math.abs(a)&&(a=0);0>a&&(a+=b,0>a&&(a=0));for(;a<b;a++)if(this[a]===f)return a;return-1});return function(f){this.objectID=
+"";this.legendSeparator=this.separator=" - ";this.method="";this.precision=0;this.precisionflag="auto";this.roundlength=2;this.silent=this.debug=this.is_uniqueValues=!1;this.bounds=[];this.ranges=[];this.inner_ranges=null;this.colors=[];this.counter=[];this.stat_cov=this.stat_stddev=this.stat_variance=this.stat_pop=this.stat_min=this.stat_max=this.stat_sum=this.stat_median=this.stat_mean=this.stat_sorted=null;this.log=function(a,b){1!=this.debug&&null==b||console.log(this.objectID+"(object id) :: "+
+a)};this.setBounds=function(a){this.log("Setting bounds ("+a.length+") : "+a.join());this.bounds=[];this.bounds=a};this.setSerie=function(a){this.log("Setting serie ("+a.length+") : "+a.join());this.serie=[];this.serie=a;this.resetStatistics();this.setPrecision()};this.setColors=function(a){this.log("Setting color ramp ("+a.length+") : "+a.join());this.colors=a};this.doCount=function(){if(!this._nodata()){var a=this.sorted();this.counter=[];for(i=0;i<this.bounds.length-1;i++)this.counter[i]=0;for(j=
+0;j<a.length;j++){var b=this.getClass(a[j]);this.counter[b]++}}};this.setPrecision=function(a){"undefined"!==typeof a&&(this.precisionflag="manual",this.precision=a);if("auto"==this.precisionflag)for(a=0;a<this.serie.length;a++){var b=isNaN(this.serie[a]+"")||-1==(this.serie[a]+"").toString().indexOf(".")?0:(this.serie[a]+"").split(".")[1].length;b>this.precision&&(this.precision=b)}this.log("Calling setPrecision(). Mode : "+this.precisionflag+" - Decimals : "+this.precision);this.serie=this.decimalFormat(this.serie)};
+this.decimalFormat=function(a){for(var b=[],c=0;c<a.length;c++){var d=a[c];!isNaN(parseFloat(d))&&isFinite(d)?b[c]=parseFloat(a[c].toFixed(this.precision)):b[c]=a[c]}return b};this.setRanges=function(){this.ranges=[];for(i=0;i<this.bounds.length-1;i++)this.ranges[i]=this.bounds[i]+this.separator+this.bounds[i+1]};this.min=function(){if(!this._nodata())return this.stat_min=Math.min.apply(null,this.serie)};this.max=function(){return this.stat_max=Math.max.apply(null,this.serie)};this.sum=function(){if(!this._nodata()){if(null==
+this.stat_sum)for(i=this.stat_sum=0;i<this.pop();i++)this.stat_sum+=parseFloat(this.serie[i]);return this.stat_sum}};this.pop=function(){if(!this._nodata())return null==this.stat_pop&&(this.stat_pop=this.serie.length),this.stat_pop};this.mean=function(){if(!this._nodata())return null==this.stat_mean&&(this.stat_mean=parseFloat(this.sum()/this.pop())),this.stat_mean};this.median=function(){if(!this._nodata()){if(null==this.stat_median){this.stat_median=0;var a=this.sorted();this.stat_median=a.length%
+2?parseFloat(a[Math.ceil(a.length/2)-1]):(parseFloat(a[a.length/2-1])+parseFloat(a[a.length/2]))/2}return this.stat_median}};this.variance=function(){round="undefined"===typeof round?!0:!1;if(!this._nodata()){if(null==this.stat_variance){for(var a=0,b=0;b<this.pop();b++)a+=Math.pow(this.serie[b]-this.mean(),2);this.stat_variance=a/this.pop();1==round&&(this.stat_variance=Math.round(this.stat_variance*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))}return this.stat_variance}};this.stddev=
+function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==this.stat_stddev&&(this.stat_stddev=Math.sqrt(this.variance()),1==a&&(this.stat_stddev=Math.round(this.stat_stddev*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),this.stat_stddev};this.cov=function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==this.stat_cov&&(this.stat_cov=this.stddev()/this.mean(),1==a&&(this.stat_cov=Math.round(this.stat_cov*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),
+this.stat_cov};this.resetStatistics=function(){this.stat_cov=this.stat_stddev=this.stat_variance=this.stat_pop=this.stat_min=this.stat_max=this.stat_sum=this.stat_median=this.stat_mean=this.stat_sorted=null};this._nodata=function(){return 0==this.serie.length?(this.silent?this.log("[silent mode] Error. You should first enter a serie!",!0):alert("Error. You should first enter a serie!"),1):0};this._hasNegativeValue=function(){for(i=0;i<this.serie.length;i++)if(0>this.serie[i])return!0;return!1};this._hasZeroValue=
+function(){for(i=0;i<this.serie.length;i++)if(0===parseFloat(this.serie[i]))return!0;return!1};this.sorted=function(){null==this.stat_sorted&&(this.stat_sorted=0==this.is_uniqueValues?this.serie.sort(function(a,b){return a-b}):this.serie.sort(function(a,b){var c=a.toString().toLowerCase(),d=b.toString().toLowerCase();return c<d?-1:c>d?1:0}));return this.stat_sorted};this.info=function(){if(!this._nodata()){var a;a=""+("Population : "+this.pop()+" - [Min : "+this.min()+" | Max : "+this.max()+"]\n");
+a+="Mean : "+this.mean()+" - Median : "+this.median()+"\n";return a+="Variance : "+this.variance()+" - Standard deviation : "+this.stddev()+" - Coefficient of variation : "+this.cov()+"\n"}};this.setClassManually=function(a){if(!this._nodata())if(a[0]!==this.min()||a[a.length-1]!==this.max())if(this.silent)this.log("[silent mode] "+t("Given bounds may not be correct! please check your input.\nMin value : "+this.min()+" / Max value : "+this.max()),!0);else{a=alert;var b="Given bounds may not be correct! please check your input.\nMin value : "+
+this.min()+" / Max value : "+this.max();a(b)}else return this.setBounds(a),this.setRanges(),this.method="manual classification ("+(a.length-1)+" classes)",this.bounds};this.getClassEqInterval=function(a,b,c){if(!this._nodata()){b="undefined"===typeof b?this.min():b;c="undefined"===typeof c?this.max():c;var d=[],e=b;b=(c-b)/a;for(i=0;i<=a;i++)d[i]=e,e+=b;d[a]=c;this.setBounds(d);this.setRanges();this.method="eq. intervals ("+a+" classes)";return this.bounds}};this.getQuantiles=function(a){for(var b=
+this.sorted(),c=[],d=this.pop()/a,e=1;e<a;e++)c.push(b[Math.round(e*d+.49)-1]);return c};this.getClassQuantile=function(a){if(!this._nodata()){var b=this.sorted(),c=this.getQuantiles(a);c.unshift(b[0]);c[b.length-1]!==b[b.length-1]&&c.push(b[b.length-1]);this.setBounds(c);this.setRanges();this.method="quantile ("+a+" classes)";return this.bounds}};this.getClassStdDeviation=function(a,b){if(!this._nodata()){this.max();this.min();var c=[];if(1==a%2){var d=Math.floor(a/2),e=d+1;c[d]=this.mean()-this.stddev()/
+2;c[e]=this.mean()+this.stddev()/2;i=d-1}else e=a/2,c[e]=this.mean(),i=e-1;for(;0<i;i--)d=c[i+1]-this.stddev(),c[i]=d;for(i=e+1;i<a;i++)d=c[i-1]+this.stddev(),c[i]=d;c[0]="undefined"===typeof b?c[1]-this.stddev():this.min();c[a]="undefined"===typeof b?c[a-1]+this.stddev():this.max();this.setBounds(c);this.setRanges();this.method="std deviation ("+a+" classes)";return this.bounds}};this.getClassGeometricProgression=function(a){if(!this._nodata())if(this._hasNegativeValue()||this._hasZeroValue())this.silent?
+this.log("[silent mode] geometric progression can't be applied with a serie containing negative or zero values.",!0):alert("geometric progression can't be applied with a serie containing negative or zero values.");else{var b=[],c=this.min(),d=this.max(),c=Math.log(c)/Math.LN10,d=(Math.log(d)/Math.LN10-c)/a;for(i=0;i<a;i++)b[i]=0==i?c:b[i-1]+d;b=b.map(function(a){return Math.pow(10,a)});b.push(this.max());this.setBounds(b);this.setRanges();this.method="geometric progression ("+a+" classes)";return this.bounds}};
+this.getClassArithmeticProgression=function(a){if(!this._nodata()){var b=0;for(i=1;i<=a;i++)b+=i;var c=[],d=this.min(),b=(this.max()-d)/b;for(i=0;i<=a;i++)c[i]=0==i?d:c[i-1]+i*b;this.setBounds(c);this.setRanges();this.method="arithmetic progression ("+a+" classes)";return this.bounds}};this.getClassJenks=function(a){if(!this._nodata()){dataList=this.sorted();for(var b=[],c=0,d=dataList.length+1;c<d;c++){for(var e=[],k=0,h=a+1;k<h;k++)e.push(0);b.push(e)}c=[];d=0;for(e=dataList.length+1;d<e;d++){for(var k=
+[],h=0,f=a+1;h<f;h++)k.push(0);c.push(k)}d=1;for(e=a+1;d<e;d++){b[0][d]=1;c[0][d]=0;for(var g=1,k=dataList.length+1;g<k;g++)c[g][d]=Infinity;g=0}d=2;for(e=dataList.length+1;d<e;d++){for(var f=h=k=0,l=1,r=d+1;l<r;l++){var p=d-l+1,g=parseFloat(dataList[p-1]),h=h+g*g,k=k+g,f=f+1,g=h-k*k/f,q=p-1;if(0!=q)for(var m=2,u=a+1;m<u;m++)c[d][m]>=g+c[q][m-1]&&(b[d][m]=p,c[d][m]=g+c[q][m-1])}b[d][1]=1;c[d][1]=g}g=dataList.length;c=[];for(d=0;d<=a;d++)c.push(0);c[a]=parseFloat(dataList[dataList.length-1]);c[0]=
+parseFloat(dataList[0]);for(d=a;2<=d;)e=parseInt(b[g][d]-2),c[d-1]=dataList[e],g=parseInt(b[g][d]-1),--d;c[0]==c[1]&&(c[0]=0);this.setBounds(c);this.setRanges();this.method="Jenks ("+a+" classes)";return this.bounds}};this.getClassUniqueValues=function(){if(!this._nodata()){this.is_uniqueValues=!0;var a=this.sorted(),b=[];for(i=0;i<this.pop();i++)-1===b.indexOf(a[i])&&b.push(a[i]);this.bounds=b;this.method="unique values";return b}};this.getClass=function(a){for(i=0;i<this.bounds.length;i++)if(1==
+this.is_uniqueValues){if(a==this.bounds[i])return i}else if(parseFloat(a)<=this.bounds[i+1])return i;return"Unable to get value's class."};this.getRanges=function(){return this.ranges};this.getRangeNum=function(a){var b,c;for(c=0;c<this.ranges.length;c++)if(b=this.ranges[c].split(/ - /),a<=parseFloat(b[1]))return c};this.getInnerRanges=function(){if(null!=this.inner_ranges)return this.inner_ranges;var a=[],b=this.sorted(),c=1;for(i=0;i<b.length;i++){if(0==i)var d=b[i];parseFloat(b[i])>parseFloat(this.bounds[c])&&
+(a[c-1]=""+d+this.separator+b[i-1],d=b[i],c++);if(c==this.bounds.length-1)return a[c-1]=""+d+this.separator+b[b.length-1],this.inner_ranges=a}};this.getSortedlist=function(){return this.sorted().join(", ")};this.getHtmlLegend=function(a,b,c,d,e,f){var h="",n=[];this.doCount();ccolors=null!=a?a:this.colors;lg=null!=b?b:"Legend";getcounter=null!=c?!0:!1;fn=null!=d?d:function(a){return a};null==e&&(e="default");if("discontinuous"==e&&(this.getInnerRanges(),-1!==this.counter.indexOf(0))){this.silent?
+this.log("[silent mode] Geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!",!0):alert("Geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!");return}"DESC"!==f&&(f="ASC");if(ccolors.length<this.ranges.length)this.silent?this.log("[silent mode] The number of colors should fit the number of ranges. Exit!",
+!0):alert("The number of colors should fit the number of ranges. Exit!");else{if(0==this.is_uniqueValues)for(i=0;i<this.ranges.length;i++)!0===getcounter&&(h=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),b=this.ranges[i].split(this.separator),a=parseFloat(b[0]).toFixed(this.precision),b=parseFloat(b[1]).toFixed(this.precision),"distinct"==e&&0!=i&&(l(a)?(a=parseInt(a)+1,"manual"==this.precisionflag&&0!=this.precision&&(a=parseFloat(a).toFixed(this.precision))):(a=parseFloat(a)+
+1/Math.pow(10,this.precision),a=parseFloat(a).toFixed(this.precision))),"discontinuous"==e&&(b=this.inner_ranges[i].split(this.separator),a=parseFloat(b[0]).toFixed(this.precision),b=parseFloat(b[1]).toFixed(this.precision)),a=fn(a)+this.legendSeparator+fn(b),a='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+a+h+"</div>",n.push(a);else for(i=0;i<this.bounds.length;i++)!0===getcounter&&(h=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),
+a=fn(this.bounds[i]),a='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+a+h+"</div>",n.push(a);"DESC"===f&&n.reverse();e='<div class="geostats-legend"><div class="geostats-legend-title">'+lg+"</div>";for(i=0;i<n.length;i++)e+=n[i];return e+"</div>"}};this.objectID=(new Date).getUTCMilliseconds();this.log("Creating new geostats object");"undefined"!==typeof f&&0<f.length?(this.serie=f,this.setPrecision(),this.log("Setting serie ("+f.length+") : "+f.join())):
+this.serie=[];this.getJenks=this.getClassJenks;this.getGeometricProgression=this.getClassGeometricProgression;this.getEqInterval=this.getClassEqInterval;this.getQuantile=this.getClassQuantile;this.getStdDeviation=this.getClassStdDeviation;this.getUniqueValues=this.getClassUniqueValues;this.getArithmeticProgression=this.getClassArithmeticProgression}});
+
+},{}],3:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2583,7 +2610,7 @@ function isValidName(name) {
     return isValid;
 }
 module.exports = isValidName;
-},{"./../construct/newCallback.js":5}],3:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],4:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2607,7 +2634,7 @@ function isValidObject(object) {
     return isValid;
 }
 module.exports = isValidObject;
-},{"./../construct/newCallback.js":5}],4:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],5:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2634,7 +2661,7 @@ function isValidUrl(url) {
     return isValid;
 }
 module.exports = isValidUrl;
-},{"./../construct/newCallback.js":5}],5:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],6:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2659,7 +2686,7 @@ function newCallback(argumentsArray) {
     return myCallback;
 }
 module.exports = newCallback;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2753,7 +2780,7 @@ function newDispatcher() {
     return new Dispatcher();
 }
 module.exports = newDispatcher;
-},{"./../construct/newEvent.js":7}],7:[function(require,module,exports){
+},{"./../construct/newEvent.js":8}],8:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, document, window, event*/
 'use strict';
@@ -2783,7 +2810,7 @@ function newEvent(name, message) {
     document.dispatchEvent(myEvent);
 }
 module.exports = newEvent;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (global){
 /*jslint node: true */
 /*global global, module, require, window*/
@@ -2828,7 +2855,7 @@ function newGlobal(name, object, overwrite) {
 module.exports = newGlobal;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./../construct/newCallback.js":5,"./../fetch/fetchGlobal.js":16}],9:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../fetch/fetchGlobal.js":17}],10:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -2941,7 +2968,7 @@ var newScapeMenu = function newScapeMenu(scapeObject, socioscapesPrototype) {
     }
 };
 module.exports = newScapeMenu;
-},{"./../bool/isValidObject.js":3,"./../construct/newEvent.js":7,"./../construct/newScapeObject.js":10}],10:[function(require,module,exports){
+},{"./../bool/isValidObject.js":4,"./../construct/newEvent.js":8,"./../construct/newScapeObject.js":11}],11:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -3113,13 +3140,13 @@ var newScapeObject = function newScapeObject(name, parent, type) {
 };
 module.exports = newScapeObject;
 
-},{"./../construct/newCallback.js":5,"./../construct/newDispatcher.js":6,"./../construct/newEvent.js":7,"./../construct/newGlobal.js":8,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchScape.js":20,"./../fetch/fetchScapeSchema.js":21}],11:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../construct/newDispatcher.js":7,"./../construct/newEvent.js":8,"./../construct/newGlobal.js":9,"./../fetch/fetchFromScape.js":16,"./../fetch/fetchGlobal.js":17,"./../fetch/fetchScape.js":21,"./../fetch/fetchScapeSchema.js":22}],12:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.2-0',
+var version = '0.7.2-2',
     chroma = require('chroma-js'),
-    geostats = require('./../lib/geostats.min.js'),
+    geostats = require('geostats'),
     newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js'),
     newDispatcher = require('./../construct/newDispatcher.js'),
@@ -3185,7 +3212,7 @@ socioscapes.fn = socioscapes.prototype = {
     version: version
 };
 module.exports = socioscapes;
-},{"./../bool/isValidName.js":2,"./../bool/isValidObject.js":3,"./../bool/isValidUrl.js":4,"./../construct/newCallback.js":5,"./../construct/newDispatcher.js":6,"./../construct/newEvent.js":7,"./../construct/newGlobal.js":8,"./../construct/newScapeMenu.js":9,"./../construct/newScapeObject.js":10,"./../core/extender":12,"./../core/schema.js":13,"./../fetch/fetchFromScape.js":15,"./../fetch/fetchGlobal.js":16,"./../fetch/fetchGoogleAuth.js":17,"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchGoogleGeocode.js":19,"./../fetch/fetchScape.js":20,"./../fetch/fetchScapeSchema.js":21,"./../fetch/fetchWfs.js":22,"./../lib/geostats.min.js":23,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28,"chroma-js":1}],12:[function(require,module,exports){
+},{"./../bool/isValidName.js":3,"./../bool/isValidObject.js":4,"./../bool/isValidUrl.js":5,"./../construct/newCallback.js":6,"./../construct/newDispatcher.js":7,"./../construct/newEvent.js":8,"./../construct/newGlobal.js":9,"./../construct/newScapeMenu.js":10,"./../construct/newScapeObject.js":11,"./../core/extender":13,"./../core/schema.js":14,"./../fetch/fetchFromScape.js":16,"./../fetch/fetchGlobal.js":17,"./../fetch/fetchGoogleAuth.js":18,"./../fetch/fetchGoogleBq.js":19,"./../fetch/fetchGoogleGeocode.js":20,"./../fetch/fetchScape.js":21,"./../fetch/fetchScapeSchema.js":22,"./../fetch/fetchWfs.js":23,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28,"chroma-js":1,"geostats":2}],13:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, socioscapes, document, window, google, gapi*/
 'use strict';
@@ -3238,7 +3265,7 @@ function extender(socioscapes, config) {
     }
 }
 module.exports = extender;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, this*/
 'use strict';
@@ -3374,7 +3401,7 @@ function schema() {
     };
 }
 module.exports = schema();
-},{"./../fetch/fetchGoogleBq.js":18,"./../fetch/fetchWfs.js":22,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28}],14:[function(require,module,exports){
+},{"./../fetch/fetchGoogleBq.js":19,"./../fetch/fetchWfs.js":23,"./../menu/menuClass.js":25,"./../menu/menuConfig.js":26,"./../menu/menuRequire.js":27,"./../menu/menuStore.js":28}],15:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, event, feature, gapi*/
 'use strict';
@@ -3997,7 +4024,7 @@ function viewGmaps(socioscapes) {
     }
 }
 module.exports = viewGmaps;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, Number*/
 'use strict';
@@ -4036,7 +4063,7 @@ function fetchFromScape(key, metaProperty, array) {
     return myKey;
 }
 module.exports = fetchFromScape;
-},{"./../bool/isValidName.js":2,"./../construct/newCallback.js":5}],16:[function(require,module,exports){
+},{"./../bool/isValidName.js":3,"./../construct/newCallback.js":6}],17:[function(require,module,exports){
 (function (global){
 /*jslint node: true */
 /*global global, module, require*/
@@ -4064,7 +4091,7 @@ function fetchGlobal(name) {
 module.exports = fetchGlobal;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./../construct/newCallback.js":5}],17:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],18:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google, gapi, auth, authorize, access_token*/
 'use strict';
@@ -4093,13 +4120,13 @@ function fetchGoogleAuth(config) {
     });
 }
 module.exports = fetchGoogleAuth;
-},{"./../construct/newCallback.js":5}],18:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],19:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, gapi*/
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    geostats = require('./../lib/geostats.min.js');
+    geostats = require('geostats');
 /**
  * This internal method fetches data from Google BigQuery. If necessary, it also requests a gapi authorization token and
  * loads the gapi BigQuery client.
@@ -4193,12 +4220,12 @@ function fetchGoogleBq(scapeObject, config) {
                 }
                 result.rows.forEach(function(row) {
                     for (var i = 0, parsedRow = {}; i < row.f.length; i++) {
+                        if (i === indexOfValueProperty) {
+                            row.f[i].v = parseFloat(row.f[i].v);
+                        }
                         if (isNaN(row.f[i].v)) { // if the value is not a number, make it 0 and add it to the erros list
                             queryResult.meta.errors.push(row.f[i]);
                             row.f[i].v = 0;
-                        } // otherwise, parse it as a float number
-                        if (i === indexOfValueProperty) {
-                            row.f[i].v = parseFloat(row.f[i].v);
                         }
                         parsedRow[result.schema.fields[i].name] = row.f[i].v; // add a property to parsedRow for each field
                         queryResult.byColumn[result.schema.fields[i].name].push(row.f[i].v);
@@ -4213,7 +4240,7 @@ function fetchGoogleBq(scapeObject, config) {
                     queryResult.geoJson.features.push( { "type": "Feature", "properties": parsedRow } );
                     queryResult.byId[parsedRow[featureIdProperty]] = parsedRow;
                 });
-                queryResult.csv = 'data:text/csv;charset=utf-8,' + queryResult.meta.columns.join(',') + '\n' + csvEntries.join('\n'); // create header line in csv array
+                queryResult.csv = queryResult.meta.columns.join(',') + '\n' + csvEntries.join('\n'); // create header line in csv array
                 queryResult.geostats = new geostats(queryResult.byColumn[valueIdProperty]);
                 callback(queryResult);
             });
@@ -4221,7 +4248,7 @@ function fetchGoogleBq(scapeObject, config) {
     return scapeObject;
 }
 module.exports = fetchGoogleBq;
-},{"./../construct/newCallback.js":5,"./../fetch/fetchGoogleAuth.js":17,"./../lib/geostats.min.js":23}],19:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../fetch/fetchGoogleAuth.js":18,"geostats":2}],20:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require, google*/
 'use strict';
@@ -4251,7 +4278,7 @@ function fetchGoogleGeocode(address) {
     });
 }
 module.exports = fetchGoogleGeocode;
-},{"./../construct/newCallback.js":5}],20:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],21:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4285,7 +4312,7 @@ function fetchScape(scapeObject) {
     return myObject;
 }
 module.exports = fetchScape;
-},{"./../bool/isValidObject.js":3,"./../construct/newCallback.js":5,"./../fetch/fetchGlobal.js":16}],21:[function(require,module,exports){
+},{"./../bool/isValidObject.js":4,"./../construct/newCallback.js":6,"./../fetch/fetchGlobal.js":17}],22:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4311,7 +4338,7 @@ var fetchScapeSchema = function fetchScapeSchema(type) {
     return myObject;
 };
 module.exports = fetchScapeSchema;
-},{"./../construct/newCallback.js":5,"./../core/schema.js":13}],22:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../core/schema.js":14}],23:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4351,32 +4378,7 @@ function fetchWfs(scapeObject, url) {
     return scapeObject;
 }
 module.exports = fetchWfs;
-},{"./../construct/newCallback.js":5}],23:[function(require,module,exports){
-(function(l){"object"===typeof exports?module.exports=l():"function"===typeof define&&define.amd?define(l):geostats=l()})(function(){var l=function(f){return"number"===typeof f&&parseFloat(f)==parseInt(f,10)&&!isNaN(f)};Array.prototype.indexOf||(Array.prototype.indexOf=function(f,a){if(void 0===this||null===this)throw new TypeError('"this" is null or not defined');var b=this.length>>>0;a=+a||0;Infinity===Math.abs(a)&&(a=0);0>a&&(a+=b,0>a&&(a=0));for(;a<b;a++)if(this[a]===f)return a;return-1});return function(f){this.objectID=
-    "";this.legendSeparator=this.separator=" - ";this.method="";this.precision=0;this.precisionflag="auto";this.roundlength=2;this.silent=this.debug=this.is_uniqueValues=!1;this.bounds=[];this.ranges=[];this.inner_ranges=null;this.colors=[];this.counter=[];this.stat_cov=this.stat_stddev=this.stat_variance=this.stat_pop=this.stat_min=this.stat_max=this.stat_sum=this.stat_median=this.stat_mean=this.stat_sorted=null;this.log=function(a,b){1!=this.debug&&null==b||console.log(this.objectID+"(object id) :: "+
-    a)};this.setBounds=function(a){this.log("Setting bounds ("+a.length+") : "+a.join());this.bounds=[];this.bounds=a};this.setSerie=function(a){this.log("Setting serie ("+a.length+") : "+a.join());this.serie=[];this.serie=a;this.setPrecision()};this.setColors=function(a){this.log("Setting color ramp ("+a.length+") : "+a.join());this.colors=a};this.doCount=function(){if(!this._nodata()){var a=this.sorted();this.counter=[];for(i=0;i<this.bounds.length-1;i++)this.counter[i]=0;for(j=0;j<a.length;j++){var b=
-    this.getClass(a[j]);this.counter[b]++}}};this.setPrecision=function(a){"undefined"!==typeof a&&(this.precisionflag="manual",this.precision=a);if("auto"==this.precisionflag)for(a=0;a<this.serie.length;a++){var b=isNaN(this.serie[a]+"")||-1==(this.serie[a]+"").toString().indexOf(".")?0:(this.serie[a]+"").split(".")[1].length;b>this.precision&&(this.precision=b)}this.log("Calling setPrecision(). Mode : "+this.precisionflag+" - Decimals : "+this.precision);this.serie=this.decimalFormat(this.serie)};this.decimalFormat=
-    function(a){for(var b=[],c=0;c<a.length;c++){var d=a[c];!isNaN(parseFloat(d))&&isFinite(d)?b[c]=parseFloat(a[c].toFixed(this.precision)):b[c]=a[c]}return b};this.setRanges=function(){this.ranges=[];for(i=0;i<this.bounds.length-1;i++)this.ranges[i]=this.bounds[i]+this.separator+this.bounds[i+1]};this.min=function(){if(!this._nodata())return this.stat_min=Math.min.apply(null,this.serie)};this.max=function(){return this.stat_max=Math.max.apply(null,this.serie)};this.sum=function(){if(!this._nodata()){if(null==
-    this.stat_sum)for(i=this.stat_sum=0;i<this.pop();i++)this.stat_sum+=parseFloat(this.serie[i]);return this.stat_sum}};this.pop=function(){if(!this._nodata())return null==this.stat_pop&&(this.stat_pop=this.serie.length),this.stat_pop};this.mean=function(){if(!this._nodata())return null==this.stat_mean&&(this.stat_mean=parseFloat(this.sum()/this.pop())),this.stat_mean};this.median=function(){if(!this._nodata()){if(null==this.stat_median){this.stat_median=0;var a=this.sorted();this.stat_median=a.length%
-2?parseFloat(a[Math.ceil(a.length/2)-1]):(parseFloat(a[a.length/2-1])+parseFloat(a[a.length/2]))/2}return this.stat_median}};this.variance=function(){round="undefined"===typeof round?!0:!1;if(!this._nodata()){if(null==this.stat_variance){for(var a=0,b=0;b<this.pop();b++)a+=Math.pow(this.serie[b]-this.mean(),2);this.stat_variance=a/this.pop();1==round&&(this.stat_variance=Math.round(this.stat_variance*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))}return this.stat_variance}};this.stddev=
-    function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==this.stat_stddev&&(this.stat_stddev=Math.sqrt(this.variance()),1==a&&(this.stat_stddev=Math.round(this.stat_stddev*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),this.stat_stddev};this.cov=function(a){a="undefined"===typeof a?!0:!1;if(!this._nodata())return null==this.stat_cov&&(this.stat_cov=this.stddev()/this.mean(),1==a&&(this.stat_cov=Math.round(this.stat_cov*Math.pow(10,this.roundlength))/Math.pow(10,this.roundlength))),
-    this.stat_cov};this._nodata=function(){return 0==this.serie.length?(this.silent?this.log("[silent mode] Error. You should first enter a serie!",!0):alert("Error. You should first enter a serie!"),1):0};this._hasNegativeValue=function(){for(i=0;i<this.serie.length;i++)if(0>this.serie[i])return!0;return!1};this._hasZeroValue=function(){for(i=0;i<this.serie.length;i++)if(0===parseFloat(this.serie[i]))return!0;return!1};this.sorted=function(){null==this.stat_sorted&&(this.stat_sorted=0==this.is_uniqueValues?
-    this.serie.sort(function(a,b){return a-b}):this.serie.sort(function(a,b){var c=a.toString().toLowerCase(),d=b.toString().toLowerCase();return c<d?-1:c>d?1:0}));return this.stat_sorted};this.info=function(){if(!this._nodata()){var a;a=""+("Population : "+this.pop()+" - [Min : "+this.min()+" | Max : "+this.max()+"]\n");a+="Mean : "+this.mean()+" - Median : "+this.median()+"\n";return a+="Variance : "+this.variance()+" - Standard deviation : "+this.stddev()+" - Coefficient of variation : "+this.cov()+
-    "\n"}};this.setClassManually=function(a){if(!this._nodata())if(a[0]!==this.min()||a[a.length-1]!==this.max())if(this.silent)this.log("[silent mode] "+t("Given bounds may not be correct! please check your input.\nMin value : "+this.min()+" / Max value : "+this.max()),!0);else{a=alert;var b="Given bounds may not be correct! please check your input.\nMin value : "+this.min()+" / Max value : "+this.max();a(b)}else return this.setBounds(a),this.setRanges(),this.method="manual classification ("+(a.length-
-    1)+" classes)",this.bounds};this.getClassEqInterval=function(a,b,c){if(!this._nodata()){b="undefined"===typeof b?this.min():b;c="undefined"===typeof c?this.max():c;var d=[],e=b;b=(c-b)/a;for(i=0;i<=a;i++)d[i]=e,e+=b;d[a]=c;this.setBounds(d);this.setRanges();this.method="eq. intervals ("+a+" classes)";return this.bounds}};this.getQuantiles=function(a){for(var b=this.sorted(),c=[],d=this.pop()/a,e=1;e<a;e++){var h=Math.round(e*d+.49);c.push(b[h-1])}return c};this.getClassQuantile=function(a){if(!this._nodata()){var b=
-    this.sorted(),c=this.getQuantiles(a);c.unshift(b[0]);c[b.length-1]!==b[b.length-1]&&c.push(b[b.length-1]);this.setBounds(c);this.setRanges();this.method="quantile ("+a+" classes)";return this.bounds}};this.getClassStdDeviation=function(a,b){if(!this._nodata()){this.max();this.min();var c=[];if(1==a%2){var d=Math.floor(a/2),e=d+1;c[d]=this.mean()-this.stddev()/2;c[e]=this.mean()+this.stddev()/2;i=d-1}else e=a/2,c[e]=this.mean(),i=e-1;for(;0<i;i--)d=c[i+1]-this.stddev(),c[i]=d;for(i=e+1;i<a;i++)d=c[i-
-    1]+this.stddev(),c[i]=d;c[0]="undefined"===typeof b?c[1]-this.stddev():this.min();c[a]="undefined"===typeof b?c[a-1]+this.stddev():this.max();this.setBounds(c);this.setRanges();this.method="std deviation ("+a+" classes)";return this.bounds}};this.getClassGeometricProgression=function(a){if(!this._nodata())if(this._hasNegativeValue()||this._hasZeroValue())this.silent?this.log("[silent mode] geometric progression can't be applied with a serie containing negative or zero values.",!0):alert("geometric progression can't be applied with a serie containing negative or zero values.");
-else{var b=[],c=this.min(),d=this.max(),d=Math.log(d)/Math.LN10,c=Math.log(c)/Math.LN10,d=(d-c)/a;for(i=0;i<a;i++)b[i]=0==i?c:b[i-1]+d;b=b.map(function(a){return Math.pow(10,a)});b.push(this.max());this.setBounds(b);this.setRanges();this.method="geometric progression ("+a+" classes)";return this.bounds}};this.getClassArithmeticProgression=function(a){if(!this._nodata()){var b=0;for(i=1;i<=a;i++)b+=i;var c=[],d=this.min(),b=(this.max()-d)/b;for(i=0;i<=a;i++)c[i]=0==i?d:c[i-1]+i*b;this.setBounds(c);
-    this.setRanges();this.method="arithmetic progression ("+a+" classes)";return this.bounds}};this.getClassJenks=function(a){if(!this._nodata()){dataList=this.sorted();for(var b=[],c=0,d=dataList.length+1;c<d;c++){for(var e=[],h=0,k=a+1;h<k;h++)e.push(0);b.push(e)}c=[];d=0;for(e=dataList.length+1;d<e;d++){for(var h=[],k=0,f=a+1;k<f;k++)h.push(0);c.push(h)}d=1;for(e=a+1;d<e;d++){b[0][d]=1;c[0][d]=0;for(var g=1,h=dataList.length+1;g<h;g++)c[g][d]=Infinity;g=0}d=2;for(e=dataList.length+1;d<e;d++){for(var f=
-    k=h=0,l=1,r=d+1;l<r;l++){var p=d-l+1,g=parseFloat(dataList[p-1]),k=k+g*g,h=h+g,f=f+1,g=k-h*h/f,q=p-1;if(0!=q)for(var m=2,u=a+1;m<u;m++)c[d][m]>=g+c[q][m-1]&&(b[d][m]=p,c[d][m]=g+c[q][m-1])}b[d][1]=1;c[d][1]=g}g=dataList.length;c=[];for(d=0;d<=a;d++)c.push(0);c[a]=parseFloat(dataList[dataList.length-1]);c[0]=parseFloat(dataList[0]);for(d=a;2<=d;)e=parseInt(b[g][d]-2),c[d-1]=dataList[e],g=parseInt(b[g][d]-1),--d;c[0]==c[1]&&(c[0]=0);this.setBounds(c);this.setRanges();this.method="Jenks ("+a+" classes)";
-    return this.bounds}};this.getClassUniqueValues=function(){if(!this._nodata()){this.is_uniqueValues=!0;var a=this.sorted(),b=[];for(i=0;i<this.pop();i++)-1===b.indexOf(a[i])&&b.push(a[i]);this.bounds=b;this.method="unique values";return b}};this.getClass=function(a){for(i=0;i<this.bounds.length;i++)if(1==this.is_uniqueValues){if(a==this.bounds[i])return i}else if(parseFloat(a)<=this.bounds[i+1])return i;return"Unable to get value's class."};this.getRanges=function(){return this.ranges};this.getRangeNum=
-    function(a){var b,c;for(c=0;c<this.ranges.length;c++)if(b=this.ranges[c].split(/ - /),a<=parseFloat(b[1]))return c};this.getInnerRanges=function(){if(null!=this.inner_ranges)return this.inner_ranges;var a=[],b=this.sorted(),c=1;for(i=0;i<b.length;i++){if(0==i)var d=b[i];parseFloat(b[i])>parseFloat(this.bounds[c])&&(a[c-1]=""+d+this.separator+b[i-1],d=b[i],c++);if(c==this.bounds.length-1)return a[c-1]=""+d+this.separator+b[b.length-1],this.inner_ranges=a}};this.getSortedlist=function(){return this.sorted().join(", ")};
-    this.getHtmlLegend=function(a,b,c,d,e,f){var k="",n=[];this.doCount();ccolors=null!=a?a:this.colors;lg=null!=b?b:"Legend";getcounter=null!=c?!0:!1;fn=null!=d?d:function(a){return a};null==e&&(e="default");if("discontinuous"==e&&(this.getInnerRanges(),-1!==this.counter.indexOf(0))){this.silent?this.log("[silent mode] geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!",!0):alert("geostats cannot apply 'discontinuous' mode to the getHtmlLegend() method because some classes are not populated.\nPlease switch to 'default' or 'distinct' modes. Exit!");
-        return}"DESC"!==f&&(f="ASC");if(ccolors.length<this.ranges.length)this.silent?this.log("[silent mode] The number of colors should fit the number of ranges. Exit!",!0):alert("The number of colors should fit the number of ranges. Exit!");else{if(0==this.is_uniqueValues)for(i=0;i<this.ranges.length;i++)!0===getcounter&&(k=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),b=this.ranges[i].split(this.separator),a=parseFloat(b[0]).toFixed(this.precision),b=parseFloat(b[1]).toFixed(this.precision),
-    "distinct"==e&&0!=i&&(l(a)?(a=parseInt(a)+1,"manual"==this.precisionflag&&0!=this.precision&&(a=parseFloat(a).toFixed(this.precision))):(a=parseFloat(a)+1/Math.pow(10,this.precision),a=parseFloat(a).toFixed(this.precision))),"discontinuous"==e&&(b=this.inner_ranges[i].split(this.separator),a=parseFloat(b[0]).toFixed(this.precision),b=parseFloat(b[1]).toFixed(this.precision)),a=fn(a)+this.legendSeparator+fn(b),a='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+
-        a+k+"</div>",n.push(a);else for(i=0;i<this.bounds.length;i++)!0===getcounter&&(k=' <span class="geostats-legend-counter">('+this.counter[i]+")</span>"),a=fn(this.bounds[i]),a='<div><div class="geostats-legend-block" style="background-color:'+ccolors[i]+'"></div> '+a+k+"</div>",n.push(a);"DESC"===f&&n.reverse();e='<div class="geostats-legend"><div class="geostats-legend-title">'+lg+"</div>";for(i=0;i<n.length;i++)e+=n[i];return e+"</div>"}};this.objectID=(new Date).getUTCMilliseconds();this.log("Creating new geostats object");
-    "undefined"!==typeof f&&0<f.length?(this.serie=f,this.setPrecision(),this.log("Setting serie ("+f.length+") : "+f.join())):this.serie=[];this.getJenks=this.getClassJenks;this.getGeometricProgression=this.getClassGeometricProgression;this.getEqInterval=this.getClassEqInterval;this.getQuantile=this.getClassQuantile;this.getStdDeviation=this.getClassStdDeviation;this.getUniqueValues=this.getClassUniqueValues;this.getArithmeticProgression=this.getClassArithmeticProgression}});
-},{}],24:[function(require,module,exports){
+},{"./../construct/newCallback.js":6}],24:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4400,7 +4402,7 @@ var socioscapes = require('./core/core.js'),
 viewGmaps(socioscapes);
 
 module.exports = socioscapes;
-},{"./core/core.js":11,"./extension/viewGmaps.js":14}],25:[function(require,module,exports){
+},{"./core/core.js":12,"./extension/viewGmaps.js":15}],25:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4420,7 +4422,7 @@ function menuClass(context, name) {
     return fetchFromScape(name, 'name', context.object);
 }
 module.exports = menuClass;
-},{"./../fetch/fetchFromScape.js":15}],26:[function(require,module,exports){
+},{"./../fetch/fetchFromScape.js":16}],26:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4453,7 +4455,7 @@ function menuConfig(context, command, config) {
     return context.that;
 }
 module.exports = menuConfig;
-},{"./../construct/newCallback.js":5,"./../construct/newEvent.js":7}],27:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../construct/newEvent.js":8}],27:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4476,7 +4478,7 @@ function menuRequire(context, command, config) {
     return context.that;
 }
 module.exports = menuRequire;
-},{"./../construct/newCallback.js":5,"./../construct/newEvent.js":7}],28:[function(require,module,exports){
+},{"./../construct/newCallback.js":6,"./../construct/newEvent.js":8}],28:[function(require,module,exports){
 /*jslint node: true */
 /*global module, require*/
 'use strict';
@@ -4517,7 +4519,7 @@ function menuStore(context, command, config) {
     return context.that;
 }
 module.exports = menuStore;
-},{"./../construct/newCallback.js":5,"./../construct/newEvent.js":7}]},{},[24])(24)
+},{"./../construct/newCallback.js":6,"./../construct/newEvent.js":8}]},{},[24])(24)
 });
 
 

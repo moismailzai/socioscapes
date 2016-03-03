@@ -3,7 +3,7 @@
 'use strict';
 var newCallback = require('./../construct/newCallback.js'),
     fetchGoogleAuth = require('./../fetch/fetchGoogleAuth.js'),
-    geostats = require('./../lib/geostats.min.js');
+    geostats = require('geostats');
 /**
  * This internal method fetches data from Google BigQuery. If necessary, it also requests a gapi authorization token and
  * loads the gapi BigQuery client.
@@ -97,12 +97,12 @@ function fetchGoogleBq(scapeObject, config) {
                 }
                 result.rows.forEach(function(row) {
                     for (var i = 0, parsedRow = {}; i < row.f.length; i++) {
+                        if (i === indexOfValueProperty) {
+                            row.f[i].v = parseFloat(row.f[i].v);
+                        }
                         if (isNaN(row.f[i].v)) { // if the value is not a number, make it 0 and add it to the erros list
                             queryResult.meta.errors.push(row.f[i]);
                             row.f[i].v = 0;
-                        } // otherwise, parse it as a float number
-                        if (i === indexOfValueProperty) {
-                            row.f[i].v = parseFloat(row.f[i].v);
                         }
                         parsedRow[result.schema.fields[i].name] = row.f[i].v; // add a property to parsedRow for each field
                         queryResult.byColumn[result.schema.fields[i].name].push(row.f[i].v);
@@ -117,7 +117,7 @@ function fetchGoogleBq(scapeObject, config) {
                     queryResult.geoJson.features.push( { "type": "Feature", "properties": parsedRow } );
                     queryResult.byId[parsedRow[featureIdProperty]] = parsedRow;
                 });
-                queryResult.csv = 'data:text/csv;charset=utf-8,' + queryResult.meta.columns.join(',') + '\n' + csvEntries.join('\n'); // create header line in csv array
+                queryResult.csv = queryResult.meta.columns.join(',') + '\n' + csvEntries.join('\n'); // create header line in csv array
                 queryResult.geostats = new geostats(queryResult.byColumn[valueIdProperty]);
                 callback(queryResult);
             });

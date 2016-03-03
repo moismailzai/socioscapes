@@ -1,9 +1,9 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var version = '0.7.2-1',
+var version = '0.7.2-2',
     chroma = require('chroma-js'),
-    geostats = require('./../lib/geostats.min.js'),
+    geostats = require('geostats'),
     newCallback = require('./../construct/newCallback.js'),
     newEvent = require('./../construct/newEvent.js'),
     newDispatcher = require('./../construct/newDispatcher.js'),
