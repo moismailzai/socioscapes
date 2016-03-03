@@ -51,5 +51,5 @@ function bundletest() {
         // optional, remove if you dont want sourcemaps
         .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
         // Add transformation tasks to the pipeline here.
-        .pipe(gulp.dest('../socioscapes-www-test/js/'));
+        .pipe(gulp.dest('../socioscapes-www/js/'));
 }

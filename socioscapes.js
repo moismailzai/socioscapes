@@ -4120,6 +4120,8 @@ function fetchGoogleBq(scapeObject, config) {
         authImmediate = config.immediate || false,
         authScope = config.scope || false,
         authToken = config.auth || false,
+        csvEntry,
+        csvEntries = [],
         featureIdProperty = (config && config.featureIdProperty) ? config.featureIdProperty.toLowerCase():'dauid',
         indexOfFeatureProperty = 1,
         indexOfValueProperty = 0,
@@ -4176,6 +4178,7 @@ function fetchGoogleBq(scapeObject, config) {
                     },
                     byColumn: {},
                     byId: {},
+                    csv: [],
                     geoJson: {
                         "type": "FeatureCollection",
                         "features": []
@@ -4190,23 +4193,27 @@ function fetchGoogleBq(scapeObject, config) {
                 }
                 result.rows.forEach(function(row) {
                     for (var i = 0, parsedRow = {}; i < row.f.length; i++) {
-                        if (isNaN(row.f[i].v)) {
+                        if (isNaN(row.f[i].v)) { // if the value is not a number, make it 0 and add it to the erros list
                             queryResult.meta.errors.push(row.f[i]);
                             row.f[i].v = 0;
-                        }
+                        } // otherwise, parse it as a float number
                         if (i === indexOfValueProperty) {
                             row.f[i].v = parseFloat(row.f[i].v);
                         }
-                        if (isNaN(row.f[i].v)) {
-                            queryResult.meta.errors.push(row.f[i]);
-                            row.f[i].v = 0;
-                        }
-                        parsedRow[result.schema.fields[i].name] = row.f[i].v;
+                        parsedRow[result.schema.fields[i].name] = row.f[i].v; // add a property to parsedRow for each field
                         queryResult.byColumn[result.schema.fields[i].name].push(row.f[i].v);
                     }
+                    csvEntry = [];
+                    for (var field in parsedRow) { // for each column
+                        if (parsedRow.hasOwnProperty(field)) {
+                            csvEntry.push(parsedRow[field]); // push every value to the csvEntry array
+                        }
+                    }
+                    csvEntries.push(csvEntry.join(',')); // then join all the values into a comma seperated list and push them to the csvEntries array
                     queryResult.geoJson.features.push( { "type": "Feature", "properties": parsedRow } );
                     queryResult.byId[parsedRow[featureIdProperty]] = parsedRow;
                 });
+                queryResult.csv = 'data:text/csv;charset=utf-8,' + queryResult.meta.columns.join(',') + '\n' + csvEntries.join('\n'); // create header line in csv array
                 queryResult.geostats = new geostats(queryResult.byColumn[valueIdProperty]);
                 callback(queryResult);
             });
