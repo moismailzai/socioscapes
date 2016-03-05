@@ -4224,7 +4224,7 @@ function fetchGoogleBq(scapeObject, config) {
                             row.f[i].v = parseFloat(row.f[i].v);
                         }
                         if (isNaN(row.f[i].v)) { // if the value is not a number, make it 0 and add it to the erros list
-                            queryResult.meta.errors.push(row.f[i]);
+                            queryResult.meta.errors.push(row.f);
                             row.f[i].v = 0;
                         }
                         parsedRow[result.schema.fields[i].name] = row.f[i].v; // add a property to parsedRow for each field
