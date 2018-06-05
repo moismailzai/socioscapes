@@ -10,7 +10,7 @@
 
 **Source code**: [http://github.com/moismailzai/socioscapes](http://github.com/moismailzai/socioscapes "github.com/moismailzai/socioscapes")
  
-**Reference implementation**: [http://app.socioscapes.com](http://app.socioscapes.com "app.socioscapes.com")
+**Reference implementation**: [https://www.socioscapes.com](https://www.socioscapes.com "www.socioscapes.com")
  
 **License**: [MIT license](http://opensource.org/licenses/MIT "MIT license") (free as in beer & speech)
  
