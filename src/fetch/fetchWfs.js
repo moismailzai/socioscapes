@@ -1,7 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js');
+import newCallback from './../construct/newCallback.js';
+
 /**
  * This internal method asynchronously fetches geometry from a Web Feature Service server. It expects geoJson and
  * returns the queried url, the id parameter, and the fetched features.
@@ -14,13 +15,13 @@ var newCallback = require('./../construct/newCallback.js');
  * @param {string} url - A valid wfs url that returns geoJson FeatureCollection.
  * @return {Object} scapeObject - The {@link ScapeObject} within which the query results will be stored.
  */
-function fetchWfs(scapeObject, url) {
-    var callback = newCallback(arguments),
+export default function fetchWfs(scapeObject, url) {
+    let callback = newCallback(arguments),
         xobj = new XMLHttpRequest(),
         geom;
-    xobj.overrideMimeType("application/json"); // From http://codepen.io/KryptoniteDove/blog/load-json-file-locally-using-pure-javascript
+    xobj.overrideMimeType('application/json');
     xobj.open('GET', url, true);
-    xobj.onreadystatechange = function () {
+    xobj.onreadystatechange = function() {
         if (xobj.readyState === 4 && xobj.status === 200) {
             geom = {};
             geom.geoJson = JSON.parse(xobj.responseText);
@@ -36,4 +37,3 @@ function fetchWfs(scapeObject, url) {
     xobj.send(null);
     return scapeObject;
 }
-module.exports = fetchWfs;

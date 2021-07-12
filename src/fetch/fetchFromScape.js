@@ -1,8 +1,9 @@
 /*jslint node: true */
 /*global module, require, Number*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js'),
-    isValidName = require('./../bool/isValidName.js');
+import newCallback from './../construct/newCallback.js';
+import isValidName from './../bool/isValidName.js';
+
 /**
  * This internal method is used to extract a specific state, view, or layer from within a {@link ScapeObject} 'array' based on a
  * 'key' and 'metaProperty' pairing.
@@ -15,17 +16,20 @@ var newCallback = require('./../construct/newCallback.js'),
  * @param {Object} array - The {@link ScapeObject} array that contains the state, view, or layer we are looking for.
  * @return this {Object}
  */
-Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
-        return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
+
+export default function fetchFromScape(key, metaProperty, array) {
+    Number.isInteger = Number.isInteger || function(value) {     // isInteger: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+        return typeof value === 'number' && isFinite(value) &&
+            Math.floor(value) ===
+            value;
     };
-function fetchFromScape(key, metaProperty, array) {
-    var callback = newCallback(arguments),
+    let callback = newCallback(arguments),
         myKey = false;
     if (array) {
         if (Number.isInteger(key)) {
-            myKey = (array[key]) ? array[key]:false;
+            myKey = (array[key]) ? array[key] : false;
         } else if (isValidName(key)) {
-            for (var i = 0; i < array.length; i++) {
+            for (let i = 0; i < array.length; i++) {
                 if (key === array[i].meta[metaProperty]) {
                     myKey = array[i];
                 }
@@ -35,4 +39,3 @@ function fetchFromScape(key, metaProperty, array) {
     callback(myKey);
     return myKey;
 }
-module.exports = fetchFromScape;

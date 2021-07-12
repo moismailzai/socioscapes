@@ -1,7 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js');
+import newCallback from './../construct/newCallback';
+
 /**
  * This internal method tests if a name used for a {@link socioscapes} scape, state, layer, or extensions adheres to naming
  * restrictions.
@@ -12,8 +13,8 @@ var newCallback = require('./../construct/newCallback.js');
  * "protocol://my.valid.url/my.file" pattern.
  * @returns {Boolean}
  */
-function isValidName(name) {
-    var callback = newCallback(arguments),
+export default function isValidName(name) {
+    let callback = newCallback(arguments),
         isValid = false,
         isReserved = [
             'help',
@@ -98,20 +99,22 @@ function isValidName(name) {
             'volatile',
             'while',
             'with',
-            'yield'
+            'yield',
         ];
     if (name && typeof name === 'string') {
         if (/^[-A-Z0-9]+$/i.test(name)) {
             if (isReserved.indexOf(name) === -1) {
                 isValid = true;
             } else {
-                console.log('Sorry, "' + name + '" is not a valid name because it is a reserved word. The full list of reserved words is: ' + isReserved);
+                console.log('Sorry, "' + name +
+                    '" is not a valid name because it is a reserved word. The full list of reserved words is: ' +
+                    isReserved);
             }
         } else {
-            console.log('Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
+            console.log(
+                'Sorry, that is not a valid name. Valid names can only contain letters (a to Z), numbers (0-9), or dashes (-).');
         }
     }
     callback(isValid);
     return isValid;
 }
-module.exports = isValidName;

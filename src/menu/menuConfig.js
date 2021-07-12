@@ -1,8 +1,9 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js'),
-    newEvent = require('./../construct/newEvent.js');
+import newCallback from './../construct/newCallback.js';
+import newEvent from './../construct/newEvent.js';
+
 /**
  * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuConfig'.
  *
@@ -14,12 +15,13 @@ var newCallback = require('./../construct/newCallback.js'),
  * @param {Object} [config] - A configuration object for the corresponding command function.
  * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
-function menuConfig(context, command, config) {
-    var callback = newCallback(arguments),
-        myCommand = (typeof command === 'function') ? command: false;
+export default function menuConfig(context, command, config) {
+    let callback = newCallback(arguments),
+        myCommand = (typeof command === 'function') ? command : false;
     if (myCommand) {
-        myCommand(context.that, config, function (result) {
-            console.log('The results of your "' + myCommand.name + '" are ready.');
+        myCommand(context.that, config, function(result) {
+            console.log(
+                'The results of your "' + myCommand.name + '" are ready.');
             newEvent('socioscapes.ready.' + myCommand.name, context);
             callback(result);
         });
@@ -29,4 +31,3 @@ function menuConfig(context, command, config) {
     }
     return context.that;
 }
-module.exports = menuConfig;

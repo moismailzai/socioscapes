@@ -10,20 +10,22 @@
  * @param {String} name - The name of the new event (this is what your event handler will listen for).
  * @param {Object} message - The content of the event.detail.
  */
-// CustomEvent Polyfill
-(function () {
-    function CustomEvent ( event, params ) {
-        params = params || { bubbles: false, cancelable: false, detail: undefined };
-        var evt = document.createEvent( 'CustomEvent' );
-        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-        return evt;
-    }
-    CustomEvent.prototype = window.Event.prototype;
-    window.CustomEvent = CustomEvent;
-})();
-function newEvent(name, message) {
-    var myEvent;
-    myEvent = new CustomEvent(name, {"detail": message});
+export default function newEvent(name, message) {
+    // CustomEvent Polyfill
+    (function() {
+        function CustomEvent(event, params) {
+            params = params ||
+                {bubbles: false, cancelable: false, detail: undefined};
+            let evt = document.createEvent('CustomEvent');
+            evt.initCustomEvent(event, params.bubbles, params.cancelable,
+                params.detail);
+            return evt;
+        }
+
+        CustomEvent.prototype = window.Event.prototype;
+        window.CustomEvent = CustomEvent;
+    })();
+    let myEvent;
+    myEvent = new CustomEvent(name, {'detail': message});
     document.dispatchEvent(myEvent);
 }
-module.exports = newEvent;

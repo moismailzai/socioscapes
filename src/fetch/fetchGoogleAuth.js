@@ -1,7 +1,8 @@
 /*jslint node: true */
 /*global module, require, google, gapi, auth, authorize, access_token*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js');
+import newCallback from './../construct/newCallback.js';
+
 /**
  * This function requests authorization to use a Google API, and if received, loads that API client. For more information
  * on Google APIs, see {@link http://developers.google.com/api-client-library/javascript/reference/referencedocs}.
@@ -14,15 +15,15 @@ var newCallback = require('./../construct/newCallback.js');
  * @param {Object} config.client.version - The version of the Google API client to load.
  * @return this {Object}
  */
-function fetchGoogleAuth(config) {
-    var callback = newCallback(arguments);
-    gapi.auth.authorize(config.auth, function (token) {
+export default function fetchGoogleAuth(config) {
+    let callback = newCallback(arguments);
+    gapi.auth.authorize(config.auth, function(token) {
         if (token && token.access_token) {
-            gapi.client.load(config.client.name, config.client.version, function (result) {
-                callback(result);
-                return result;
-            });
+            gapi.client.load(config.client.name, config.client.version,
+                function(result) {
+                    callback(result);
+                    return result;
+                });
         }
     });
 }
-module.exports = fetchGoogleAuth;

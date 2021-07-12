@@ -1,7 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newEvent = require('./../construct/newEvent.js');
+import newEvent from './../construct/newEvent';
+
 /**
  * The {@link socioscapes} {@link Dispatcher} class helps to facilitate asynchronous method chaining and queues. Socioscapes
  * associates every 'scape' object with a unique dispatcher instance and id. The dispatcher allows for API calls to be
@@ -20,23 +21,25 @@ var newEvent = require('./../construct/newEvent.js');
  * @memberof socioscapes
  * @return {Object}
  * */
-function newDispatcher() {
+export default function newDispatcher() {
     /**
      * Represents a {@link ScapeObject} dispatcher.
      * @namespace Dispatcher
      * @constructor
      */
-    var Dispatcher = function() {
-        var dispatcherId = new Date().getTime().toString() + Math.random().toString().split('.')[1], // unique ID,
+    let Dispatcher = function() {
+        let dispatcherId = new Date().getTime().toString() +
+            Math.random().toString().split('.')[1], // unique ID,
             dispatcherQueue = [],
             dispatcherReady = true,
             queueItem,
             that = this;
         // add a unique event listener persistent to this dispatcher instance
-        document.addEventListener("socioscapes.dispatched." + dispatcherId, function(event) {
-            dispatcherReady = true;
-            that.dispatch();
-        });
+        document.addEventListener('socioscapes.dispatched.' + dispatcherId,
+            function(event) {
+                dispatcherReady = true;
+                that.dispatch();
+            });
         /**
          * Calls to the dispatcher are expeted to provide an arguments array, myArguments, and a function, myFunction.
          * The first argument in myArguments should always be the object that myFunction modifes and/or returns.
@@ -51,19 +54,21 @@ function newDispatcher() {
          * @param {object} [config]
          * */
         Object.defineProperty(this, 'dispatch', {
-            value: function (config) {
+            value: function(config) {
                 if (config) {
                     config.myArguments.unshift(config.myContext);
-                    for (; config.myFunction.length > config.myArguments.length; ) {
+                    for (; config.myFunction.length >
+                           config.myArguments.length;) {
                         config.myArguments.push(null);
                     } // pack arguments array with null values if there are missing params so that the last param is always the dispatcher callback
                     config.myArguments.push(function(result) { // append the dispatcher callback to the arguments array
                         config.myCallback(result);
-                        newEvent("socioscapes.dispatched." + dispatcherId, result);
+                        newEvent('socioscapes.dispatched.' + dispatcherId,
+                            result);
                     }); // this event executes the callback and triggers the next item in the queue to be processed
                     dispatcherQueue.push({ // push the function and argument array to the dispatcher queue
-                        "myArguments": config.myArguments,
-                        "myFunction": config.myFunction
+                        'myArguments': config.myArguments,
+                        'myFunction': config.myFunction,
                     });
                 }
                 if (dispatcherReady && dispatcherQueue.length > 0) {
@@ -72,7 +77,7 @@ function newDispatcher() {
                     queueItem.myFunction.apply(that, queueItem.myArguments);
                 }
                 return this;
-            }
+            },
         });
         /**
          * Returns the id specific to this {@link Dispatcher} instance. Useful if you want to setup external listeners for
@@ -84,10 +89,9 @@ function newDispatcher() {
         Object.defineProperty(this, 'id', {
             value: function() {
                 return dispatcherId;
-            }
+            },
         });
         return this;
     };
     return new Dispatcher();
 }
-module.exports = newDispatcher;

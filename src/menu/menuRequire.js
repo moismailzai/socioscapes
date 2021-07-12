@@ -1,8 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var newCallback = require('./../construct/newCallback.js'),
-    newEvent = require('./../construct/newEvent.js');
+import newCallback from './../construct/newCallback.js';
+
 /**
  * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuRequire'.
  *
@@ -14,9 +14,8 @@ var newCallback = require('./../construct/newCallback.js'),
  * @param {Object} [config] - A configuration object for the corresponding command function.
  * @return {Object} context.that - A {@link socioscapes} {@link ScapeObject} object.
  */
-function menuRequire(context, command, config) {
-    var callback = newCallback(arguments);
+export default function menuRequire(context, command, config) {
+    let callback = newCallback(arguments);
     callback(context.that);
     return context.that;
 }
-module.exports = menuRequire;

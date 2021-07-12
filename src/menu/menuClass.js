@@ -1,7 +1,8 @@
 /*jslint node: true */
 /*global module, require*/
 'use strict';
-var fetchFromScape = require('./../fetch/fetchFromScape.js');
+import fetchFromScape from './../fetch/fetchFromScape.js';
+
 /**
  * This method returns a {@link ScapeObject} object for schema entries where menu === 'menuClass'.
  *
@@ -12,8 +13,7 @@ var fetchFromScape = require('./../fetch/fetchFromScape.js');
  * @param {string} [name] - Not implemented.
  * @return {Object} - A {@link socioscapes} {@link ScapeObject} object.
  */
-function menuClass(context, name) {
+export default function menuClass(context, name) {
     name = (typeof name === 'string') ? name : context.schema.name;
     return fetchFromScape(name, 'name', context.object);
 }
-module.exports = menuClass;

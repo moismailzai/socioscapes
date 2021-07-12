@@ -18,16 +18,16 @@
  * @param {Boolean} config[].silent - If true, supresses console.log messages.
  * @param {Object} config[].extension - Your extension.
  * */
-function extender(socioscapes, config) {
-    var myExtension, myName, myPath, i, ii,
+export default function extender(socioscapes, config) {
+    let myExtension, myName, myPath, i, ii,
         myTarget = socioscapes.prototype;
     for (i = 0; i < config.length; i++) {
-        myPath = (typeof config[i].path === 'string') ? config[i].path:false;
+        myPath = (typeof config[i].path === 'string') ? config[i].path : false;
         myExtension = config[i].extension || false;
         if (myPath && myExtension) {
-            if (myPath.indexOf('/') > -1){
+            if (myPath.indexOf('/') > -1) {
                 myPath = myPath.split('/');
-                for (ii = 0; myTarget[myPath[ii]] ; ii++) {
+                for (ii = 0; myTarget[myPath[ii]]; ii++) {
                     myTarget = myTarget[myPath[ii]];
                 }
                 myName = myPath[ii];
@@ -41,12 +41,15 @@ function extender(socioscapes, config) {
                     myTarget.schema.alias[config[i].alias] = myTarget[myName];
                 }
                 if (!config[i].silent) {
-                    console.log('Extended socioscapes.fn with "' + myPath + (config[i].alias ? ('" alias "' + config[i].alias + '".'):('".')));
+                    console.log('Extended socioscapes.fn with "' + myPath +
+                        (config[i].alias ?
+                            ('" alias "' + config[i].alias + '".') :
+                            ('".')));
                 }
             } else {
-                console.log('Sorry, unable to add your extension. Please check the .path string.');
+                console.log(
+                    'Sorry, unable to add your extension. Please check the .path string.');
             }
         }
     }
 }
-module.exports = extender;
