@@ -36,37 +36,38 @@ const version = '0.8.0-0';
  * @return {Object} The {@link socioscapes} api interface, which is a {@link ScapeMenu} object.
  */
 export default function socioscapes(scapeName) { // when socioscapes is called, fetch the {@link ScapeObject} specified (or fetch / create a default {@link ScapeObject}) and return an api ({@link ScapeMenu}) for it
-    // lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this way external socioscapes extensions will have access to internal socioscapes methods via the prototype
-    socioscapes.fn = socioscapes.prototype = {
-        constructor: socioscapes,
-        chroma: chroma,
-        geostats: geostats,
-        extender: extender,
-        fetchFromScape: fetchFromScape,
-        fetchGlobal: fetchGlobal,
-        fetchGoogleAuth: fetchGoogleAuth,
-        fetchGoogleBq: fetchGoogleBq,
-        fetchGoogleGeocode: fetchGoogleGeocode,
-        fetchScape: fetchScape,
-        fetchScapeSchema: fetchScapeSchema,
-        fetchWfs: fetchWfs,
-        isValidName: isValidName,
-        isValidObject: isValidObject,
-        isValidUrl: isValidUrl,
-        menuClass: menuClass,
-        menuConfig: menuConfig,
-        menuRequire: menuRequire,
-        menuStore: menuStore,
-        newCallback: newCallback,
-        newDispatcher: newDispatcher,
-        newEvent: newEvent,
-        newGlobal: newGlobal,
-        newScapeMenu: newScapeMenu,
-        newScapeObject: newScapeObject,
-        schema: schema,
-        version: version,
-    };
     let myScape = fetchScape(scapeName || 'scape0') ||
         newScapeObject('scape0', null, 'scape');
     return newScapeMenu(myScape, socioscapes.prototype);
 }
+
+// lets steal some structure from jQuery and setup socioscapes.prototype to act as a central methods repository, this way external socioscapes extensions will have access to internal socioscapes methods via the prototype
+socioscapes.fn = socioscapes.prototype = {
+    constructor: socioscapes,
+    chroma: chroma,
+    geostats: geostats,
+    extender: extender,
+    fetchFromScape: fetchFromScape,
+    fetchGlobal: fetchGlobal,
+    fetchGoogleAuth: fetchGoogleAuth,
+    fetchGoogleBq: fetchGoogleBq,
+    fetchGoogleGeocode: fetchGoogleGeocode,
+    fetchScape: fetchScape,
+    fetchScapeSchema: fetchScapeSchema,
+    fetchWfs: fetchWfs,
+    isValidName: isValidName,
+    isValidObject: isValidObject,
+    isValidUrl: isValidUrl,
+    menuClass: menuClass,
+    menuConfig: menuConfig,
+    menuRequire: menuRequire,
+    menuStore: menuStore,
+    newCallback: newCallback,
+    newDispatcher: newDispatcher,
+    newEvent: newEvent,
+    newGlobal: newGlobal,
+    newScapeMenu: newScapeMenu,
+    newScapeObject: newScapeObject,
+    schema: schema,
+    version: version,
+};
